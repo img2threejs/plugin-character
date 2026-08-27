@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "name": "character",
+  "version": "0.1.0",
+  "description": "Character rigging and animation: skeleton from a GLB, skin conditioning, clip measurement, action design, and a twelve-check rig gate.",
+  "capabilities": [
+    { "from": "character-mesh", "to": "rigged-character" },
+    { "from": "glb", "to": "rig-reference" }
+  ],
+  "requires": { "harness": ">=0.2.1", "coreApi": 1 }
+}
