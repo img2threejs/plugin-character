@@ -416,13 +416,18 @@ class GateRiggingTest(unittest.TestCase):
         self.assertEqual(result["status"], "pass")
         self.assertEqual(result["envelope"]["plugin"], "character")
 
-    def test_gate_runner_end_to_end_blocking_fail(self):
+    def test_gate_runner_end_to_end_fail_is_recorded_but_not_blocking(self):
+        # `rigging` is declared blocking: false until the four producer-less checks gain producers
+        # (extract-animated-character, design D1): an honest fail must be VISIBLE in the aggregate
+        # without halting the sweep -- with rig-aware participation the sweep only evaluates the
+        # gate post-rig, where a fail should be recorded, not fatal. Re-block trigger in CHANGELOG.
         payload = full_payload()
         payload["bindRestore"]["maxBindRestoreDelta"] = 1.0e-6
         self.write_payload(payload)
         proc = self.run_gate_runner()
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         doc = json.loads(proc.stdout)
+        self.assertFalse(doc["stopped"])
         [result] = doc["results"]
         self.assertEqual(result["status"], "fail")
         self.assertEqual(result["exitCode"], 1)

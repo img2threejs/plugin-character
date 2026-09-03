@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # 25, test_emit_animation_runtime 25, test_geodesic_skinning 12, test_rig_milestone0 9,
 # test_validate_rig_payload 6), plus 9 in test_gate_rigging. This file's own 2 are not counted --
 # the probe discovers them too, but a floor that counts the checker inflates itself.
-COLLECTED_FLOOR = 227
+COLLECTED_FLOOR = 235
 
 _PROBE = """
 import json, unittest

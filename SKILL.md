@@ -1,6 +1,6 @@
 ---
 name: character
-version: 0.1.0
+version: 0.2.0
 description: Character rigging and animation for img2threejs — skeleton read from a GLB, skin conditioning across overlapping parts, clip measurement and naming, action design against target bands, and a twelve-check rig gate where an unmeasured check is never a pass.
 ---
 
@@ -54,6 +54,25 @@ only by measuring.
    and the model renders a corpse while reporting `bound: true`.
 5. **An unmeasured check is not a pass.** The gate reports `error` when an input is absent, and says
    which input. Four of the twelve checks have no producer yet, so that is the honest verdict today.
+
+## The rig track in the checklist
+
+Installing this plugin registers the `animated-character` profile: the base splices this plugin's
+`domain.json` — two character setup steps, then nine rig steps appended AFTER the base's FINAL
+steps. The step order is canonical here and pinned by `tests/test_domain_declaration.py`; repair
+precedes the freeze, the freeze precedes every rig step, parity is verified after the bind.
+
+Working-directory contract: rig steps run from the base checkout, which is also the workspace.
+Every tool invocation therefore carries an explicit `--out <name>` or `--payload <path>` — never
+rely on workspace auto-resolution, which refuses checkout-shaped directories.
+
+**Where the gate payload goes.** The `rig-gates` checklist step assembles
+`rig-gate-payload.json` at the WORKSPACE ROOT and runs
+`gate_rigging.py --payload rig-gate-payload.json`. The terminal `gates.json` sweep instead reads
+the fixed confined path `.img2/artifacts/character/rig-gate-payload.json` — copy the payload there
+if you want the terminal sweep to evaluate it. The gate is declared `blocking: false` until the
+four producer-less checks gain producers (re-block trigger in the CHANGELOG); an honest fail is
+recorded in the aggregate without halting it.
 
 ## Reference material
 

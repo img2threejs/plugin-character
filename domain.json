@@ -1,0 +1,52 @@
+{
+  "id": "animated-character",
+  "setupSteps": [
+    [
+      "character-contract-read",
+      "Read grimoire/character/reconstruction.md and grimoire/character/likeness_maximization.md completely"
+    ],
+    [
+      "character-landmarks",
+      "python3 forge/stage1_intake/extract_landmarks.py {reference} --out anatomy.json --overlay landmarks.png"
+    ]
+  ],
+  "setupAnchorBefore": "local-spec-search",
+  "rigSteps": [
+    [
+      "rig-contract-read",
+      "Read {plugin_dir}/reference/animation-contract.md and {plugin_dir}/reference/character-rigging-animation-1.5.2.md completely"
+    ],
+    [
+      "glb-rig-reference",
+      "Run python3 {plugin_dir}/tools/rig_glb_reference.py {reference} --out glb-rig.json (skeleton, skin joint order, inverse binds and clips read FROM the GLB; skip with a reason only when there is no GLB)"
+    ],
+    [
+      "mesh-repair",
+      "Inspect the meshes for breakage and repair them now, before the freeze; record what was repaired, or skip with a reason when nothing is broken"
+    ],
+    [
+      "mesh-freeze",
+      "Export the mesh buffers with node runtime/scripts/export_mesh_buffers.mjs --url PREVIEW_URL --out meshes.json, then run python3 {plugin_dir}/tools/rig_mesh_parity.py freeze meshes.json --out mesh-manifest.json"
+    ],
+    [
+      "rig-payload-validate",
+      "Run python3 {plugin_dir}/tools/rig_validate_payload.py --payload rig-payload.json (structural payload integrity ONLY -- never pose stress or likeness; a sculpt spec is NOT a rig payload, they are different schemas)"
+    ],
+    [
+      "rig-bind",
+      "Bind the skeleton: ADD skeleton, skinIndex and skinWeight only. Vertex positions, normals, uvs and indices are frozen evidence"
+    ],
+    [
+      "mesh-parity-verify",
+      "Export the post-bind buffers with node runtime/scripts/export_mesh_buffers.mjs --url PREVIEW_URL --out meshes-after.json, then run python3 {plugin_dir}/tools/rig_mesh_parity.py verify mesh-manifest.json meshes-after.json"
+    ],
+    [
+      "clip-measure",
+      "Run python3 {plugin_dir}/tools/anim_clip_features.py sampled-clips.json --out clip-features.json (measure, classify, name, and decide loop from poseReturn)"
+    ],
+    [
+      "rig-gates",
+      "Run python3 {plugin_dir}/tools/gate_rigging.py --payload rig-gate-payload.json (G1-G10; an unevaluated gate is not a pass)"
+    ]
+  ]
+}

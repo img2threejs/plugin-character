@@ -10,6 +10,7 @@ require_core_api(1)
 import argparse
 import json
 import math
+from pathlib import Path
 
 from img2_core.paths import resolve_workspace
 
@@ -80,13 +81,22 @@ def describe(result, spec):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="gate_rigging.py")
     parser.add_argument("--workspace", default=None)
+    # --payload is the checklist-step mode: an explicit path, no resolve_workspace. The base
+    # pipeline's workspace IS its checkout, which resolve_workspace refuses on the SKILL.md marker,
+    # and {workspace} is not domain.json vocabulary -- so the per-pass rig-gates step passes the
+    # payload directly, at the workspace root, matching the base CLI's old positional argument.
+    # --workspace remains the terminal gates.json mode, reading the confined artifact path.
+    parser.add_argument("--payload", type=Path, default=None)
     args = parser.parse_args(argv)
-    try:
-        workspace = resolve_workspace(args.workspace)
-    except ValueError as err:
-        emit("error", [str(err)], {})
-        return 2
-    payload_path = workspace / ".img2" / "artifacts" / PLUGIN_ID / PAYLOAD_NAME
+    if args.payload is not None:
+        payload_path = args.payload.expanduser()
+    else:
+        try:
+            workspace = resolve_workspace(args.workspace)
+        except ValueError as err:
+            emit("error", [str(err)], {})
+            return 2
+        payload_path = workspace / ".img2" / "artifacts" / PLUGIN_ID / PAYLOAD_NAME
     evidence = {"payload": str(payload_path), "ok": False, "gates": [], "failed": [], "unevaluated": []}
     if not payload_path.is_file():
         emit("error", ["rig gate payload not found at %s" % payload_path], evidence)

@@ -2,7 +2,7 @@
   {
     "id": "rigging",
     "command": "python3 {plugin_dir}/tools/gate_rigging.py --workspace {workspace}",
-    "blocking": true,
+    "blocking": false,
     "after": []
   }
 ]
