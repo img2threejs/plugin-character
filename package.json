@@ -1,0 +1,22 @@
+{
+  "name": "@img2threejs/plugin-character",
+  "version": "0.2.0",
+  "description": "Character rigging and animation: skeleton from a GLB, skin conditioning, clip measurement, action design, and a twelve-check rig gate.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/img2threejs/plugin-character.git"
+  },
+  "files": [
+    "CHANGELOG.md",
+    "SKILL.md",
+    "domain.json",
+    "gates.json",
+    "plugin.json",
+    "reference",
+    "tools"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
