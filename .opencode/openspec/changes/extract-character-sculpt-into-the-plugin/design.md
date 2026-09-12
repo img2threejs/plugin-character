@@ -85,10 +85,11 @@ a half-left hair subsystem is worse than either end. And the base does still nam
 no domain" for exactly one name. That is worth doing and worth stating accurately; it is not the rule
 satisfied.
 
-`scalp_exposure.py` leaves anyway, and the earlier attempt's worry about it was misread:
-`hair_gate.py` imports only `extract_hair_evidence` and takes `scalp_exposure_report` as a
-**parameter** (`hair_gate.py:104`). The coupling is data. One docstring line at `:123` names the old
-path and is repointed at the plugin.
+`scalp_exposure.py` **stays too**, under D11 partition 1 — an earlier revision of this section had
+it leaving, which was the very split the paragraph above refutes. The coupling analysis stands and is
+worth keeping for 7.1: `hair_gate.py` imports only `extract_hair_evidence` and takes
+`scalp_exposure_report` as a **parameter** (`hair_gate.py:104`), so when hair does leave, the
+dependency is data rather than code and only a docstring path at `:123` moves with it.
 
 ## D3 — The template authors into an empty scratch, never into the base's spec
 
@@ -408,6 +409,37 @@ evaporates: the base legitimately keeps the whole hair subsystem, and renaming o
 coherent group — whose only consumer is `scalp_exposure.py`, also staying — would make the pair
 *less* legible, for a rule this partition explicitly defers. The rename travels with hair in 7.1.
 D10's analysis stands and is why the module stays; only its cosmetic half is deferred.
+
+## D12 — Assumptions this change makes, written down so they can be attacked
+
+The review's closing finding was that several load-bearing assumptions were never stated. Stated:
+
+- **`~/.img2` is not clean.** The registry records `796dd9c` (v0.2.0) while the directory holds the
+  abandoned v0.3.0 tree, and `img2 doctor` FAILs on it today. Task 3.10a cleans it; until then every
+  "with the plugin installed" capture photographs the abandoned attempt.
+- **`anatomy.json` substitutes for the agent-curated `preSpecAssessment.anatomy`.** Decided in D4,
+  not inherited: `new_pre_spec_assessment.py` authors no `anatomy` at all, and at this anchor
+  `assessment.json` does not exist yet.
+- **The plugin re-authors a base-equivalent `base` material.** The alternative — accepting that
+  `specSections` drops it — is rejected, because task 1.2's byte-identity test could not pass.
+- **A doctor WARN is not a finding.** The multi-capability WARN is mandated by §12 and this change
+  adds a third edge; the bar is zero FAILs.
+- **`assessmentPatch` may carry `primaryDomain`.** It may — `spec_augmentation.py:102` refuses only
+  `objectClass.domain` — but the plan names this as the mechanism rather than leaving it implied,
+  for a value `validate_sculpt_spec.py:904` hard-errors without.
+- **`hybrid` is NOT assumed to leave with `character`.** The abandoned branch removed both from
+  `VALID_KINDS`; `hybrid` is a classification outcome, not a domain name, and `domain-recognition`
+  requires it to request input rather than route. Task 3.5 decides it.
+- **The harness branch carrying §15 is out of scope but not irrelevant.** §15's "the base SHALL NOT
+  import plugin code" is a rule this change ought to conform to, and it lives only on an unmerged
+  branch of the change being abandoned. Follow-up 7.2.
+- **A function-local import is NOT caught by the collected-count floor.** Measured: with the module
+  gone, `--collect-only` still reported 31 while the run reported 2 failed. D6 and the Direction-1
+  sweep exist because of it.
+
+*(This section was silently deleted once, by an edit that replaced the block between D11 and D7
+while D12 sat inside it — and two documents went on citing it. Restored, and recorded here because
+"a claim that does not match the artifact" is the failure this whole change is about.)*
 
 ## D7 — Acceptance
 
