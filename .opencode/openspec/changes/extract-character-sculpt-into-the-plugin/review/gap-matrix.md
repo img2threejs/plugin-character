@@ -74,7 +74,11 @@ text. The maths stays; the gate goes.
 
 ## Rounds 1c–1e — reviewer A parts 3–9
 
-Nine parts in all. Beyond what is tabled above: the capability edge is legal under §13 and
+Nine parts in all, and twelve across both reviewers — reviewer B delivered its report in three
+(H1–H6; H7–H8 and M1–M8; L1–L3 with the contradictions, the unfalsifiable criteria and its bottom
+line). B's findings are folded into the round-1 table above under dual ids (`A1/B1`, `A2/B2`), which
+is why they are not separately enumerated here; the count is recorded now so "twelve report parts"
+is checkable from this file rather than resting on process context that was never written down. Beyond what is tabled above: the capability edge is legal under §13 and
 manifest-level is a deliberate choice (D5); `test_rigid_hair_binding` moves a test whose subject
 stays (H8); the review-existence gate is withdrawn for a rule about what may live in the base suite
 at all (D6); the gate row ships a tool that cannot produce a verdict envelope (M1); D4's anchor
