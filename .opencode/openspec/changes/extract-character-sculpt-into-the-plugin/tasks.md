@@ -163,13 +163,14 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
 - [ ] 1.4 `git mv` into `tools/`: **`humanoid_proportions.py` only.** Under D11 partition 1 neither
       `scalp_field.py` nor `scalp_exposure.py` moves — the first because the base's emitted
       `ringStackDistance` is pinned against it (D10), the second because it is **hair's** content and
-      hair stays whole. The moved tool gains the §8 bootstrap stanza **and takes `--workspace`, resolving through
-      `img2_core.paths` with no `Path(__file__).parents[N]`** — the stanza alone is not enough, and
-      this is not a prediction: `img2 doctor` FAILs today on a hand-copied `tools/scalp_exposure.py`
-      in the installed clone, for `computes a repo root via Path(...).parents[N]`, because the base
-      file does exactly that at `stage4_review/scalp_exposure.py:40` and `:242`; the fix for `:40`
-      is to **delete** it once the field is a sibling or a data input, not to wrap it. The withdrawn attempt moved it
-      the way an earlier revision of this task described, and that FAIL is the result.
+      hair stays whole. The moved tool gains the §8 bootstrap stanza. It needs nothing further:
+      `humanoid_proportions.py` contains **no** `Path(__file__).parents[N]` and no `sys.path`
+      insertion — measured. (An earlier revision of this task demanded `--workspace` and
+      `img2_core.paths` here; that requirement was written for `scalp_exposure.py`, which no longer
+      moves. It is not lost — `img2 doctor` FAILs on a hand-copied `tools/scalp_exposure.py` in the
+      installed clone today for exactly that pattern, so the requirement travels to **7.1** with
+      hair.) What it does need is the `--in-place` question: it writes the base's spec, and a plugin
+      may not — see 1.3a.
       `humanoid_proportions`' canon anatomy travels as an `assessmentPatch`, never `--in-place` into
       the base's spec
 - [ ] 1.5 `git mv` the grimoire pages into the plugin's `grimoire/` — **by content, not by folder**.
@@ -301,9 +302,10 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       `test_stand_proud_emission.py` (31 tests; function-scoped `from scalp_field import ScalpField`
       at `:204` and `:228`. **Under D10 it no longer breaks** — `scalp_field.py` stays — but it is
       the measured proof that the floor is blind to this loss class: with the module gone,
-      `--collect-only` still reports 31 while the run reports 2 failed. Keep it as the pin it is) and `test_hair_gate.py:222-236`, which asserts `assertIn("scalp_exposure.py", evidence)`
-      for a hair subject that stays while the file it names leaves, surviving only by substring luck
-      once the path becomes `{plugin_dir}/tools/scalp_exposure.py`.
+      `--collect-only` still reports 31 while the run reports 2 failed. Keep it as the pin it is) and `test_hair_gate.py:222-236`, which asserts
+      `assertIn("scalp_exposure.py", evidence)`. Under D11 partition 1 that file **stays**, so this
+      assertion is no longer at risk — recorded because an earlier revision listed it as breaking,
+      and because it breaks again the day 7.1 moves hair.
       Also `test_rig_workflow_steps.py:199-211` — `SetupStepAssetsAgreement` asserts base-relative
       `grimoire/character/reconstruction.md` and `likeness_maximization.md` exist, and 3.6 deletes
       both. Its sibling `InstalledPluginOrderIsCheckedWhenPresent` at `:186` **survives** the id
@@ -344,13 +346,16 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
 ## 4. The documentation stops lying
 
 - [ ] 4.1 `SKILL.md`: the profile list, the `character` / `animated-character` prose at `:65`,
-      `:77`, `:80-83`, the six `grimoire/character/` links at `:150`, `:157`, `:161-164`, the
-      `humanoid_proportions.py` reference at **`:168`**, and the `scalp_exposure.py` hard-gate lines
-      at **`:293`** and `:362`. Every runnable example states the plugin as prerequisite.
+      `:77`, `:80-83`, the **four** moving `grimoire/character/` links at `:150`, `:157`, `:161-162`
+      (`:163-164` name the two hair pages, which **stay**), and the `humanoid_proportions.py`
+      reference at **`:168`**. The `scalp_exposure.py` hard-gate lines at **`:293`** and `:362` are
+      **left alone** — that file stays, so those lines remain true. Every runnable example states the
+      plugin as prerequisite.
       (Re-measured against `6e60b5e`: an earlier revision cited `:170` and `:296`; `:296` is
       `vertex_region_gate.py`, an unrelated gate)
-- [ ] 4.2 `docs/ARCHITECTURE.md`: the Hair table still lists `scalp_field.py` and
-      `scalp_exposure.py`; `stage5_rig/` is restated as library, not checklist authority
+- [ ] 4.2 `docs/ARCHITECTURE.md`: `stage5_rig/` is restated as library, not checklist authority.
+      The Hair table lists `scalp_field.py` and `scalp_exposure.py` and is **left alone** — both stay
+      under D11, so the table is already correct. An earlier revision had this task removing them.
 - [ ] 4.3 Sweep `grimoire/` for links into `grimoire/character/`
 - [ ] 4.3a **Disposition the seven documents no task covers.** `rg -c "animated-character"` over
       `6e60b5e`: covered — `SKILL.md` (2, task 4.1), `docs/ARCHITECTURE.md` (2, task 4.2),

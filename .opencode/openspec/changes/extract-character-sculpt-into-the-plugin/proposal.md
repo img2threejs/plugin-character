@@ -43,12 +43,16 @@ envMapIntensity; the character domain writes rig, buildPasses and sculptPipeline
      the way `apply_cs2_template` does. It never reads the base's authored spec.
    - `tools/emit_spec_augmentation.py` — the `spec-augmentation-v1` artifact, partitioned into
      `specSections` / `assessmentPatch` / `qualityFloors` exactly as cs2's is.
-   - `tools/scalp_field.py`, `tools/scalp_exposure.py`, `tools/humanoid_proportions.py`.
-   - `grimoire/character/` — the six pages, moved.
+   - `tools/humanoid_proportions.py` — the **only** module that moves. `scalp_field.py` and
+     `scalp_exposure.py` stay in the base (D10, D11).
+   - `grimoire/character/` — **four** of its six entries, moved. The two hair pages
+     (`stylized_hair_threejs.md`, `threejs_hair_parameter_contract.json`) stay, and the directory is
+     five `.md` files plus one `.json`, not "six pages".
    - `spec_search_profile.json` and `specCollection: "character"` — the plugin contributes no
      evidence corpus today; cs2 does, and the mandatory local-spec-search step runs on every profile.
-   - a `gates.json` row for the scalp-exposure gate, which is HARD in the base today and must not
-     become a check with no runtime caller.
+   - **no** `gates.json` row is added. An earlier revision added one for the scalp-exposure gate;
+     under D11 that gate stays in the base, where it already has a caller, so the row and the
+     verdict-envelope wrapper it would have needed both cease to exist.
 2. **One domain id.** `domain.json` declares `id: "character"` and always carries the nine rig
    steps. `animated-character` is withdrawn. A static build skips a rig step with a recorded reason,
    which the checklist already supports; a profile that omitted the Stage R gates entirely is how
@@ -127,11 +131,9 @@ ADDED is what makes `openspec archive` throw (`specs-apply.js:212`).
   text), `forge/_shared/pipeline_routing.py` (drop the character track),
   `forge/stage2_spec/new_pre_spec_assessment.py` (the flag and **every reader of it**),
   `forge/stage3_build/generate_threejs_factory.py` (`BONE_TRACK_DOMAINS`),
-  `forge/_shared/spec_augmentation.py` (the authority ruling), and
-  `forge/_shared/scalp_field.py` → `ring_stack_field.py` (D10);
+  `forge/_shared/spec_augmentation.py` (the authority ruling);
   delete `forge/_shared/domains/character.py`,
-  `forge/stage2_spec/humanoid_proportions.py`, `forge/_shared/scalp_field.py`,
-  `forge/stage4_review/scalp_exposure.py`, `grimoire/character/`; remove the character content from
+  `forge/stage2_spec/humanoid_proportions.py` and four of the `grimoire/character/` pages; remove the character content from
   `new_sculpt_spec.py` and `validate_character_track` from `validate_sculpt_spec.py`; the domain-name
   sweep; the doc sweep; the floor, lowered with accounting.
 

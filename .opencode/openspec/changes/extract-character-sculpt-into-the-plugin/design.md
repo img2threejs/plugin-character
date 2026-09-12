@@ -355,9 +355,10 @@ hair**, per D11: under partition 1 the base keeps the whole hair subsystem, and 
 of it for a rule this partition defers would make the group less legible, not more. `docs/ARCHITECTURE.md:165` describes it as "signed distance to a
 **skull**", which is the same domain flavour in prose and is reworded with it.
 
-The rename surface is small and measured: `scalp_exposure.py` (leaving anyway),
-`test_scalp_exposure.py` and `test_scalp_field.py` (moving with it under Partition 2, or renamed in
-place under Partition 1), `test_stand_proud_emission.py`, and `ARCHITECTURE.md:165`. `CHANGELOG.md`
+The rename surface, measured when the rename was still live: `scalp_exposure.py`,
+`test_scalp_exposure.py`, `test_scalp_field.py`, `test_stand_proud_emission.py` and
+`ARCHITECTURE.md:165` — **all of which stay** under D11 partition 1, which is why the rename is
+deferred to 7.1 rather than performed here. `CHANGELOG.md`
 entries are historical and stay as written.
 
 The plugin's scalp gate then carries its own copy as a **deliberate duplicate with a two-sided
