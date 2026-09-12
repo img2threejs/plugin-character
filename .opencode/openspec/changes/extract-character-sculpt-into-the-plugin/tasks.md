@@ -90,7 +90,17 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       **Sweep `forge/tests/` too, in BOTH directions** — staying tests that import into the leaving
       set, and leaving tests whose subject stays — because the disposition list is otherwise a guess
       dressed as a decision. It already went wrong both ways from filenames alone: see 1.6
-- [ ] 0.3 Get `partition.md` and the 0.2 sweep reviewed. Deliverable: `review/partition-review.md`
+- [x] 0.3 **Done 2026-09-12 — gate closed.** `review/partition-review.md`: an independent
+      architecture adversary ruled on all seven questions across ten report parts.
+      **Accept 1 · Amend 3 · Rebut 3**, and all three rebuttals dissolved their question rather than
+      answering it. Outcomes that changed the partition: `_cnode` leaves (18 call sites, all inside
+      the leaving function); `validate_rig_admission` **stays whole** — `rig` is plugin-contributable
+      and admitted opaquely, so moving three of five checks would make the plugin validate its own
+      submission; `_eye_socket_sdf` and `_limb_attachment` leave with their caller; the `anatomy` key
+      is dropped, not scaffolded; `POOL_FLOOR`'s 4 is the `skinIndex` vec4 width, not anatomy;
+      `hybrid` stays, with the sweep scoped to the `{"character","hybrid"}` literal pair.
+      **Four of seven questions were malformed** — the review's own finding, recorded there.
+      Originally: Get `partition.md` and the 0.2 sweep reviewed. Deliverable: `review/partition-review.md`
       recording accept / rebut / amend per row
 - [ ] 0.3a **Make the partition's CONCLUSIONS executable — not its review.** An earlier revision of
       this task added a base test asserting `review/partition-review.md` exists with a verdict per
@@ -116,11 +126,21 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
          the partition asserts — catches a stays entry deleted by accident, which a deny-list sweep
          cannot see.
       All three survive archive, need no allowlist upkeep, and hold for the next extraction too
-- [ ] 0.4 Freeze the **emission** oracle: `forge/tests/fixtures/oracle-character/{spec.json,
+- [x] 0.4 **Done 2026-09-12.** `forge/tests/fixtures/oracle-character/{spec.json,blockout.ts,anatomy.json}` +
+      `test_character_oracle_replay.py`. spec `bb1051fd35003aa8eb125fa8f77b5410`, blockout
+      `98ac2045dcc9d802cc369e8b4d4d20a4`, all four anti-tamper markers present. **Finding:** the
+      emitter embeds a spec's dict KEY ORDER in its output, so the first freeze (sort_keys=True)
+      replayed to 850 diff lines of pure reordering. Fixture is now serialised without sort_keys
+      and round-trips exactly — and the plugin must author its sections in the base's key order or
+      byte-identity fails on unchanged content.
+      Originally: Freeze the **emission** oracle: `forge/tests/fixtures/oracle-character/{spec.json,
       blockout.ts}` and `test_character_oracle_replay.py` asserting byte equality, plus an
       anti-tamper assertion that the frozen output still contains `THREE.SkinnedMesh`,
       `THREE.Skeleton`, `new THREE.Bone` and `skinIndex`
-- [ ] 0.5 Freeze the **authoring** oracle — the one that can see this extraction regress:
+- [x] 0.5 **Done 2026-09-12.** `plugin-character/tests/test_character_authoring_oracle.py` + its own fixtures.
+      Reads the template from the plugin's `tools/` when present, else the base via
+      `IMG2THREEJS_BASE`, so it follows the template when slice 1 moves it.
+      Originally: Freeze the **authoring** oracle — the one that can see this extraction regress:
       assessment → `new_sculpt_spec.py` → spec, md5 recorded. It is authored in
       **`plugin-character/tests/` from the start** (design D6), frozen from `main` before anything
       moves, run against the base checkout through `IMG2THREEJS_BASE` during slice 0 and against the
@@ -128,10 +148,20 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       requires that deleting the moved authoring makes it fail, while 3.10 requires the base suite to
       have zero failures after exactly that deletion — one home satisfies both, the other is a
       contradiction that reads as licence to neutralise the only test that can see the regression
-- [ ] 0.6 Record the determinism evidence beside the fixtures: no `random` / `uuid` / `time.time()`
+- [x] 0.6 **Done 2026-09-12.** Zero unseeded sources on either path (no `random`/`uuid`/`time.time()`/
+      `datetime.now()`/`os.urandom`), and two full runs produced one md5 for both the spec and the
+      emitted TypeScript.
+      Originally: Record the determinism evidence beside the fixtures: no `random` / `uuid` / `time.time()`
       / `datetime.now()` / `os.urandom` in `new_sculpt_spec.py`, `generate_threejs_factory.py` or
       `forge/stage5_rig/*.py`, and repeated runs producing one md5
-- [ ] 0.7 Both oracles green on `main`, before any file moves. Record both md5s here
+- [x] 0.7 **Done 2026-09-12.** Both green on `main`: emission 5 passed, authoring 4 passed. **And the pair is
+      proven falsifiable** — against a scratch tree with `apply_character_template` stubbed to a
+      no-op (componentTree 61 → 1, rig gone): emission **5 passed** (blind by construction),
+      authoring **1 failed**, naming buildPasses, componentTree, featureReviewTargets, materials,
+      preSpecAssessment, rig, sculptPipeline. That is the demonstration the
+      `domain-plugin-boundary` delta requires, and the reason the previous attempt's oracle stayed
+      green while the authoring was deleted.
+      Originally: Both oracles green on `main`, before any file moves. Record both md5s here
 
 ## 1. The plugin takes the content — base untouched, nothing user-visible changes
 
