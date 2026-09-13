@@ -59,7 +59,7 @@ independent partition review that rebutted four of seven questions as malformed)
 - `setupSteps` gains `character-spec-augmentation`, listed after `character-landmarks` because it
   reads `anatomy.json`, which that step writes. Ordering inside the group; the anchor does not buy it.
 - `SKILL.md` describes the whole track; frontmatter version moves with `plugin.json`.
-- `COLLECTED_FLOOR` 235 → 326, **corrected rather than raised**: 0.2.0 declared 235 while collecting
+- `COLLECTED_FLOOR` 235 → 334, **corrected rather than raised**: 0.2.0 declared 235 while collecting
   258, so 23 tests could have stopped being collected with nothing going red. The arithmetic is
   written down in `tests/test_suite_integrity.py`.
 
