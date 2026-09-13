@@ -12,13 +12,15 @@ out is the one frozen from `img2threejs` @ `6e60b5e` before anything moved.
 
 WHERE IT READS THE TEMPLATE FROM, and why that changes:
 
-  slice 0 (now)   the base checkout, via IMG2THREEJS_BASE. The template still lives there.
-  slice 1 onward  `tools/character_spec_template.py`, this plugin's own copy.
+  slice 0   the base checkout, via IMG2THREEJS_BASE. The template still lived there.
+  slice 1+  `tools/character_spec_template.py`, this plugin's own copy — and NO base checkout,
+            because the base's contribution is frozen too.
 
-It prefers the plugin's copy and falls back to the base, so the day the template arrives here the
-oracle follows it with no edit. During the transition a missing base checkout is a skip WITH a
-reason — the mirror of the base suite's own rule, and transitional by construction: once slice 1
-lands, this test needs no base at all.
+`skeleton.json` is the output of the base's `make_spec()` before any template runs. Freezing it as
+an INPUT is what makes this a plugin-side property rather than a two-repo integration test: the
+oracle asserts that this plugin's template, applied to the base's own starting point, yields the
+spec the base used to produce by itself. `make_spec` stays in the base and is not this plugin's to
+test; what is this plugin's is everything that happens after it.
 
 KEY ORDER IS PART OF THE COMPARISON. The base's emitter embeds a spec's dict key order in the
 TypeScript it writes, so "same content, different order" is a real difference downstream. The frozen
@@ -37,6 +39,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "oracle-character"
 ANATOMY_PATH = FIXTURES / "anatomy.json"
+SKELETON_PATH = FIXTURES / "skeleton.json"
 SPEC_PATH = FIXTURES / "spec.json"
 
 DEFAULT_BASE = ROOT.parent / "img2threejs"
@@ -45,7 +48,11 @@ PLUGIN_TEMPLATE = ROOT / "tools" / "character_spec_template.py"
 
 
 def _load_template():
-    """The module that authors a character spec: this plugin's if it has one, else the base's."""
+    """The module that applies the character template: this plugin's if it has one, else the base's.
+
+    The fallback exists only for the window before slice 1 lands the module here. Once it has
+    landed, this test needs no base checkout at all.
+    """
     if PLUGIN_TEMPLATE.is_file():
         sys.path.insert(0, str(ROOT / "tools"))
         import character_spec_template  # noqa: PLC0415
@@ -69,8 +76,8 @@ def _load_template():
     if os.environ.get("IMG2THREEJS_REQUIRE_BASE") == "1":
         raise RuntimeError(message + " IMG2THREEJS_REQUIRE_BASE=1 forbids skipping this check.")
     raise unittest.SkipTest(
-        message + " Skipping: this is transitional — once slice 1 moves the template here, this "
-        "test needs no base checkout. It did NOT verify the authoring on this run."
+        message + " Skipping: transitional only — once slice 1 moves the template here this test "
+        "needs no base checkout. It did NOT verify the authoring on this run."
     )
 
 
@@ -79,12 +86,16 @@ class CharacterAuthoringOracle(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.template, cls.source = _load_template()
         cls.anatomy = json.loads(ANATOMY_PATH.read_text(encoding="utf-8"))
+        cls.skeleton_text = SKELETON_PATH.read_text(encoding="utf-8")
         cls.frozen_text = SPEC_PATH.read_text(encoding="utf-8")
         cls.frozen = json.loads(cls.frozen_text)
 
-    def _author(self) -> dict:
-        spec = self.template.make_spec("Oracle Figure", None, None)
-        self.template.apply_character_template(spec, self.anatomy, include_accessories=False)
+    def _author(self, anatomy=None) -> dict:
+        # The base's own starting point, frozen. json.loads gives a fresh object each call, so the
+        # template never sees a spec a previous test already mutated.
+        spec = json.loads(self.skeleton_text)
+        self.template.apply_character_template(
+            spec, self.anatomy if anatomy is None else anatomy, include_accessories=False)
         return spec
 
     def test_the_authored_spec_is_byte_identical_to_the_frozen_one(self) -> None:
@@ -100,6 +111,14 @@ class CharacterAuthoringOracle(unittest.TestCase):
         self.assertEqual(json.dumps(self._author(), indent=2),
                          json.dumps(self._author(), indent=2))
 
+    def test_the_skeleton_fixture_is_the_base_s_starting_point_not_the_answer(self) -> None:
+        # If skeleton.json already carried the humanoid tree, every assertion here would pass
+        # against an input that had done the work.
+        skeleton = json.loads(self.skeleton_text)
+        self.assertEqual([m["id"] for m in skeleton["materials"]], ["base"])
+        self.assertNotIn("rig", skeleton)
+        self.assertLess(len(skeleton.get("componentTree", [])), 5)
+
     def test_the_frozen_spec_still_carries_the_humanoid_track(self) -> None:
         # Without these the fixture could be satisfied by a spec that authored nothing, and the
         # byte comparison would pass against an equally empty expectation.
@@ -110,9 +129,7 @@ class CharacterAuthoringOracle(unittest.TestCase):
     def test_anatomy_actually_reaches_the_template(self) -> None:
         # If the template ignored its anatomy argument, every test above would still pass.
         taller = dict(self.anatomy, proportions=dict(self.anatomy["proportions"], torso=3.0))
-        spec = self.template.make_spec("Oracle Figure", None, None)
-        self.template.apply_character_template(spec, taller, include_accessories=False)
-        self.assertNotEqual(spec["componentTree"], self.frozen["componentTree"])
+        self.assertNotEqual(self._author(taller)["componentTree"], self.frozen["componentTree"])
 
 
 if __name__ == "__main__":
