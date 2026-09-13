@@ -1,6 +1,6 @@
 # Acceptance capture — extract-character-sculpt-into-the-plugin
 
-Run 2026-09-13 against `img2threejs` @ `061ac35` and `plugin-character` @ `f860f4e`, installed
+Run 2026-09-13 against `img2threejs` @ `a355e60` and `plugin-character` @ `f35b074`, installed
 with `img2 add --link ./plugin-character` (0.3.0, local).
 
 ## The rule the whole change is measured by
@@ -37,19 +37,19 @@ Anti-tamper markers in the emitted TypeScript: `THREE.SkinnedMesh` ×50, `THREE.
 
 ```
 $ IMG2_HOME=$(mktemp -d) python3 -m pytest forge/tests -q
-1383 passed, 66 skipped in 93.68s
+1387 passed, 66 skipped in 82.39s
 ```
-Zero failures, zero errors. `COLLECTED_FLOOR` 1449 == 1383 + 66 collected.
+Zero failures, zero errors. `COLLECTED_FLOOR` 1453 == 1387 + 66 collected.
 
 ## A2 — plugin suite standalone
 
 ```
 $ IMG2_HOME=$HOME/.img2 python3 -m pytest tests/ -q
-308 passed, 23 skipped
+311 passed, 23 skipped
 $ IMG2THREEJS_BASE=/nonexistent python3 -m pytest tests/ -q
-293 passed, 38 skipped
+296 passed, 38 skipped
 ```
-With no base checkout reachable, 15 more tests SKIP and none fail. `COLLECTED_FLOOR` 331 == 331.
+With no base checkout reachable, 15 more tests SKIP and none fail. `COLLECTED_FLOOR` 334 == 334.
 
 ## A3 — `img2 doctor`
 
@@ -129,12 +129,18 @@ $ img2 add --link ./plugin-character  -> added character 0.3.0
 
 | | floor | collected |
 |---|---|---|
-| base | 1449 | 1449 |
-| plugin | 331 | 331 |
+| base | 1453 | 1453 |
+| plugin | 334 | 334 |
 
 Both **set** to the measurement, not lowered and not merely raised. The base floor stood at 1192
 against 1458 — 266 of slack, enough to absorb a quarter of the suite going dark, which is how the
 withdrawn attempt lost 100 tests without the floor moving.
+
+Both numbers moved once more after a cleanup review: 1449 → 1453 and 331 → 334. The plugin's three
+are the ones that matter — the five base values this plugin carries were pinned only by KEY
+PRESENCE, with the value comparison in a class that skips without a base checkout, so a stale
+`blockedReason` string could have shipped on every run with nothing red. The new pin compares
+values against the frozen fixture this plugin carries, so it cannot skip.
 
 ## A10 — every skip states a reason
 
