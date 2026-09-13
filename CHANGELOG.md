@@ -52,6 +52,18 @@ independent partition review that rebutted four of seven questions as malformed)
 
 ### Changed
 
+- **`emit_spec_augmentation.py` REFUSES to author a figure from invented proportions.** Either
+  measured anatomy (`--anatomy`, from the `character-landmarks` step) or an explicit
+  `--style-heads N` for a reference-free figure. This is the gate the base deleted with
+  `validate_character_track`; the base has no view on anatomy any more, so if the producer does not
+  make the check it exists in neither repo — which is what a review measured, against a test
+  docstring asserting the producer already refused. It did not. Stricter than the base was (it
+  could only warn until `--strict-quality`), deliberately: "I have no measurements" is now a
+  statement the caller makes out loud rather than one the default quietly makes for them.
+- **`--anatomy` is actually read.** `_anatomy_from` only ever looked for an `"anatomy"` key, so the
+  BARE block `extract_landmarks.py` writes — the one `domain.json` passes — returned `None` and the
+  tool authored the DEFAULT humanoid instead of the measured one. Invisible because the frozen
+  fixture's measurements equal the template's defaults, so the spec was byte-identical either way.
 - **`domain.json` declares `id: "character"`.** See Removed.
 - `character-contract-read` names `{plugin_dir}/grimoire/character/...`. The withdrawn attempt
   shipped it base-relative, which dangles the moment the pages move — and dangles silently, because
@@ -59,7 +71,7 @@ independent partition review that rebutted four of seven questions as malformed)
 - `setupSteps` gains `character-spec-augmentation`, listed after `character-landmarks` because it
   reads `anatomy.json`, which that step writes. Ordering inside the group; the anchor does not buy it.
 - `SKILL.md` describes the whole track; frontmatter version moves with `plugin.json`.
-- `COLLECTED_FLOOR` 235 → 334, **corrected rather than raised**: 0.2.0 declared 235 while collecting
+- `COLLECTED_FLOOR` 235 → 344, **corrected rather than raised**: 0.2.0 declared 235 while collecting
   258, so 23 tests could have stopped being collected with nothing going red. The arithmetic is
   written down in `tests/test_suite_integrity.py`.
 

@@ -175,3 +175,55 @@ $ g3_moved_not_copied.py --src forge --dst ../plugin-character/tools  (19 symbol
 G5 is the withdrawn attempt's signature defect: it deleted `--character` and left `args.character`,
 which raised `AttributeError` on **every** profile, generic included. A string-literal AST sweep
 cannot see it — `args.character` contains no string constant.
+
+## The review that came after this capture
+
+A correctness review run over the finished diff found **one Critical and three Important**, all
+confirmed by measurement and all fixed. Recorded here because a capture that only lists what passed
+is the shape the withdrawn attempt had.
+
+**Critical — the anatomy gate existed in NEITHER repo.** The base deleted `validate_character_track`
+under a disposition asserting the check had moved to the producer. It had not:
+`emit_spec_augmentation.py --out a.json` with no anatomy exited 0 and authored a full default
+humanoid. The gate fired under `--strict-quality`, and `strict-validation` is a mandatory checklist
+step — so a character run with no landmark evidence used to be BLOCKED and had silently become a
+clean pass with invented proportions. The byte-identity capture above could not see it: the fixture
+always supplies anatomy.
+
+**And the fix exposed a second hole underneath it.** Adding the gate immediately rejected the real
+fixture, because `_anatomy_from` only ever looked for an `"anatomy"` key — so the BARE block
+`extract_landmarks.py` writes, the one `domain.json` passes, returned `None` and every run had been
+authoring the DEFAULT humanoid rather than the measured one. Invisible for an unlucky reason: the
+fixture's measurements equal the template's defaults, so the spec was byte-identical either way.
+**The byte-identity that proves this extraction correct was, for this one function, also what hid a
+bug in it.**
+
+**Important — the routing conflict's remedy could not succeed.** The message named `--domain
+character` plus an augmentation artifact; supplying both reproduced the message, because the routing
+check ran before the block that reads those flags. The first fix was worse than none — it let the
+run through with the record still `request-input`, which exited 0 and then failed strict validation.
+
+**Important — `unittest.main()` sat mid-file** in `test_spec_augmentation_artifact.py`, so running
+that module directly defined 11 of 20 tests, silently including the non-skippable value pin added
+specifically so a stale value could not drift. pytest collected all 20, so CI never saw it.
+
+**Important — `SKILL.md:81` was left truncated** by an earlier edit: an orphan clause, and the claim
+"on `character` the Stage R gates are absent", which contradicted the clause three lines above it.
+`test_documentation_agreement` could not catch it — no dead path, and the withdrawn identifier had
+been edited out.
+
+Also: `test_rig_spec_agreement.py` defaulted to `~/Documents/personal/img2threejs`, so **nine
+cross-repo drift pins had been skipping silently** with the base sitting next door. They pass.
+
+Re-measured after every fix:
+
+```
+base    1391 passed, 66 skipped, 0 failed     floor 1457 == 1457 collected
+plugin   330 passed, 14 skipped               floor  344 ==  344 collected
+plugin, no base checkout   306 passed, 38 skipped, 0 failed
+end to end                 md5 98ac2045dcc9d802cc369e8b4d4d20a4, BYTE-IDENTICAL
+```
+
+**The lesson this round earned**, which is the same one the partition review earned in a different
+costume: a disposition is a claim about code somewhere else, and writing it down is not the same as
+checking it. Three of the five findings were sentences I wrote asserting behaviour I had not run.
