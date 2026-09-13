@@ -102,7 +102,7 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       **Four of seven questions were malformed** — the review's own finding, recorded there.
       Originally: Get `partition.md` and the 0.2 sweep reviewed. Deliverable: `review/partition-review.md`
       recording accept / rebut / amend per row
-- [ ] 0.3a **Make the partition's CONCLUSIONS executable — not its review.** An earlier revision of
+- [x] 0.3a **Make the partition's CONCLUSIONS executable — not its review.** An earlier revision of
       this task added a base test asserting `review/partition-review.md` exists with a verdict per
       row. That is withdrawn on review: it points `forge/tests/` at
       `openspec/changes/<name>/review/`, a directory that moves at archive, so it breaks or is
@@ -165,12 +165,12 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
 
 ## 1. The plugin takes the content — base untouched, nothing user-visible changes
 
-- [ ] 1.1 `tools/character_spec_template.py`: the humanoid component tree, `derive_character_rig`,
+- [x] 1.1 `tools/character_spec_template.py`: the humanoid component tree, `derive_character_rig`,
       `apply_character_pose`, build passes, feature targets, `validate_character_track`, and the
       material constants — authored into an **empty scratch dict**, mirroring
       `cs2_spec_template.py`. One definition per symbol; the withdrawn attempt shipped this file
       with its own content pasted twice
-- [ ] 1.2 Make the character materials **self-contained** (design D3): each carries its own
+- [x] 1.2 Make the character materials **self-contained** (design D3): each carries its own
       `shaderModel`, `textureResolution`, `textureProjection`, `albedo`, `colorVariation`,
       `roughness` — as `_cs2_finish_material` does — instead of seeding from the base's `base`
       material. **The list is NINE, not eight**, and it is led by the base's own `base`:
@@ -179,7 +179,7 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       re-authors a base-equivalent default, so that default is part of this task. With accessories
       it is **thirteen**: `CHARACTER_ACCESSORY_MATERIALS` has **four** entries, not three. Test:
       byte-identical to what the base produces today, same order, both accessory modes
-- [ ] 1.3 `tools/emit_spec_augmentation.py`, mirroring cs2's: `specSections` filtered by the
+- [x] 1.3 `tools/emit_spec_augmentation.py`, mirroring cs2's: `specSections` filtered by the
       `BASE_OWNED` deny-list, `assessmentPatch` with the domain marker popped, `qualityFloors`
       carrying the floors, `provenance` read from `plugin.json` so it cannot drift from the release.
       **No `--spec` argument** — it authors, it does not read the base's output.
@@ -187,10 +187,10 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       writes it at `new_sculpt_spec.py:1139` and `validate_sculpt_spec.py:904` hard-errors without
       it. The merge refuses only `objectClass.domain`, so the route is open — but an earlier revision
       named only the canon anatomy as travelling this way, and the run would have failed validation
-- [ ] 1.3a **Replace the `--accessories` switch.** Slice 3 deletes the base flag; the plugin needs
+- [x] 1.3a **Replace the `--accessories` switch.** Slice 3 deletes the base flag; the plugin needs
       its own way to select the four accessory materials and their feature targets, or the
       capability disappears with the flag and nobody notices
-- [ ] 1.4 `git mv` into `tools/`: **`humanoid_proportions.py` only.** Under D11 partition 1 neither
+- [x] 1.4 `git mv` into `tools/`: **`humanoid_proportions.py` only.** Under D11 partition 1 neither
       `scalp_field.py` nor `scalp_exposure.py` moves — the first because the base's emitted
       `ringStackDistance` is pinned against it (D10), the second because it is **hair's** content and
       hair stays whole. The moved tool gains the §8 bootstrap stanza. It needs nothing further:
@@ -203,7 +203,7 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       may not — see 1.3a.
       `humanoid_proportions`' canon anatomy travels as an `assessmentPatch`, never `--in-place` into
       the base's spec
-- [ ] 1.5 `git mv` the grimoire pages into the plugin's `grimoire/` — **by content, not by folder**.
+- [x] 1.5 `git mv` the grimoire pages into the plugin's `grimoire/` — **by content, not by folder**.
       The directory holds five pages and a JSON file; two are hair (`stylized_hair_threejs.md`,
       `threejs_hair_parameter_contract.json`, cross-referenced from `SKILL.md:163-164`) and under
       D11 partition 1 they **stay**. The moving set is **four**:
@@ -211,7 +211,7 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       `head_construction.md`. and add
       `spec_search_profile.json` declaring the `character` collection — the plugin contributes no
       evidence corpus today and the mandatory local-spec-search step runs on every profile
-- [ ] 1.6 Move the tests with their subjects — **derived from imports, not from filenames**, per
+- [x] 1.6 Move the tests with their subjects — **derived from imports, not from filenames**, per
       0.2's sweep over `forge/tests/`. Two corrections an earlier revision got wrong in opposite
       directions, both from reading names: `test_rigid_hair_binding` (21) **does not move** — its
       bootstrap is `sys.path.insert(... "stage5_rig")` then
@@ -226,29 +226,29 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       once moved — `test_scalp_field` (36), `test_scalp_exposure` (21), `test_rigid_hair_binding`
       (21), **78 collected** — all stay. Base-checkout and showcase dependencies skip with a reason through
       `IMG2THREEJS_BASE` / `IMG2THREEJS_SHOWCASE_ROOT`, never silently
-- [ ] 1.7 New tests: the artifact's shape against the base's real `merge_spec_augmentation`; that
+- [x] 1.7 New tests: the artifact's shape against the base's real `merge_spec_augmentation`; that
       no `specSections` key collides with `BASE_OWNED`; that the tool writes only its artifact and
       never the spec it was pointed at; and that **every `specSections` key the artifact carries is
       named in the base's authority ruling** (read through `IMG2THREEJS_BASE`, skipped with a reason
       when unset). Without that last one, `spec-augmentation`'s "authority is stated" scenarios
       describe a document no test can check, and a section added without a ruling ships unnoticed
-- [ ] 1.7a Write the ruling itself, **in `forge/_shared/spec_augmentation.py` beside the deny-list**
+- [x] 1.7a Write the ruling itself, **in `forge/_shared/spec_augmentation.py` beside the deny-list**
       it governs — not in a design document: name `componentTree`, `rig`, `materials`, `buildPasses`,
       `featureReviewTargets` and `sculptPipeline`, each with whether a plugin may write it and why.
       This is base work and belongs in slice 3's commit; it is listed here because 1.7's test asserts
       against it
-- [ ] 1.8 Plugin floor **corrected, not merely raised**: v0.2.0 declares 235 against 258 collected,
+- [x] 1.8 Plugin floor **corrected, not merely raised**: v0.2.0 declares 235 against 258 collected,
       so it is already 23 short. Set it to the measured count with the arithmetic recorded
       (`258 + arrived + added = measured`). Plugin suite green standalone, without the base test
       tree — numbers in the commit message
 
 ## 2. The plugin declares itself — still additive, still nothing removed
 
-- [ ] 2.1 `domain.json`: `id: "character"` (D1); `setupSteps` = `character-contract-read`,
+- [x] 2.1 `domain.json`: `id: "character"` (D1); `setupSteps` = `character-contract-read`,
       `character-landmarks`, `character-spec-augmentation` at `setupAnchorBefore: local-spec-search`;
       `passSteps` = `character-scalp-exposure` at `passAnchorBefore: ai-review-recorded`;
       `rigSteps` = the nine Stage R steps unchanged; `specCollection: "character"`
-- [ ] 2.2 `character-contract-read` names `{plugin_dir}/grimoire/character/...`, not the base paths —
+- [x] 2.2 `character-contract-read` names `{plugin_dir}/grimoire/character/...`, not the base paths —
       those files are gone after slice 3, and the withdrawn attempt shipped a step pointing at them
 - [x] 2.3 **Dissolved by D11 partition 1.** The scalp-exposure gate row and its verdict-envelope
       wrapper are not needed: `scalp_exposure.py` stays in the base, where it is already the hard
@@ -264,48 +264,48 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       prevent, one layer down. `gate_rigging.py` shows the shape to copy. The word "envelope"
       appeared nowhere in this change before review.
       It is a HARD gate in the base today (`SKILL.md:293`, `:362`).~~
-- [ ] 2.3a `gates.json`: keep the existing `rigging` row and its `blocking: false` re-block trigger
+- [x] 2.3a `gates.json`: keep the existing `rigging` row and its `blocking: false` re-block trigger
       unchanged. Nothing is added to this file by this change
-- [ ] 2.4 `plugin.json`: version `0.3.0`, and the `image → character-sculpt-spec` capability edge —
+- [x] 2.4 `plugin.json`: version `0.3.0`, and the `image → character-sculpt-spec` capability edge —
       resolution matches on the typed edge alone, never on the plugin's name. **State what backs the
       edge before adding it**: cs2 ships a `steps.json` and resolves with `"steps": []`; this plugin
       ships none and no task adds one. Either add the row, or record the edge as discovery-only and
       name what consumes it. `domain-step-contribution` forbids a declaration with no runtime caller,
       and a declaration with no caller was the withdrawn attempt's central defect — settle it here,
       not at the doctor capture
-- [ ] 2.5 Declaration guard tests: the domain parses; every step's placeholders are inside
+- [x] 2.5 Declaration guard tests: the domain parses; every step's placeholders are inside
       domain.json's own closed set (`{plugin_dir}`, `{reference}`, `{spec}`, `{pass_id}`); no
       command row carries a shell metacharacter; every tool a row names exists
-- [ ] 2.6 Everything above is committed to the plugin repo and NOT installed. Verify the invariant
+- [x] 2.6 Everything above is committed to the plugin repo and NOT installed. Verify the invariant
       holds: `img2 doctor` still reports the registry healthy, because nothing new is registered yet.
       Installing here would collide with the base's `character` module and break CS2 too — the
       install is task 3.2
 
 ## 3. The base lets go — the first slice that removes anything
 
-- [ ] 3.1 Delete `forge/_shared/domains/character.py`. The id cannot be served by two
+- [x] 3.1 Delete `forge/_shared/domains/character.py`. The id cannot be served by two
       providers, so the base releases it here and the plugin claims it at 3.11. Between the two the
       profile is simply unserved, which fails loud — the reverse order breaks the whole registry
-- [ ] 3.2 Delete the character content from `new_sculpt_spec.py` per the 0.1 partition, and
+- [x] 3.2 Delete the character content from `new_sculpt_spec.py` per the 0.1 partition, and
       `validate_character_track` from `validate_sculpt_spec.py`
-- [ ] 3.3 Remove the `--character` / `--accessories` flags **and every reader of them**, per the 0.2
+- [x] 3.3 Remove the `--character` / `--accessories` flags **and every reader of them**, per the 0.2
       sweep. This is the exact defect the withdrawn attempt shipped: the flag went, the
       `args.character` read stayed, and step 2 of the pipeline raised `AttributeError` on every
       profile including generic
-- [ ] 3.3a **`forge/state.py`: drop the argparse `choices=` on `--profile`** (`:37-40`) and let
+- [x] 3.3a **`forge/state.py`: drop the argparse `choices=` on `--profile`** (`:37-40`) and let
       `new_state()` refuse, so the registry's own message — which names the missing provider and the
       remedy — reaches the user. Today `init` answers `invalid choice: 'x' (choose from ...)` and
       names nothing, while **resume** goes through `validate_state → domain_profile` and does print
       the good message: one bad profile, two different answers. The comment already at `state.py:31`
       describes the behaviour this restores. Test both paths
-- [ ] 3.3b **A withdrawal table beside the registry**: `animated-character → character`, with the
+- [x] 3.3b **A withdrawal table beside the registry**: `animated-character → character`, with the
       remedy. `domain-step-contribution`'s new scenarios require the refusal to name the withdrawn
       identifier, name its successor and state the remedy; today's message names an availability list
       from which a user cannot tell "your plugin is missing" from "this profile no longer exists",
       and it says *"Install the domain plugin that provides it"* — after this change nobody does, so
       obeying it installs v0.3.0 and reproduces the message. Two base tests, one per new scenario.
       Without this task those two scenarios cannot fail
-- [ ] 3.4 Delete `BONE_TRACK_DOMAINS` from `generate_threejs_factory.py:1915` and the
+- [x] 3.4 Delete `BONE_TRACK_DOMAINS` from `generate_threejs_factory.py:1915` and the
       `primaryDomain` test at `:1926`; `rig_is_bone_track` then routes on `rig.bones` alone.
       **"All three emission md5s unchanged" is not enough** — it samples fixtures, while the class
       that actually changes behaviour is a spec carrying `rig.bones` with `primaryDomain: "object"`,
@@ -313,7 +313,7 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       docstring guarantee that object output stays byte-identical. Add the negative test for that
       spec rather than weakening the claim to "no fixture regresses": a weaker claim leaves the
       behaviour change unowned
-- [ ] 3.5 `pipeline_routing.py`: drop the character track. `TRACK_BY_KIND` keeps `weapon`, and the
+- [x] 3.5 `pipeline_routing.py`: drop the character track. `TRACK_BY_KIND` keeps `weapon`, and the
       resolver's `kind` handling is resolved for both domains at once, not only for the one leaving.
       **`hybrid` is a decision, not a side effect.** On `main`,
       `VALID_KINDS = {"weapon", "character", "hybrid", "unknown"}`; the abandoned branch silently
@@ -322,10 +322,10 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       an unknown-or-hybrid classification to **request input** rather than route. Decide explicitly
       whether it stays in the vocabulary; an earlier revision of this task was silent and would have
       inherited the deletion
-- [ ] 3.6 `git rm` **`humanoid_proportions.py` and the four moved grimoire pages only** — under D11
+- [x] 3.6 `git rm` **`humanoid_proportions.py` and the four moved grimoire pages only** — under D11
       partition 1 `scalp_field.py`, `scalp_exposure.py` and the two hair pages stay; repoint the docstring at
       `hair_gate.py:123` that names `forge/stage4_review/scalp_exposure.py`
-- [ ] 3.7 Rework the base tests that break — by disposition, never by deletion to make the suite
+- [x] 3.7 Rework the base tests that break — by disposition, never by deletion to make the suite
       green. Each either moved with its subject in 1.6 or is re-expressed against the mechanism the
       base keeps. **The list is filled in during slice 0, not discovered here** — leaving it blank at
       review time is how 100 tests went missing last time, and it is a grep. Two are already known:
@@ -341,41 +341,41 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       both. Its sibling `InstalledPluginOrderIsCheckedWhenPresent` at `:186` **survives** the id
       rename: it keys on the plugin *directory* name and reads `rigSteps`, neither of which changes.
       Name both dispositions, so the survivor is a decision rather than luck
-- [ ] 3.8 `test_domain_registry`: in-repo domains are now empty. Per design D9, replace
+- [x] 3.8 `test_domain_registry`: in-repo domains are now empty. Per design D9, replace
       `test_both_registry_sources_register_hermetically` — whose comment reads "A seam with one
       consumer is a rename, so both sources are exercised" — with a test that **two installed
       plugins** resolve through the same mechanism and that no in-repo branch exists for either.
       The seam keeps two consumers; neither is in the repo. Do not simply delete the assertion
-- [ ] 3.9 **Set** `COLLECTED_FLOOR` to the measured count, with the arithmetic
+- [x] 3.9 **Set** `COLLECTED_FLOOR` to the measured count, with the arithmetic
       (`1453 − 100 + added = measured`), in the same sitting as the measurement. The verb is `set`,
       not `lower`: the floor is **1192** against **1453** collected — 261 of slack today — so after
       ~100 tests move out the measured count is ~1353 and the floor goes **UP** by ~161. "Lower it"
       would preserve the slack this change exists to close. 22 is what slice 1.6 moves under
       partition 1 (13+9, confirmed by `--collect-only`); starting from the passed
       count instead would land it 66 below the tree
-- [ ] 3.10 **`IMG2_HOME=$(mktemp -d) pytest forge/tests -q` → zero failures, zero errors.** Not
+- [x] 3.10 **`IMG2_HOME=$(mktemp -d) pytest forge/tests -q` → zero failures, zero errors.** Not
       "the same failures as before". Numbers in the commit message. This RUN is the primary gate;
       the floor is a second check for a different loss. The floor sees tests that stop being
       collected; only the run sees tests that break while still being collected, and the withdrawn
       attempt lost tests both ways
-- [ ] 3.10a **Clean the installed clone before anything is captured.** `~/.img2/plugins/character`
+- [x] 3.10a **Clean the installed clone before anything is captured.** `~/.img2/plugins/character`
       is at `796dd9c` (= v0.2.0) but carries **12 untracked files** hand-copied from the withdrawn
       attempt (`tools/character_template.py`, `tools/scalp_exposure.py`, `tools/humanoid_proportions.py`,
       `tools/derive_character_rig.py`, `tools/make_character_*.py`, …), none of them in v0.2.0.
       `img2 doctor` reads the directory, not the SHA, and **FAILs today** because of them. Every
       capture below would otherwise photograph that attempt instead of this release. Preserve the
       files somewhere first if anyone still wants them, then `img2 remove character` and re-add
-- [ ] 3.11 **Only now install.** `img2 add --link ./plugin-character`, then `img2 doctor`, output
+- [x] 3.11 **Only now install.** `img2 add --link ./plugin-character`, then `img2 doctor`, output
       captured. Bar: **zero FAILs**; the multi-capability WARN is expected and is part of the
       captured baseline. First confirm the installed clone is clean — a clone carrying untracked
       files from an abandoned attempt makes every "with the plugin installed" capture a picture of
       that attempt rather than of the release
-- [ ] 3.12 Checklist capture with the plugin installed: the contributed steps appear at the declared
+- [x] 3.12 Checklist capture with the plugin installed: the contributed steps appear at the declared
       anchors, attributed to the provider, and `--profile character` resolves to exactly one
 
 ## 4. The documentation stops lying
 
-- [ ] 4.1 `SKILL.md`: the profile list, the `character` / `animated-character` prose at `:65`,
+- [x] 4.1 `SKILL.md`: the profile list, the `character` / `animated-character` prose at `:65`,
       `:77`, `:80-83`, the **four** moving `grimoire/character/` links at `:150`, `:157`, `:161-162`
       (`:163-164` name the two hair pages, which **stay**), and the `humanoid_proportions.py`
       reference at **`:168`**. The `scalp_exposure.py` hard-gate lines at **`:293`** and `:362` are
@@ -383,11 +383,11 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       plugin as prerequisite.
       (Re-measured against `6e60b5e`: an earlier revision cited `:170` and `:296`; `:296` is
       `vertex_region_gate.py`, an unrelated gate)
-- [ ] 4.2 `docs/ARCHITECTURE.md`: `stage5_rig/` is restated as library, not checklist authority.
+- [x] 4.2 `docs/ARCHITECTURE.md`: `stage5_rig/` is restated as library, not checklist authority.
       The Hair table lists `scalp_field.py` and `scalp_exposure.py` and is **left alone** — both stay
       under D11, so the table is already correct. An earlier revision had this task removing them.
-- [ ] 4.3 Sweep `grimoire/` for links into `grimoire/character/`
-- [ ] 4.3a **Disposition the seven documents no task covers.** `rg -c "animated-character"` over
+- [x] 4.3 Sweep `grimoire/` for links into `grimoire/character/`
+- [x] 4.3a **Disposition the seven documents no task covers.** `rg -c "animated-character"` over
       `6e60b5e`: covered — `SKILL.md` (2, task 4.1), `docs/ARCHITECTURE.md` (2, task 4.2),
       `CHANGELOG.md` (3, task 4.5). **Uncovered** — `README.md` (4), `ROADMAP.md` (5),
       `docs/GLB_ANIMATED_CHARACTER_PROMPT.md` (6), `docs/STAGE_R_BACKLOG.md` (3),
@@ -396,7 +396,7 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       `docs/STAGE_R_TEST_PLAN.md:179` and `docs/GLB_ANIMATED_CHARACTER_PROMPT.md:93` both invoke
       `--profile animated-character`. An entire document is named after the withdrawn profile —
       give it an explicit verdict: rename, rewrite, or delete
-- [ ] 4.4 Machine check, **as a test in `forge/tests/`, not a command someone remembers to run**
+- [x] 4.4 Machine check, **as a test in `forge/tests/`, not a command someone remembers to run**
       (tasks 3.10 and 5.4 already force the suite): (a) every path named in `SKILL.md`, `docs/` and
       `grimoire/` exists — zero dead links, and scoped to include **`README.md`** (`:89`, `:91`,
       `:94`, `:140`, `:148`, `:342`, `:346`) and **Python docstrings**, since
@@ -410,13 +410,13 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       the check was scoped to paths, and `--profile animated-character` is not a path, so the plan's
       one mechanical doc gate passed green while `domain-step-contribution`'s "every document that
       taught the withdrawn identifier SHALL be updated" was violated in seven files
-- [ ] 4.5 Base CHANGELOG: the breaking entry, the withdrawn profile, the re-init remedy
+- [x] 4.5 Base CHANGELOG: the breaking entry, the withdrawn profile, the re-init remedy
 
 ## 5. Release and acceptance
 
-- [ ] 5.1 Plugin CHANGELOG 0.3.0: what it now serves, the withdrawn `animated-character`, the
+- [x] 5.1 Plugin CHANGELOG 0.3.0: what it now serves, the withdrawn `animated-character`, the
       re-block trigger for the `rigging` gate. No line describes work not in the release
-- [ ] 5.2 Plugin SKILL.md: it is no longer "rigging and animation" — it serves the whole track.
+- [x] 5.2 Plugin SKILL.md: it is no longer "rigging and animation" — it serves the whole track.
       Frontmatter version moves with `plugin.json`
 - [ ] 5.3 Tag `v0.3.0` and push. **"Publish" here means the git tag, not npm**: `git ls-tree v0.2.0`
       returns 44 files with no `package.json` and no `.github/workflows/` — both exist only on the
@@ -425,14 +425,14 @@ safe: it fails loud with no provider, which is the designed behaviour, not a bro
       resolve through GitHub refs. If npm distribution is wanted, it is a separate change that adds
       the manifest and the publish workflow. Then `img2 add img2threejs/plugin-character` and
       `img2 doctor`: zero FAILs
-- [ ] 5.4 A1 base suite, empty `IMG2_HOME`: zero failures, zero errors
-- [ ] 5.5 A2 plugin suite standalone; A3 doctor clean, captured
-- [ ] 5.6 A4 **both** oracles green with the plugin installed — the second run that makes them
+- [x] 5.4 A1 base suite, empty `IMG2_HOME`: zero failures, zero errors
+- [x] 5.5 A2 plugin suite standalone; A3 doctor clean, captured
+- [x] 5.6 A4 **both** oracles green with the plugin installed — the second run that makes them
       oracles rather than snapshots
-- [ ] 5.7 A5 structural checklist parity capture; A9 both floors asserted at measured values
-- [ ] 5.8 A6 fail-loud without the plugin, naming the missing provider; A8 removal round-trip
-- [ ] 5.9 A7 generic run with no plugin installed authors a spec and passes strict validation
-- [ ] 5.10 A10 every skip states a reason; no skip's reason is a missing plugin
+- [x] 5.7 A5 structural checklist parity capture; A9 both floors asserted at measured values
+- [x] 5.8 A6 fail-loud without the plugin, naming the missing provider; A8 removal round-trip
+- [x] 5.9 A7 generic run with no plugin installed authors a spec and passes strict validation
+- [x] 5.10 A10 every skip states a reason; no skip's reason is a missing plugin
 - [ ] 5.11 A11 one real character image end to end **through the checklist** — `state.py init
       --profile character`, then drain every step, ending in a bound rig. Not an import by hand:
       that is what the withdrawn attempt's evidence actually was. **Evidence is the emitted
