@@ -57,8 +57,13 @@ ROOT = Path(__file__).resolve().parents[1]
 #   +   7   test_spec_search_profile
 #   +  19   test_domain_declaration, which grew from 14: the harness's own doctor rules, run
 #           before the commit rather than after the tag, plus the manifest agreements
-#   = 334
-COLLECTED_FLOOR = 334
+#   +  10   test_spec_augmentation_artifact again, from a correctness review that found TWO holes:
+#           the anatomy gate the base deleted was picked up by NEITHER repo (emit exited 0 with no
+#           anatomy at all, authoring a default humanoid), and `_anatomy_from` never read the bare
+#           block the checklist actually writes -- invisible because the fixture's measurements
+#           equal the template's defaults, so every oracle stayed green either way
+#   = 344
+COLLECTED_FLOOR = 344
 
 _PROBE = """
 import json, unittest

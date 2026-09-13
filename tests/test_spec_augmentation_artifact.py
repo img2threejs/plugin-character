@@ -128,10 +128,6 @@ class MergedAgainstTheFrozenSpec(unittest.TestCase):
         self.assertEqual(pipeline["passOrder"], self.frozen["sculptPipeline"]["passOrder"])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class ThePipelineDefaultsMatchTheFrozenSpec(unittest.TestCase):
     """The FIVE VALUES this plugin carries for the base, pinned against the frozen spec.
 
@@ -230,3 +226,107 @@ class TheToolWritesOnlyItsArtifact(unittest.TestCase):
             self.assertEqual(written, ["nested/spec-augmentation.json"])
             self.assertEqual(json.loads(out.read_text())["kind"], "spec-augmentation-v1")
 
+class TheAnatomyGate(unittest.TestCase):
+    """The check the base deleted with `validate_character_track`, now made at the producer.
+
+    It fired under `--strict-quality`, which promotes warnings to errors, and `strict-validation`
+    is a mandatory base step -- so a character run that never filled `anatomy.json` used to be
+    BLOCKED. The base cannot keep the check (it has no view on anatomy any more), so if the
+    producer does not make it, it exists in NEITHER repo.
+
+    That is what a code review measured, against a docstring of mine in the base's `test_pipeline.py`
+    asserting the producer already refused. It did not: `build(None)` authored a full default
+    humanoid and exited 0. These tests are that claim made true, and the reason the base test's
+    docstring is allowed to keep pointing here.
+    """
+
+    ANATOMY = {"applies": True, "styleHeads": 8,
+               "proportions": {"torso": 2.2, "legs": 3.6},
+               "faceLandmarks": {"eyeLine": 0.45}}
+
+    def _emit(self, *argv) -> int:
+        import contextlib, io, tempfile  # noqa: PLC0415
+        with tempfile.TemporaryDirectory() as tmp:
+            with contextlib.redirect_stdout(io.StringIO()):
+                return E.main([*argv, "--out", str(Path(tmp) / "a.json")])
+
+    def _emit_with(self, payload) -> int:
+        import tempfile  # noqa: PLC0415
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "anatomy.json"
+            source.write_text(json.dumps(payload), encoding="utf-8")
+            return self._emit("--anatomy", str(source))
+
+    def test_no_anatomy_and_no_style_heads_is_refused(self) -> None:
+        with self.assertRaises(SystemExit) as caught:
+            self._emit()
+        self.assertEqual(caught.exception.code, 2)
+
+    def test_an_anatomy_file_that_measured_nothing_is_refused(self) -> None:
+        for payload in ({}, {"preSpecAssessment": {}}, {"applies": False, "styleHeads": 8}):
+            with self.subTest(payload=payload), self.assertRaises(SystemExit):
+                self._emit_with(payload)
+
+    def test_each_missing_field_is_named_rather_than_lumped_together(self) -> None:
+        # "anatomy is invalid" tells the agent to guess which part. The base's deleted checks named
+        # styleHeads, the torso/legs ratios and the face landmarks separately; so does this.
+        self.assertEqual(E.anatomy_problems({"applies": True}), [
+            "styleHeads must be greater than 0 (the head-unit proportion read off the reference)",
+            "proportions must set a torso or legs head-unit ratio",
+            "faceLandmarks must set eyeLine, noseBase or mouthLine from the reference",
+        ])
+        self.assertEqual(E.anatomy_problems(dict(self.ANATOMY)), [])
+
+    def test_a_zero_or_boolean_measurement_does_not_count_as_measured(self) -> None:
+        # `True` is an `int` in Python, so a field accidentally set to True would read as 1.
+        for bad in (0, True, "8", None):
+            with self.subTest(styleHeads=bad):
+                problems = E.anatomy_problems(dict(self.ANATOMY, styleHeads=bad))
+                self.assertTrue(any("styleHeads" in p for p in problems), bad)
+
+    def test_style_heads_is_the_reference_free_way_through(self) -> None:
+        self.assertEqual(self._emit("--style-heads", "8"), 0)
+
+    def test_measured_anatomy_is_the_other_way_through(self) -> None:
+        self.assertEqual(self._emit_with(self.ANATOMY), 0)
+
+
+class TheAnatomyFileIsActuallyRead(unittest.TestCase):
+    """`_anatomy_from` missed the shape the checklist actually writes, and nothing noticed.
+
+    It looked only for an `"anatomy"` key, so a BARE anatomy block -- which is what
+    `extract_landmarks.py --out anatomy.json` produces, and what `domain.json` passes -- returned
+    None and the tool silently authored the DEFAULT humanoid instead of the measured one.
+
+    It stayed invisible for an unlucky reason: the frozen fixture's measurements equal the
+    template's defaults, so the emitted spec was byte-identical either way and every oracle stayed
+    green. The byte-identity that proves this extraction correct was, for this one function, also
+    what hid a bug in it.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.bare = json.loads((FIXTURES / "anatomy.json").read_text(encoding="utf-8"))
+
+    def test_the_bare_block_the_checklist_writes_is_read(self) -> None:
+        self.assertEqual(E._anatomy_from(self.bare), self.bare)
+
+    def test_the_wrapped_and_assessment_shapes_are_read_too(self) -> None:
+        self.assertEqual(E._anatomy_from({"anatomy": self.bare}), self.bare)
+        self.assertEqual(E._anatomy_from({"preSpecAssessment": {"anatomy": self.bare}}), self.bare)
+
+    def test_nothing_anatomy_shaped_returns_none_rather_than_a_default(self) -> None:
+        for payload in ({}, {"preSpecAssessment": {}}, {"anatomy": 5}, 5, None, []):
+            with self.subTest(payload=payload):
+                self.assertIsNone(E._anatomy_from(payload))
+
+    def test_measurements_that_differ_from_the_defaults_survive_the_read(self) -> None:
+        # The assertion the byte-identity could never make. A file whose numbers are NOT the
+        # template defaults must produce a spec that is not the default one.
+        taller = dict(self.bare, proportions=dict(self.bare["proportions"], torso=3.0))
+        self.assertNotEqual(E.build(E._anatomy_from(taller))["specSections"]["componentTree"],
+                            E.build(None)["specSections"]["componentTree"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -54,6 +54,56 @@ from character_spec_template import apply_character_template  # noqa: E402
 ARTIFACT_KIND = "spec-augmentation-v1"
 PLUGIN_ID = "character"
 
+# The anatomy gate, moved here from the base's deleted `validate_character_track`. It fired under
+# `--strict-quality`, which promotes warnings to errors, and `strict-validation` is a MANDATORY base
+# checklist step -- so before the extraction a character run whose agent never filled `anatomy.json`
+# was BLOCKED with "anatomy.applies is not true; fill anatomy (styleHeads, proportions, pose,
+# faceLandmarks) from the reference".
+#
+# The base cannot keep that check: it has no view on anatomy any more. If the producer does not make
+# it, it exists in neither repo -- which is what a code review measured here, against a test
+# docstring of mine that ASSERTED the producer refused. It did not. `build(None)` authored a full
+# default humanoid and exited 0, so a run with no landmark evidence at all shipped a spec with
+# invented proportions and nothing anywhere said so.
+#
+# Refusing at the producer is stricter than the base was, deliberately. The base could only warn
+# until strict; here there is a real alternative for a figure with no reference -- `--style-heads`,
+# which labels its numbers as canon. "I have no measurements" is a statement the caller must now
+# make out loud instead of one the default quietly makes for them.
+#
+# The fifth of the old checks -- featureReviewTargets covering anatomy/face/pose/outfit -- is not
+# repeated: the template authors all four unconditionally (pinned by the authoring oracle), so it
+# can no longer fail. Named here so the next reader knows it was considered, not dropped.
+ANATOMY_REQUIRED = (
+    ("styleHeads", ("styleHeads",),
+     "styleHeads must be greater than 0 (the head-unit proportion read off the reference)"),
+    ("proportions", ("torso", "legs"),
+     "proportions must set a torso or legs head-unit ratio"),
+    ("faceLandmarks", ("eyeLine", "noseBase", "mouthLine"),
+     "faceLandmarks must set eyeLine, noseBase or mouthLine from the reference"),
+)
+
+
+def _positive(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and float(value) > 0
+
+
+def anatomy_problems(anatomy: Any) -> list[str]:
+    """What stops this anatomy block counting as measured evidence. Empty means it counts."""
+    if not isinstance(anatomy, dict):
+        return ["no anatomy block was supplied"]
+    if anatomy.get("applies") is not True:
+        return ["anatomy.applies is not true"]
+    problems = []
+    for key, fields, message in ANATOMY_REQUIRED:
+        block = anatomy if key == "styleHeads" else anatomy.get(key)
+        source = block if isinstance(block, dict) else {}
+        if key == "styleHeads":
+            source = anatomy
+        if not any(_positive(source.get(field)) for field in fields):
+            problems.append(message)
+    return problems
+
 # Keys the BASE owns; a section named here is refused by the merge. Pinned duplicate of
 # `forge/_shared/spec_augmentation.py:26` — a plugin may not import base code, so the agreement is
 # asserted by `tests/test_character_template.py` from this side and by the base from the other.
@@ -86,17 +136,31 @@ def _plugin_version() -> str:
 
 
 def _anatomy_from(payload: Any) -> dict | None:
-    """The anatomy block, whether it arrives bare or wrapped in a preSpecAssessment.
+    """The anatomy block, in any of the three shapes it actually arrives in.
 
-    `extract_landmarks.py` writes the bare form. The wrapped form is accepted because the same file
-    is what a later assessment embeds, and refusing it would make the caller unwrap by hand.
+        {"applies": true, "styleHeads": …}                  BARE -- what the checklist writes
+        {"anatomy": {...}}                                  wrapped
+        {"preSpecAssessment": {"anatomy": {...}}}           inside an assessment
+
+    The bare form is the one that matters and the one this function used to MISS: it only ever
+    looked for an `"anatomy"` key, so `--anatomy anatomy.json` pointed at the real fixture returned
+    None and the tool authored the DEFAULT humanoid instead of the measured one.
+
+    Nothing caught it, for an unlucky reason: the fixture's measurements happen to equal the
+    template's defaults, so the emitted spec was byte-identical either way and every oracle stayed
+    green. The test that looked like it covered this (`test_anatomy_actually_reaches_the_template`)
+    passes its dict straight to the template and never goes through this function. It took adding
+    the anatomy gate below -- which refuses when no block is found -- to make the silence audible.
     """
     if not isinstance(payload, dict):
         return None
-    pre = payload.get("preSpecAssessment")
-    pre = pre if isinstance(pre, dict) else payload
-    anatomy = pre.get("anatomy")
-    return anatomy if isinstance(anatomy, dict) else None
+    for candidate in (payload.get("preSpecAssessment", {}).get("anatomy")
+                      if isinstance(payload.get("preSpecAssessment"), dict) else None,
+                      payload.get("anatomy"),
+                      payload if "applies" in payload else None):
+        if isinstance(candidate, dict):
+            return candidate
+    return None
 
 
 def build(anatomy: dict | None, include_accessories: bool = False,
@@ -114,6 +178,13 @@ def build(anatomy: dict | None, include_accessories: bool = False,
     # the key order matches what the base produced; the template's own keys then land in place.
     pipeline = dict(BASE_PIPELINE_DEFAULTS)
     pipeline.update(scratch.get("sculptPipeline") or {})
+    missing = [k for k in ("passOrder", "currentPass") if k not in pipeline]
+    if missing:
+        # Unreachable while the template sets them, and pinned by
+        # `test_the_carried_set_is_exactly_what_the_template_does_not_set`. A bare KeyError three
+        # lines down would name the key and not the reason.
+        raise ValueError(f"the character template stopped setting sculptPipeline {missing}; the "
+                         f"base owns the rest and this tool has nothing to carry them onto")
     scratch["sculptPipeline"] = {
         "passGateMode": pipeline["passGateMode"],
         "passOrder": pipeline["passOrder"],
@@ -181,6 +252,17 @@ def main(argv: list[str] | None = None) -> int:
     anatomy = None
     if args.anatomy is not None:
         anatomy = _anatomy_from(json.loads(args.anatomy.expanduser().read_text(encoding="utf-8")))
+
+    if args.style_heads is None:
+        problems = anatomy_problems(anatomy)
+        if problems:
+            parser.error(
+                "this domain will not author a figure from invented proportions: "
+                + "; ".join(problems)
+                + ". Run the character-landmarks step to measure them from the reference, or say "
+                  "the figure is reference-free with --style-heads N to take them from public "
+                  "figure-drawing canon, which is labelled as canon rather than as evidence"
+            )
 
     try:
         artifact = build(anatomy, args.accessories, args.style_heads)
