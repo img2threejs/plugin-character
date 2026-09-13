@@ -1,9 +1,13 @@
 {
   "schema": 1,
   "name": "character",
-  "version": "0.2.0",
-  "description": "Character rigging and animation: skeleton from a GLB, skin conditioning, clip measurement, action design, and a twelve-check rig gate.",
+  "version": "0.3.0",
+  "description": "Character reconstruction end to end: anatomy landmarks, the humanoid sculpt spec and its derived rig, skeleton from a GLB, skin conditioning, clip measurement, action design, and a twelve-check rig gate.",
   "capabilities": [
+    {
+      "from": "image",
+      "to": "character-sculpt-spec"
+    },
     {
       "from": "character-mesh",
       "to": "rigged-character"

@@ -27,12 +27,48 @@ ROOT = Path(__file__).resolve().parents[1]
 # Raise when tests are added. Never lower it to make a red suite green: a drop means tests stopped
 # being collected, which is the failure this file exists to catch.
 #
-# Where the number came from: 218 tests ported from the base skill's forge/tests (test_clip_features
-# 40, test_action_design 38, test_glb_rig_reference 32, test_mesh_parity 31, test_skin_conditioning
-# 25, test_emit_animation_runtime 25, test_geodesic_skinning 12, test_rig_milestone0 9,
-# test_validate_rig_payload 6), plus 9 in test_gate_rigging. This file's own 2 are not counted --
-# the probe discovers them too, but a floor that counts the checker inflates itself.
-COLLECTED_FLOOR = 235
+# THE FLOOR IS THE MEASURED COUNT, and the measurement is the probe below — not a tally kept by
+# hand. v0.2.0 declared 235 while actually collecting 258, so 23 tests could have stopped being
+# collected with nothing going red. That gap was not a drift; the 235 was a hand-built sum that was
+# never checked against a run, and it also excluded this file's own 2 on the reasoning that a floor
+# counting its own checker inflates itself. It does, by exactly 2, every release, forever — which is
+# a smaller error than the 23 the hand-built sum cost. So the floor is now simply what the probe
+# returns, this file included, and re-measuring it is one command:
+#
+#   IMG2_HOME=$HOME/.img2 python3 -m pytest tests/ -q --collect-only | tail -2
+#
+# Arithmetic for this value, so the next reader can check it rather than trust it:
+#
+#     258   measured on a clean v0.2.0 checkout (226 passed, 32 skipped)
+#   +  14   test_character_rig_derivation, moved from the base with its subject (13 there, plus
+#           one new: the rig is now admitted through merge_spec_augmentation, and nothing asserted
+#           validate_rig_admission passes on a plugin's submission)
+#   +   9   test_humanoid_proportions, moved from the base with its subject
+#   +  10   test_character_authoring_oracle: 5, plus the five named template properties that
+#           came from the base's test_pipeline.py with their subject -- accessories, digits,
+#           the parent chain and the palette. The byte comparison covers them all already,
+#           but only as an opaque 282KB equality that says 'componentTree differs'
+#   +  17   test_spec_augmentation_artifact: 14, plus 3 from a cleanup review. The five base
+#           defaults this plugin carries were pinned only by KEY PRESENCE, and the value
+#           comparison lived in a class that skips without a base checkout -- so a stale
+#           blockedReason string could have shipped on every run with nothing red. The new three
+#           compare VALUES against the frozen spec, which travels with this plugin, so they
+#           cannot skip
+#   +   7   test_spec_search_profile
+#   +  19   test_domain_declaration, which grew from 14: the harness's own doctor rules, run
+#           before the commit rather than after the tag, plus the manifest agreements
+#   +  10   test_spec_augmentation_artifact again, from a correctness review that found TWO holes:
+#           the anatomy gate the base deleted was picked up by NEITHER repo (emit exited 0 with no
+#           anatomy at all, authoring a default humanoid), and `_anatomy_from` never read the bare
+#           block the checklist actually writes -- invisible because the fixture's measurements
+#           equal the template's defaults, so every oracle stayed green either way
+#   +   5   test_spec_augmentation_artifact once more, from the RE-review of those fixes: the gate
+#           copied the base's `applies is not True` test, and `extract_landmarks.py` never writes
+#           that key -- so it refused the domain's own checklist output on the happy path. Every
+#           test written alongside it used a hand-made dict; none fed it what the producer emits.
+#           `landmarks-skeleton.json` freezes that output so the gap cannot reopen silently
+#   = 349
+COLLECTED_FLOOR = 349
 
 _PROBE = """
 import json, unittest

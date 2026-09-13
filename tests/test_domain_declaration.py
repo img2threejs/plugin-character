@@ -1,4 +1,18 @@
-"""The animated-character domain declaration (OpenSpec change `extract-animated-character`).
+"""The character domain declaration, and the manifest that carries it.
+
+The domain id is now `character`, not `animated-character` (OpenSpec change
+`extract-character-sculpt-into-the-plugin`, D1): one id that always carries the nine rig steps. A
+static build skips a rig step with a recorded reason, which the checklist already supports; a second
+profile that omitted the Stage R gates entirely is how animation shipped broken in 1.5.1.
+
+`img2 doctor` checks this file's subject too, but only once installed — after the tag is cut. The
+harness rules transcribed below are checked here instead, each with the line of `bin/img2.mjs` that
+defines it, and where the base and this file could drift the base's real parser is used.
+
+WHY THE PATH CHECK EXISTS. The withdrawn attempt shipped `character-contract-read` pointing at
+`grimoire/character/reconstruction.md` — BASE-relative, correct while the pages lived there and
+dangling the moment they moved. Nothing failed: a step is spliced as text and rendered for an agent,
+so a dead path becomes a step nobody can carry out rather than an error anybody sees.
 
 domain.json is the CANONICAL rig-step order after the base's in-repo module was deleted — the only
 place the real order exists. The order pins below assert its ids against a separately declared
@@ -19,6 +33,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -26,6 +43,21 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+BASE_RELATIVE_REGISTRY = Path("forge/_shared/domains/__init__.py")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _base_checkout import on_base_path, require_base  # noqa: E402
+MANIFEST = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+
+# Transcribed from img2-harness `bin/img2.mjs`, each with the line that defines it. A plugin cannot
+# import the harness's JavaScript, so these are pinned duplicates in the sense BASE_OWNED is.
+ALLOWED_PLACEHOLDERS = {"{plugin_dir}", "{reference}", "{spec}", "{pass_id}"}   # :966
+SHELL_METACHARS = re.compile(r"[;|&$`><()\n]")                                 # :732
+INTERPRETERS = {"python3", "python", "node", "bash", "sh"}                      # :745
+DOMAIN_KEYS = {"id", "setupSteps", "setupAnchorBefore", "passSteps", "passAnchorBefore",
+               "specCollection", "rigSteps"}                                    # :940
+STEP_KEYS = ("setupSteps", "passSteps", "rigSteps")
 DOMAIN = json.loads((ROOT / "domain.json").read_text(encoding="utf-8"))
 GATES = json.loads((ROOT / "gates.json").read_text(encoding="utf-8"))
 
@@ -85,17 +117,36 @@ class RigOrderIsLoadBearing(unittest.TestCase):
 
 class DeclarationShape(unittest.TestCase):
     def test_domain_id_and_anchor(self):
-        self.assertEqual(DOMAIN["id"], "animated-character")
+        self.assertEqual(DOMAIN["id"], "character")
         self.assertEqual(DOMAIN["setupAnchorBefore"], "local-spec-search")
 
-    def test_setup_steps_are_the_two_base_relative_character_steps(self):
-        # Deliberately base-relative: the static `character` domain stays in-repo and owns these
-        # assets. A base-side agreement test pins that the referenced paths exist.
+    def test_animated_character_is_withdrawn_from_every_declaration(self):
+        for path in ("domain.json", "plugin.json"):
+            self.assertNotIn("animated-character", (ROOT / path).read_text(encoding="utf-8"), path)
+
+    def test_setup_steps_are_the_three_the_domain_contributes(self):
+        # The grimoire paths are PLUGIN-relative now: those pages moved here, and the base deletes
+        # its copies. `extract_landmarks.py` stays base-relative because it stays in the base.
         ids = [s for s, _ in DOMAIN["setupSteps"]]
-        self.assertEqual(ids, ["character-contract-read", "character-landmarks"])
+        self.assertEqual(ids, ["character-contract-read", "character-landmarks",
+                               "character-spec-augmentation"])
         commands = dict(DOMAIN["setupSteps"])
-        self.assertIn("grimoire/character/reconstruction.md", commands["character-contract-read"])
+        self.assertIn("{plugin_dir}/grimoire/character/reconstruction.md",
+                      commands["character-contract-read"])
+        self.assertNotIn(" grimoire/", commands["character-contract-read"])
         self.assertIn("forge/stage1_intake/extract_landmarks.py {reference}", commands["character-landmarks"])
+        self.assertIn("{plugin_dir}/tools/emit_spec_augmentation.py",
+                      commands["character-spec-augmentation"])
+
+    def test_the_augmentation_step_runs_after_the_step_producing_its_input(self):
+        # Within a group the splice preserves order, so `anatomy.json` exists by then only because
+        # character-landmarks is listed first. Anchoring alone does not buy this.
+        ids = [s for s, _ in DOMAIN["setupSteps"]]
+        self.assertLess(ids.index("character-landmarks"), ids.index("character-spec-augmentation"))
+
+    def test_the_declared_collection_is_one_this_plugin_contributes(self):
+        profile = json.loads((ROOT / "spec_search_profile.json").read_text(encoding="utf-8"))
+        self.assertIn(DOMAIN["specCollection"], profile["collections"])
 
     def test_every_tool_invocation_bypasses_workspace_resolution(self):
         # Parity over confinement (design D3): each tool row carries --out or --payload so no step
@@ -124,6 +175,134 @@ class DeclarationShape(unittest.TestCase):
         # Re-block trigger: the producers exist and the oracle rig passes (CHANGELOG v0.2.0).
         rigging = next(g for g in GATES if g["id"] == "rigging")
         self.assertIs(rigging["blocking"], False)
+
+
+def _rows(domain: dict) -> list[tuple[str, str, str]]:
+    return [(key, step_id, command)
+            for key in STEP_KEYS for step_id, command in domain.get(key, [])]
+
+
+def _is_command_row(command: str) -> bool:
+    """A path form or a known interpreter marks a row something a caller actually runs (`:970`).
+
+    Everything else is prose an agent reads, where a parenthesis is English, not a shell hazard.
+    The existing rig steps lean on this: `glb-rig-reference` begins with the word "Run", so its
+    explanatory parentheses are legal exactly because nothing execs it.
+    """
+    leading = (shlex.split(command)[0] if command.strip() else "").replace("{plugin_dir}", "/p")
+    return "/" in leading or leading in INTERPRETERS
+
+
+class HarnessRules(unittest.TestCase):
+    """The checks `img2 doctor` runs, run before the commit instead of after the tag."""
+
+    def test_it_carries_no_key_the_registry_would_refuse(self) -> None:
+        # `_validate` RAISES on an unknown key rather than ignoring it, so a typo is a hard failure
+        # for every run on the machine — not just a character one.
+        self.assertEqual(sorted(set(DOMAIN) - DOMAIN_KEYS), [])
+
+    def test_every_step_group_with_steps_declares_its_anchor(self) -> None:
+        for steps_key, anchor_key in (("setupSteps", "setupAnchorBefore"),
+                                      ("passSteps", "passAnchorBefore")):
+            if DOMAIN.get(steps_key):
+                self.assertTrue(DOMAIN.get(anchor_key), f"{steps_key} needs {anchor_key}")
+
+    def test_every_row_is_an_id_and_command_pair_of_strings(self) -> None:
+        for key in STEP_KEYS:
+            for row in DOMAIN.get(key, []):
+                self.assertEqual(len(row), 2, f"{key}: {row!r}")
+                self.assertTrue(all(isinstance(v, str) and v for v in row), f"{key}: {row!r}")
+
+    def test_step_ids_are_unique_across_every_group(self) -> None:
+        ids = [step_id for _, step_id, _ in _rows(DOMAIN)]
+        self.assertEqual(sorted(ids), sorted(set(ids)))
+
+    def test_every_placeholder_is_in_domain_json_s_own_closed_set(self) -> None:
+        # Not the harness's steps.json set: `{workspace}` and `{image}` are legal there and raise
+        # KeyError in `workflow_state._format_command`, so they crash at runtime, not at doctor.
+        for key, step_id, command in _rows(DOMAIN):
+            for brace in re.findall(r"\{[^{}]*\}", command):
+                self.assertIn(brace, ALLOWED_PLACEHOLDERS, f"{key}/{step_id}")
+
+    def test_no_command_row_needs_a_shell(self) -> None:
+        for key, step_id, command in _rows(DOMAIN):
+            if not _is_command_row(command):
+                continue
+            stripped = command
+            for placeholder in ALLOWED_PLACEHOLDERS:
+                stripped = stripped.replace(placeholder, "")
+            self.assertIsNone(SHELL_METACHARS.search(stripped),
+                              f"{key}/{step_id} contains a shell metacharacter")
+
+    def test_no_row_uses_an_angle_bracket_pseudo_placeholder(self) -> None:
+        # A shell reads `<name>` as redirection. The base's own steps use them; a plugin's may not.
+        for key, step_id, command in _rows(DOMAIN):
+            self.assertIsNone(re.search(r"<[^<>\n]*>", command), f"{key}/{step_id}")
+
+    def test_every_plugin_relative_path_a_step_names_exists(self) -> None:
+        named = 0
+        for key, step_id, command in _rows(DOMAIN):
+            for match in re.findall(r"\{plugin_dir\}/(\S+)", command):
+                target = ROOT / match.rstrip(".,)")
+                self.assertTrue(target.is_file(), f"{key}/{step_id} names {match}, which is missing")
+                named += 1
+        self.assertGreater(named, 0, "no step names a plugin-relative path; the check tests nothing")
+
+
+class TheManifest(unittest.TestCase):
+    def test_the_sculpt_edge_is_declared(self) -> None:
+        edges = {(c["from"], c["to"]) for c in MANIFEST["capabilities"]}
+        self.assertIn(("image", "character-sculpt-spec"), edges)
+
+    def test_the_rigging_edges_this_plugin_already_served_are_kept(self) -> None:
+        edges = {(c["from"], c["to"]) for c in MANIFEST["capabilities"]}
+        self.assertIn(("character-mesh", "rigged-character"), edges)
+        self.assertIn(("glb", "rig-reference"), edges)
+
+    def test_the_name_is_the_domain_id(self) -> None:
+        # The registry keys domains by `domain.json`'s id and the harness keys rows by the manifest
+        # name; they are different files and nothing outside this assertion ties them together.
+        self.assertEqual(MANIFEST["name"], DOMAIN["id"])
+
+    def test_the_skill_frontmatter_version_moves_with_the_manifest(self) -> None:
+        front = (ROOT / "SKILL.md").read_text(encoding="utf-8").split("---")[1]
+        declared = dict(line.split(": ", 1) for line in front.strip().splitlines() if ": " in line)
+        self.assertEqual(declared["version"], MANIFEST["version"])
+
+
+class AgreesWithTheBase(unittest.TestCase):
+    """Checked against the base's real registry rather than a transcription of it."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        root = require_base(BASE_RELATIVE_REGISTRY, "the declaration/base agreement",
+                            "the declaration's own shape is still pinned above, but this run did "
+                            "NOT compare it.")
+        on_base_path(root, "forge", "forge/_shared")
+
+    def test_the_registry_accepts_this_declaration(self) -> None:
+        from domains import _validate  # noqa: PLC0415
+        _validate(dict(DOMAIN), ROOT / "domain.json")
+
+    def test_the_allowed_keys_transcribed_here_are_the_registry_s(self) -> None:
+        from domains import _ALLOWED  # noqa: PLC0415
+        self.assertEqual(DOMAIN_KEYS, set(_ALLOWED))
+
+    def test_the_setup_anchor_is_a_real_base_step(self) -> None:
+        from workflow_state import SETUP_STEPS  # noqa: PLC0415
+        self.assertIn(DOMAIN["setupAnchorBefore"], [step_id for step_id, _ in SETUP_STEPS])
+
+    def test_the_augmentation_step_runs_before_the_base_reads_its_artifact(self) -> None:
+        """`spec-authoring` passes `--augmentation spec-augmentation.json` unconditionally.
+
+        The artifact has to exist by then or the base authors the generic skeleton and the whole
+        extraction contributes nothing — silently, since a missing augmentation is not an error.
+        """
+        from workflow_state import SETUP_STEPS  # noqa: PLC0415
+        order = [step_id for step_id, _ in SETUP_STEPS]
+        authoring = dict(SETUP_STEPS)["spec-authoring"]
+        self.assertIn("--augmentation spec-augmentation.json", authoring)
+        self.assertLess(order.index(DOMAIN["setupAnchorBefore"]), order.index("spec-authoring"))
 
 
 class ReferenceDocDriftPins(unittest.TestCase):
