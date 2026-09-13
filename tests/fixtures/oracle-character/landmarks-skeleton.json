@@ -1,0 +1,93 @@
+{
+  "anatomy": {
+    "styleHeads": 7.5,
+    "proportions": {
+      "headUnit": null,
+      "torso": null,
+      "legs": null,
+      "shoulderWidth": null,
+      "hipWidth": null
+    },
+    "pose": {
+      "type": "",
+      "jointAngles": {
+        "neck": [
+          0,
+          0,
+          0
+        ],
+        "leftShoulder": [
+          0,
+          0,
+          0
+        ],
+        "rightShoulder": [
+          0,
+          0,
+          0
+        ],
+        "leftElbow": [
+          0,
+          0,
+          0
+        ],
+        "rightElbow": [
+          0,
+          0,
+          0
+        ],
+        "leftWrist": [
+          0,
+          0,
+          0
+        ],
+        "rightWrist": [
+          0,
+          0,
+          0
+        ],
+        "leftHip": [
+          0,
+          0,
+          0
+        ],
+        "rightHip": [
+          0,
+          0,
+          0
+        ],
+        "leftKnee": [
+          0,
+          0,
+          0
+        ],
+        "rightKnee": [
+          0,
+          0,
+          0
+        ],
+        "leftAnkle": [
+          0,
+          0,
+          0
+        ],
+        "rightAnkle": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "faceLandmarks": {
+      "hairline": null,
+      "eyeLine": null,
+      "eyeSpacing": null,
+      "noseBase": null,
+      "mouthLine": null,
+      "earTop": null,
+      "earBottom": null
+    },
+    "features": [],
+    "confidence": 0.0
+  }
+}

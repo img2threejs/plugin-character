@@ -60,10 +60,18 @@ independent partition review that rebutted four of seven questions as malformed)
   docstring asserting the producer already refused. It did not. Stricter than the base was (it
   could only warn until `--strict-quality`), deliberately: "I have no measurements" is now a
   statement the caller makes out loud rather than one the default quietly makes for them.
-- **`--anatomy` is actually read.** `_anatomy_from` only ever looked for an `"anatomy"` key, so the
-  BARE block `extract_landmarks.py` writes — the one `domain.json` passes — returned `None` and the
-  tool authored the DEFAULT humanoid instead of the measured one. Invisible because the frozen
-  fixture's measurements equal the template's defaults, so the spec was byte-identical either way.
+- **The anatomy gate reads what the checklist actually produces.** Its first version copied the
+  base's `applies is not True` test, and `extract_landmarks.py` never writes an `applies` key — so
+  it refused `anatomy.json` even after an agent filled every null exactly as that tool's own
+  `authoringInstruction` demands, and told them to run the step that had just produced the file. A
+  missing `applies` is now "not stated" and the FIELDS decide; only an explicit `False` refuses on
+  its own terms, because `new_sculpt_spec.py` writes that to mean "not a character".
+  `tests/fixtures/oracle-character/landmarks-skeleton.json` freezes the producer's real output, so
+  this suite can no longer be green while the checklist is red.
+- **`--style-heads` refuses a non-finite head count.** `nan` emitted an artifact whose proportions
+  were all `nan` — a block this tool's own gate rejects — and `json.dumps` wrote literal `NaN`,
+  which is not valid JSON for the Node harness that reads it; `inf` raised an uncaught
+  `ZeroDivisionError`.
 - **`domain.json` declares `id: "character"`.** See Removed.
 - `character-contract-read` names `{plugin_dir}/grimoire/character/...`. The withdrawn attempt
   shipped it base-relative, which dangles the moment the pages move — and dangles silently, because

@@ -190,7 +190,11 @@ step — so a character run with no landmark evidence used to be BLOCKED and had
 clean pass with invented proportions. The byte-identity capture above could not see it: the fixture
 always supplies anatomy.
 
-**And the fix exposed a second hole underneath it.** Adding the gate immediately rejected the real
+**And the fix exposed what looked like a second hole underneath it** -- the paragraph below was
+itself wrong, and is corrected at the end of this document. It is left standing because the
+correction is the point.
+
+**What I wrote at the time:** Adding the gate immediately rejected the real
 fixture, because `_anatomy_from` only ever looked for an `"anatomy"` key — so the BARE block
 `extract_landmarks.py` writes, the one `domain.json` passes, returned `None` and every run had been
 authoring the DEFAULT humanoid rather than the measured one. Invisible for an unlucky reason: the
@@ -227,3 +231,57 @@ end to end                 md5 98ac2045dcc9d802cc369e8b4d4d20a4, BYTE-IDENTICAL
 **The lesson this round earned**, which is the same one the partition review earned in a different
 costume: a disposition is a claim about code somewhere else, and writing it down is not the same as
 checking it. Three of the five findings were sentences I wrote asserting behaviour I had not run.
+
+## And the re-review of those fixes found the Critical was mine
+
+A focused re-review over the fix delta found **one Critical and one Important**, both in the fixes
+themselves. Recorded because it is the sharpest instance of this change's own recurring lesson.
+
+**Critical — the anatomy gate broke the domain's own checklist on the happy path.** `domain.json`
+runs `character-landmarks` then `character-spec-augmentation` back to back. The gate copied the
+base's `anatomy.get("applies") is not True` test, and `extract_landmarks.py` **never writes an
+`applies` key** — so it refused `anatomy.json` even after an agent filled every null exactly as that
+tool's own `authoringInstruction` demands, with a message telling them to run the step that had just
+produced the file. Advice that cannot succeed: the third instance of that class in this change, one
+file over from the fix that removed the second.
+
+**And the story I wrote about it was wrong.** The docstring, the CHANGELOG and this document all
+said `extract_landmarks.py` writes a BARE anatomy block that `_anatomy_from` used to miss. It writes
+the **wrapped** shape, which the original two-line version handled correctly. The bare form exists
+only in this plugin's own hand-made fixtures — so "every run had been authoring the default humanoid
+rather than the measured one" was never true of the real pipeline. **Every test written alongside
+that gate used a hand-made dict or that fixture. Not one fed it what the producer emits.**
+
+Fixed: a missing `applies` is "not stated" and the fields decide; only an explicit `False` refuses on
+its own terms. `tests/fixtures/oracle-character/landmarks-skeleton.json` freezes the producer's real
+output — so this suite cannot be green while the checklist is red — plus a base-checkout test that
+the frozen shape is still what `make_anatomy_skeleton` emits.
+
+**Important — the provider branch opened a hole in the fail-closed guarantee.**
+`resolve_pipeline_routing` checked four conditions before letting a provider resolve a record;
+`validate_pipeline_routing` checked the record's SHAPE and none of them. Measured: a hand-edited
+record claiming `source: "provider"` walked a **0.40-confidence hybrid** through as `resolved` with
+zero errors — the "needs a human" case the module exists to stop. Before the provider branch that
+edit was impossible, because `track` had to be in `VALID_TRACKS`. Both sides now call one predicate,
+`provider_may_resolve`, and a test asserts they cannot disagree.
+
+Also fixed from the same pass: `--style-heads nan` emitted literal `NaN` (invalid JSON for the Node
+harness) and `inf` raised an uncaught `ZeroDivisionError`; `_anatomy_from`'s bare fallback could
+return a whole assessment payload; and a provider-resolved run persisted two contradictory routing
+records, the nested copy still saying `request-input`.
+
+Final:
+
+```
+base    1394 passed, 66 skipped, 0 failed     floor 1460 == 1460 collected
+plugin   335 passed, 14 skipped               floor  349 ==  349 collected
+end to end                 md5 98ac2045dcc9d802cc369e8b4d4d20a4, BYTE-IDENTICAL
+real checklist path        unfilled anatomy -> refused NAMING the fields
+                           filled anatomy   -> 61 components, 49 bones
+```
+
+**The lesson, now measured three times in one change:** a claim about code is worth nothing until it
+is run. The partition review caught it in classification ("what does it know" vs "who calls it"), the
+first correctness review caught it in a disposition, and this one caught it in a fix written to close
+that disposition — where the test that should have caught it was fed a fixture I had made rather than
+the artifact the pipeline produces.

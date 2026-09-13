@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os, sys
 root = os.environ.get("IMG2_HOME")
 if root: sys.path.insert(0, os.path.join(root, "harness"))
@@ -89,17 +90,28 @@ def _positive(value: Any) -> bool:
 
 
 def anatomy_problems(anatomy: Any) -> list[str]:
-    """What stops this anatomy block counting as measured evidence. Empty means it counts."""
+    """What stops this anatomy block counting as measured evidence. Empty means it counts.
+
+    A MISSING `applies` is "not stated", not "false". The base's check read
+    `anatomy.get("applies") is not True`, and copying that here broke the domain's own two-step
+    checklist on the happy path: `extract_landmarks.py` never writes the key, so a fully measured
+    block -- every null filled exactly as its own `authoringInstruction` demands -- was refused,
+    with a message telling the agent to run the step that had just produced the file. Advice that
+    cannot succeed, which is the defect class the routing fix in this same change removed.
+
+    Only an explicit `False` refuses, because that one is a statement: `new_sculpt_spec.py:78`
+    writes it to mean "this is not a character". Otherwise the FIELDS decide, which is the honest
+    test anyway -- an unfilled skeleton has null proportions and fails on those, naming them.
+    """
     if not isinstance(anatomy, dict):
         return ["no anatomy block was supplied"]
-    if anatomy.get("applies") is not True:
-        return ["anatomy.applies is not true"]
+    if anatomy.get("applies") is False:
+        return ["anatomy.applies is false: this assessment says the subject is not a character"]
     problems = []
     for key, fields, message in ANATOMY_REQUIRED:
-        block = anatomy if key == "styleHeads" else anatomy.get(key)
-        source = block if isinstance(block, dict) else {}
-        if key == "styleHeads":
-            source = anatomy
+        source = anatomy if key == "styleHeads" else anatomy.get(key)
+        if not isinstance(source, dict):
+            source = {}
         if not any(_positive(source.get(field)) for field in fields):
             problems.append(message)
     return problems
@@ -130,36 +142,51 @@ BASE_PIPELINE_DEFAULTS: dict[str, Any] = {
 }
 
 
+def _finite_positive(raw: str) -> float:
+    """argparse type for --style-heads. `float()` alone accepts `nan` and `inf`.
+
+    Measured before this existed: `--style-heads nan` emitted an artifact whose proportions were
+    all `nan` -- a block this tool's own `anatomy_problems` rejects -- and `json.dumps` wrote
+    literal `NaN`, which is not valid JSON for the Node harness that reads it. `inf` reached a
+    division and raised an uncaught ZeroDivisionError. Refusing at the boundary is one line;
+    threading the check through the derivation would have been several, in the wrong place.
+    """
+    value = float(raw)
+    if not math.isfinite(value) or value <= 0:
+        raise argparse.ArgumentTypeError(f"must be a finite head count greater than 0, got {raw!r}")
+    return value
+
+
 def _plugin_version() -> str:
     manifest = Path(__file__).resolve().parent.parent / "plugin.json"
     return json.loads(manifest.read_text(encoding="utf-8"))["version"]
 
 
 def _anatomy_from(payload: Any) -> dict | None:
-    """The anatomy block, in any of the three shapes it actually arrives in.
+    """The anatomy block, in the three shapes it arrives in.
 
-        {"applies": true, "styleHeads": …}                  BARE -- what the checklist writes
-        {"anatomy": {...}}                                  wrapped
-        {"preSpecAssessment": {"anatomy": {...}}}           inside an assessment
+        {"anatomy": {...}}                            what `extract_landmarks.py --out` writes
+        {"preSpecAssessment": {"anatomy": {...}}}      inside an assessment
+        {"styleHeads": …, "proportions": {...}}        bare, as this plugin's fixtures carry it
 
-    The bare form is the one that matters and the one this function used to MISS: it only ever
-    looked for an `"anatomy"` key, so `--anatomy anatomy.json` pointed at the real fixture returned
-    None and the tool authored the DEFAULT humanoid instead of the measured one.
-
-    Nothing caught it, for an unlucky reason: the fixture's measurements happen to equal the
-    template's defaults, so the emitted spec was byte-identical either way and every oracle stayed
-    green. The test that looked like it covered this (`test_anatomy_actually_reaches_the_template`)
-    passes its dict straight to the template and never goes through this function. It took adding
-    the anatomy gate below -- which refuses when no block is found -- to make the silence audible.
+    A previous revision of this docstring claimed the BARE form was what the checklist writes and
+    that this function used to miss it. Both halves were wrong, and a review measured it:
+    `extract_landmarks.py:442` writes the WRAPPED form, which the original two-line version handled
+    correctly. The bare form appears only in this plugin's own hand-made fixtures. Recorded rather
+    than quietly deleted, because the false claim was what made the gate below look safe.
     """
     if not isinstance(payload, dict):
         return None
-    for candidate in (payload.get("preSpecAssessment", {}).get("anatomy")
-                      if isinstance(payload.get("preSpecAssessment"), dict) else None,
-                      payload.get("anatomy"),
-                      payload if "applies" in payload else None):
-        if isinstance(candidate, dict):
-            return candidate
+    if isinstance(payload.get("preSpecAssessment"), dict):
+        nested = payload["preSpecAssessment"].get("anatomy")
+        if isinstance(nested, dict):
+            return nested
+    if isinstance(payload.get("anatomy"), dict):
+        return payload["anatomy"]
+    # Bare only when neither wrapper key is present at all: a payload carrying an empty
+    # `preSpecAssessment` is an assessment that has no anatomy yet, not an anatomy block.
+    if "preSpecAssessment" not in payload and "anatomy" not in payload and "styleHeads" in payload:
+        return payload
     return None
 
 
@@ -235,7 +262,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--accessories", action="store_true",
                         help="include the four accessory materials and their feature targets. "
                              "Replaces the base's removed --accessories flag")
-    parser.add_argument("--style-heads", type=float,
+    parser.add_argument("--style-heads", type=_finite_positive,
                         help="reference-free figure: derive anatomy from public canon at this many "
                              "head heights instead of measuring it")
     return parser
@@ -259,9 +286,11 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(
                 "this domain will not author a figure from invented proportions: "
                 + "; ".join(problems)
-                + ". Run the character-landmarks step to measure them from the reference, or say "
-                  "the figure is reference-free with --style-heads N to take them from public "
-                  "figure-drawing canon, which is labelled as canon rather than as evidence"
+                + ". `character-landmarks` writes the skeleton with those values null; reading "
+                  "them off the reference and filling them in is the agent's half of that step, "
+                  "and its own authoringInstruction says so. Or say the figure is reference-free "
+                  "with --style-heads N, which takes them from public figure-drawing canon and "
+                  "labels them as canon rather than as evidence"
             )
 
     try:

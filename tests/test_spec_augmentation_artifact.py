@@ -328,5 +328,70 @@ class TheAnatomyFileIsActuallyRead(unittest.TestCase):
                             E.build(None)["specSections"]["componentTree"])
 
 
+class TheGateAcceptsWhatTheChecklistActuallyProduces(unittest.TestCase):
+    """The happy path, against the real producer's output rather than a hand-made dict.
+
+    `domain.json` runs two steps back to back: `character-landmarks` writes `anatomy.json`, then
+    `character-spec-augmentation` reads it. The first version of the gate REFUSED that file --
+    including after an agent filled every null exactly as `extract_landmarks.py`'s own
+    `authoringInstruction` demands -- because it copied the base's `applies is not True` test and
+    `extract_landmarks.py` never writes an `applies` key. The refusal then told the agent to run the
+    step that had just produced the file.
+
+    Every test written alongside that gate used a hand-made bare dict or this plugin's own fixture.
+    Not one fed it what the producer emits, which is why the tests passed and the pipeline broke.
+    `landmarks-skeleton.json` is that output, frozen, so this suite can no longer be green while the
+    checklist is red -- and so it needs no base checkout.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.raw = json.loads((FIXTURES / "landmarks-skeleton.json").read_text(encoding="utf-8"))
+
+    def test_the_producer_writes_the_wrapped_shape_and_no_applies_key(self) -> None:
+        # Both facts the broken version got wrong, pinned so the next reader need not re-measure.
+        self.assertIn("anatomy", self.raw)
+        self.assertNotIn("applies", self.raw["anatomy"])
+        self.assertIsNotNone(E._anatomy_from(self.raw))
+
+    def test_an_unfilled_skeleton_is_refused_by_NAMING_the_fields(self) -> None:
+        # Refusing is right -- its proportions are null. What matters is that the reason is
+        # actionable: "fill torso or legs", not "applies is not true", which named a key no
+        # producer writes and no document mentions.
+        problems = E.anatomy_problems(E._anatomy_from(self.raw))
+        self.assertTrue(problems)
+        self.assertTrue(all("applies" not in p for p in problems), problems)
+        self.assertTrue(any("torso or legs" in p for p in problems), problems)
+
+    def test_a_filled_skeleton_is_accepted(self) -> None:
+        filled = dict(self.raw["anatomy"],
+                      proportions={"torso": 2.2, "legs": 3.6},
+                      faceLandmarks={"eyeLine": 0.45, "noseBase": 0.62, "mouthLine": 0.74})
+        self.assertEqual(E.anatomy_problems(E._anatomy_from({"anatomy": filled})), [])
+
+    def test_an_assessment_that_says_not_a_character_is_refused_as_such(self) -> None:
+        # `new_sculpt_spec.py` writes `applies: False` to mean exactly that. An explicit False is a
+        # statement and refuses on its own terms; a MISSING key is not stated and the fields decide.
+        problems = E.anatomy_problems({"applies": False, "styleHeads": 8,
+                                       "proportions": {"torso": 2.2},
+                                       "faceLandmarks": {"eyeLine": 0.45}})
+        self.assertEqual(len(problems), 1)
+        self.assertIn("not a character", problems[0])
+
+
+class TheFrozenProducerOutputIsStillWhatTheProducerEmits(unittest.TestCase):
+    """The frozen fixture above is only worth anything while it matches the real function."""
+
+    def test_the_fixture_matches_extract_landmarks(self) -> None:
+        root = require_base(Path("forge/stage1_intake/extract_landmarks.py"),
+                            "the landmarks-shape pin",
+                            "the gate is still checked against the frozen copy, but this run did "
+                            "NOT confirm the base still emits that shape.")
+        on_base_path(root, "forge/stage1_intake")
+        from extract_landmarks import make_anatomy_skeleton  # noqa: PLC0415
+        frozen = json.loads((FIXTURES / "landmarks-skeleton.json").read_text(encoding="utf-8"))
+        self.assertEqual({"anatomy": make_anatomy_skeleton(frozen["anatomy"]["styleHeads"])}, frozen)
+
+
 if __name__ == "__main__":
     unittest.main()

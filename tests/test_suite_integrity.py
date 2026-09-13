@@ -62,8 +62,13 @@ ROOT = Path(__file__).resolve().parents[1]
 #           anatomy at all, authoring a default humanoid), and `_anatomy_from` never read the bare
 #           block the checklist actually writes -- invisible because the fixture's measurements
 #           equal the template's defaults, so every oracle stayed green either way
-#   = 344
-COLLECTED_FLOOR = 344
+#   +   5   test_spec_augmentation_artifact once more, from the RE-review of those fixes: the gate
+#           copied the base's `applies is not True` test, and `extract_landmarks.py` never writes
+#           that key -- so it refused the domain's own checklist output on the happy path. Every
+#           test written alongside it used a hand-made dict; none fed it what the producer emits.
+#           `landmarks-skeleton.json` freezes that output so the gap cannot reopen silently
+#   = 349
+COLLECTED_FLOOR = 349
 
 _PROBE = """
 import json, unittest
