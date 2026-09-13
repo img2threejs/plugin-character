@@ -126,6 +126,75 @@ class CharacterAuthoringOracle(unittest.TestCase):
         self.assertEqual(len(self.frozen["rig"]["bones"]), 49)
         self.assertEqual(len(self.frozen["materials"]), 9)
 
+    def test_the_default_figure_is_a_general_humanoid_not_one_person_s_bust(self) -> None:
+        """Moved from the base's `test_pipeline.py` with its subject.
+
+        The byte comparison above already covers this, but only as an opaque 282KB equality: when it
+        fails it says "componentTree differs" and nothing about WHAT the template is for. These are
+        the named properties the humanoid was designed around, and each one is a defect that shipped.
+        """
+        ids = {c["id"] for c in self._author()["componentTree"]}
+        for part in ("root", "head", "abdomen", "chest", "neck", "hair",
+                     "pelvis", "thigh-l", "shin-l", "foot-l",
+                     "upper-arm-l", "forearm-l", "hand-l",
+                     "eye-l", "eye-cavity-l"):
+            self.assertIn(part, ids)
+        # Accessories are one reference person's traits, opt-in since Plan 1.5.
+        for accessory in ("glasses-frame-l", "hp-band", "shirt-decal"):
+            self.assertNotIn(accessory, ids)
+
+    def test_accessories_are_opt_in_and_actually_arrive(self) -> None:
+        spec = json.loads(self.skeleton_text)
+        self.template.apply_character_template(spec, self.anatomy, include_accessories=True)
+        ids = {c["id"] for c in spec["componentTree"]}
+        for accessory in ("glasses-frame-l", "hp-band", "shirt-decal"):
+            self.assertIn(accessory, ids)
+
+    def test_digits_are_baseline_rather_than_a_mitten(self) -> None:
+        """US-003 replaced the `--fingers` flag with real digits in the default template.
+
+        The flag added ONE box called `fingers-l` plus one called `thumb-l` — a mitten, opt-in. A
+        humanoid that cannot curl a finger is not finished. Both halves are asserted: the digits
+        exist with no flag, and the mitten ids do not come back.
+        """
+        tree = self._author()["componentTree"]
+        ids = {c["id"] for c in tree}
+        for side in ("l", "r"):
+            for digit in ("thumb", "index", "middle", "ring", "little"):
+                for phalanx in (1, 2, 3):
+                    self.assertIn(f"{digit}-{side}-{phalanx}", ids)
+        self.assertNotIn("fingers-l", ids)
+        self.assertNotIn("thumb-l", ids)
+        by_id = {c["id"]: c for c in tree}
+        self.assertEqual(by_id["middle-l-1"]["parent"], "hand-l")
+        self.assertEqual(by_id["middle-l-3"]["parent"], "middle-l-2")
+
+    def test_the_tree_is_a_real_parent_chain_not_a_flat_list(self) -> None:
+        """WS-E: a non-uniformly-scaled parent can no longer distort a nested child, so the
+        template authors anatomically sensible parents instead of flattening onto `root`."""
+        by_id = {c["id"]: c for c in self._author()["componentTree"]}
+        for child, parent in {
+            # US-001 split torso into abdomen + chest so the waist flexes, and parented the spine
+            # to the pelvis — which is what made the rig derivation's hand-picked bone root and its
+            # torso joint exception unnecessary.
+            "pelvis": "root", "abdomen": "pelvis", "chest": "abdomen",
+            "neck": "chest", "head": "neck",
+            # US-002 inserted a clavicle so the shoulder can shrug and the arm's rotation origin
+            # sits on the joint instead of inside the ribcage.
+            "clavicle-l": "chest", "upper-arm-l": "clavicle-l",
+            "forearm-l": "upper-arm-l", "hand-l": "forearm-l",
+            "thigh-l": "pelvis", "shin-l": "thigh-l", "foot-l": "shin-l",
+            "hair": "head", "eye-l": "head", "eye-cavity-l": "head",
+        }.items():
+            self.assertEqual(by_id[child]["parent"], parent, child)
+
+    def test_the_palette_is_per_part_rather_than_one_beige_fallback(self) -> None:
+        materials = {m["id"]: m for m in self._author()["materials"]}
+        colors = {materials[k].get("color") for k in ("skin", "hair", "shirt")}
+        self.assertEqual(len(colors), 3, "skin, hair and shirt must not share one colour")
+        for key in ("skin", "hair", "shirt"):
+            self.assertGreaterEqual(len(materials[key].get("colorVariation", {}).get("palette", [])), 2)
+
     def test_anatomy_actually_reaches_the_template(self) -> None:
         # If the template ignored its anatomy argument, every test above would still pass.
         taller = dict(self.anatomy, proportions=dict(self.anatomy["proportions"], torso=3.0))
