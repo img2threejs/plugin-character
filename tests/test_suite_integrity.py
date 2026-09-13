@@ -47,8 +47,10 @@ ROOT = Path(__file__).resolve().parents[1]
 #   +   5   test_character_authoring_oracle
 #   +  14   test_spec_augmentation_artifact
 #   +   7   test_spec_search_profile
-#   = 307
-COLLECTED_FLOOR = 307
+#   +  19   test_domain_declaration, which grew from 14: the harness's own doctor rules, run
+#           before the commit rather than after the tag, plus the manifest agreements
+#   = 326
+COLLECTED_FLOOR = 326
 
 _PROBE = """
 import json, unittest
