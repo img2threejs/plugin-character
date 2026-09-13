@@ -18,36 +18,29 @@ provider"), and it is asserted here by name so that it stays the *only* one.
 from __future__ import annotations
 
 import json
-import os
 import sys
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "oracle-character"
-DEFAULT_BASE = ROOT.parent / "img2threejs"
 BASE_RELATIVE_MERGE = Path("forge/_shared/spec_augmentation.py")
 
 sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import emit_spec_augmentation as E  # noqa: E402
+from _base_checkout import on_base_path, require_base  # noqa: E402
 
 
 def _base_spec_augmentation():
     """The base's real merge module, or a skip naming the checkout it needs."""
-    configured = os.environ.get("IMG2THREEJS_BASE")
-    root = Path(configured).expanduser().resolve() if configured else DEFAULT_BASE
-    if (root / BASE_RELATIVE_MERGE).is_file():
-        sys.path[:0] = [str(root / "forge"), str(root / "forge" / "_shared")]
-        import spec_augmentation  # noqa: PLC0415
-        return spec_augmentation
-    where = "from IMG2THREEJS_BASE" if configured else "the default; IMG2THREEJS_BASE is unset"
-    message = ("the artifact/merge integration pin needs the base checkout: set IMG2THREEJS_BASE to "
-               f"an img2threejs checkout containing {BASE_RELATIVE_MERGE}. Looked in {root} ({where}).")
-    if os.environ.get("IMG2THREEJS_REQUIRE_BASE") == "1":
-        raise RuntimeError(message + " IMG2THREEJS_REQUIRE_BASE=1 forbids skipping this check.")
-    raise unittest.SkipTest(message + " Skipping: the artifact's own shape is still pinned by the "
-                                      "rest of this suite, but this run did NOT merge it.")
+    root = require_base(BASE_RELATIVE_MERGE, "the artifact/merge integration pin",
+                        "the artifact's own shape is still pinned by the rest of this suite, but "
+                        "this run did NOT merge it.")
+    on_base_path(root, "forge", "forge/_shared")
+    import spec_augmentation  # noqa: PLC0415
+    return spec_augmentation
 
 
 def _base_merge():
@@ -137,6 +130,47 @@ class MergedAgainstTheFrozenSpec(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ThePipelineDefaultsMatchTheFrozenSpec(unittest.TestCase):
+    """The FIVE VALUES this plugin carries for the base, pinned against the frozen spec.
+
+    `MergedAgainstTheFrozenSpec` needs the base checkout and therefore SKIPS by default, and
+    `test_sculptPipeline_keeps_the_base_keys_the_template_does_not_set` only asserts key PRESENCE.
+    Between them, a stale `blockedReason` string -- copied by hand from the base at `6e60b5e`,
+    including its user-facing wording -- could ship on every character run with nothing red. A
+    review called that a silent-drift liability dressed as a documented follow-up, correctly.
+
+    This closes it with no base checkout: `fixtures/oracle-character/spec.json` is the base's own
+    output, frozen, and it travels with this plugin. So the check is NOT SKIPPABLE, and it compares
+    values rather than names.
+
+    It does not make the follow-up unnecessary. The clean end state is the base preserving its own
+    gate state instead of trusting a provider to carry it; this makes the interim shim falsifiable
+    rather than merely documented.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.frozen = json.loads((FIXTURES / "spec.json").read_text(encoding="utf-8"))["sculptPipeline"]
+
+    def test_every_carried_default_equals_the_value_the_base_produced(self) -> None:
+        for key, carried in E.BASE_PIPELINE_DEFAULTS.items():
+            self.assertEqual(carried, self.frozen[key],
+                             f"BASE_PIPELINE_DEFAULTS[{key!r}] has drifted from the base's value")
+
+    def test_the_carried_set_is_exactly_what_the_template_does_not_set(self) -> None:
+        # Too few and the merge drops a key; too many and this plugin is asserting authority over
+        # something the template already decides. Derived from the template, not transcribed.
+        authored = set(E.build(json.loads((FIXTURES / "anatomy.json").read_text(encoding="utf-8")))
+                       ["specSections"]["sculptPipeline"])
+        self.assertEqual(set(E.BASE_PIPELINE_DEFAULTS) | {"passOrder", "currentPass"}, authored)
+        self.assertEqual(set(E.BASE_PIPELINE_DEFAULTS) & {"passOrder", "currentPass"}, set())
+
+    def test_the_section_carries_every_key_the_base_had(self) -> None:
+        authored = E.build(json.loads((FIXTURES / "anatomy.json").read_text(encoding="utf-8")))
+        self.assertEqual(list(authored["specSections"]["sculptPipeline"]), list(self.frozen),
+                         "key order is part of the comparison: the emitter embeds it")
 
 
 class RuledOnByTheBase(unittest.TestCase):

@@ -27,29 +27,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = ROOT / "spec_search_profile.json"
-DEFAULT_BASE = ROOT.parent / "img2threejs"
 BASE_RELATIVE_SEARCH = Path("forge/_shared/spec_search.py")
 BASE_VOCABULARY = Path("docs/specs/vocabulary")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _base_checkout import on_base_path, require_base  # noqa: E402
 
 # Collection names the BASE declares. Claiming one is refused by the merge, not silently preferred.
 BASE_COLLECTIONS = ("core_3d",)
 
 
-def _base_root() -> Path | None:
-    configured = os.environ.get("IMG2THREEJS_BASE")
-    root = Path(configured).expanduser().resolve() if configured else DEFAULT_BASE
-    return root if (root / BASE_RELATIVE_SEARCH).is_file() else None
-
-
 def _require_base(what: str) -> Path:
-    root = _base_root()
-    if root is not None:
-        return root
-    message = (f"{what} needs the base checkout: set IMG2THREEJS_BASE to an img2threejs checkout "
-               f"containing {BASE_RELATIVE_SEARCH}.")
-    if os.environ.get("IMG2THREEJS_REQUIRE_BASE") == "1":
-        raise RuntimeError(message + " IMG2THREEJS_REQUIRE_BASE=1 forbids skipping this check.")
-    raise unittest.SkipTest(message + " Skipping: this run did NOT check it.")
+    return require_base(BASE_RELATIVE_SEARCH, what, "this run did NOT check it.")
 
 
 class ProfileShape(unittest.TestCase):
@@ -107,7 +97,7 @@ class TheBaseCanReadIt(unittest.TestCase):
     def test_load_profiles_resolves_the_collection_against_this_plugin(self) -> None:
         base = _require_base("the profile-loading pin")
         import tempfile  # noqa: PLC0415
-        sys.path[:0] = [str(base / "forge"), str(base / "forge" / "_shared")]
+        on_base_path(base, "forge", "forge/_shared")
         import spec_search  # noqa: PLC0415
 
         with tempfile.TemporaryDirectory() as home:

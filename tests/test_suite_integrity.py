@@ -48,12 +48,17 @@ ROOT = Path(__file__).resolve().parents[1]
 #           came from the base's test_pipeline.py with their subject -- accessories, digits,
 #           the parent chain and the palette. The byte comparison covers them all already,
 #           but only as an opaque 282KB equality that says 'componentTree differs'
-#   +  14   test_spec_augmentation_artifact
+#   +  17   test_spec_augmentation_artifact: 14, plus 3 from a cleanup review. The five base
+#           defaults this plugin carries were pinned only by KEY PRESENCE, and the value
+#           comparison lived in a class that skips without a base checkout -- so a stale
+#           blockedReason string could have shipped on every run with nothing red. The new three
+#           compare VALUES against the frozen spec, which travels with this plugin, so they
+#           cannot skip
 #   +   7   test_spec_search_profile
 #   +  19   test_domain_declaration, which grew from 14: the harness's own doctor rules, run
 #           before the commit rather than after the tag, plus the manifest agreements
-#   = 331
-COLLECTED_FLOOR = 331
+#   = 334
+COLLECTED_FLOOR = 334
 
 _PROBE = """
 import json, unittest

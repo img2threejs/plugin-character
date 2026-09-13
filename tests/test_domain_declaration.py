@@ -43,8 +43,11 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_BASE = ROOT.parent / "img2threejs"
 BASE_RELATIVE_REGISTRY = Path("forge/_shared/domains/__init__.py")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _base_checkout import on_base_path, require_base  # noqa: E402
 MANIFEST = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
 
 # Transcribed from img2-harness `bin/img2.mjs`, each with the line that defines it. A plugin cannot
@@ -259,8 +262,7 @@ class TheManifest(unittest.TestCase):
     def test_the_name_is_the_domain_id(self) -> None:
         # The registry keys domains by `domain.json`'s id and the harness keys rows by the manifest
         # name; they are different files and nothing outside this assertion ties them together.
-        self.assertEqual(MANIFEST["name"],
-                         json.loads((ROOT / "domain.json").read_text(encoding="utf-8"))["id"])
+        self.assertEqual(MANIFEST["name"], DOMAIN["id"])
 
     def test_the_skill_frontmatter_version_moves_with_the_manifest(self) -> None:
         front = (ROOT / "SKILL.md").read_text(encoding="utf-8").split("---")[1]
@@ -273,19 +275,10 @@ class AgreesWithTheBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        configured = os.environ.get("IMG2THREEJS_BASE")
-        root = Path(configured).expanduser().resolve() if configured else DEFAULT_BASE
-        if not (root / BASE_RELATIVE_REGISTRY).is_file():
-            where = "from IMG2THREEJS_BASE" if configured else "the default; IMG2THREEJS_BASE is unset"
-            message = ("the declaration/base agreement needs the base checkout: set IMG2THREEJS_BASE "
-                       f"to an img2threejs checkout containing {BASE_RELATIVE_REGISTRY}. Looked in "
-                       f"{root} ({where}).")
-            if os.environ.get("IMG2THREEJS_REQUIRE_BASE") == "1":
-                raise RuntimeError(message + " IMG2THREEJS_REQUIRE_BASE=1 forbids skipping this.")
-            raise unittest.SkipTest(message + " Skipping: the declaration's own shape is still "
-                                              "pinned above, but this run did NOT compare it.")
-        sys.path[:0] = [str(root / "forge"), str(root / "forge" / "_shared")]
-        pass
+        root = require_base(BASE_RELATIVE_REGISTRY, "the declaration/base agreement",
+                            "the declaration's own shape is still pinned above, but this run did "
+                            "NOT compare it.")
+        on_base_path(root, "forge", "forge/_shared")
 
     def test_the_registry_accepts_this_declaration(self) -> None:
         from domains import _validate  # noqa: PLC0415

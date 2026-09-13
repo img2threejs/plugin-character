@@ -85,11 +85,16 @@ def _plugin_version() -> str:
     return json.loads(manifest.read_text(encoding="utf-8"))["version"]
 
 
-def _anatomy_from(assessment: Any) -> dict | None:
-    if not isinstance(assessment, dict):
+def _anatomy_from(payload: Any) -> dict | None:
+    """The anatomy block, whether it arrives bare or wrapped in a preSpecAssessment.
+
+    `extract_landmarks.py` writes the bare form. The wrapped form is accepted because the same file
+    is what a later assessment embeds, and refusing it would make the caller unwrap by hand.
+    """
+    if not isinstance(payload, dict):
         return None
-    pre = assessment.get("preSpecAssessment")
-    pre = pre if isinstance(pre, dict) else assessment
+    pre = payload.get("preSpecAssessment")
+    pre = pre if isinstance(pre, dict) else payload
     anatomy = pre.get("anatomy")
     return anatomy if isinstance(anatomy, dict) else None
 
@@ -150,10 +155,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, required=True, help="write the artifact here")
-    parser.add_argument("--assessment", type=Path,
-                        help="pre-spec assessment carrying preSpecAssessment.anatomy")
+    # No `--assessment`. This step is anchored before `local-spec-search`, which is before
+    # `pre-spec-assessment`, so at the moment it runs there IS no assessment -- only the
+    # `anatomy.json` that `character-landmarks` wrote one step earlier. A flag for an input that
+    # cannot exist yet is surface a reader has to reason about and nothing can produce.
     parser.add_argument("--anatomy", type=Path,
-                        help="anatomy.json from the character-landmarks step, if no assessment yet")
+                        help="anatomy.json from the character-landmarks step")
     parser.add_argument("--accessories", action="store_true",
                         help="include the four accessory materials and their feature targets. "
                              "Replaces the base's removed --accessories flag")
@@ -167,16 +174,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.style_heads is not None and (args.assessment or args.anatomy):
-        parser.error("--style-heads derives anatomy from canon; it cannot be combined with "
-                     "measured anatomy from --assessment or --anatomy")
+    if args.style_heads is not None and args.anatomy is not None:
+        parser.error("--style-heads derives anatomy from public canon; it cannot be combined with "
+                     "the measured anatomy in --anatomy")
 
     anatomy = None
-    for source in (args.assessment, args.anatomy):
-        if source is not None:
-            anatomy = _anatomy_from(json.loads(source.expanduser().read_text(encoding="utf-8")))
-            if anatomy is not None:
-                break
+    if args.anatomy is not None:
+        anatomy = _anatomy_from(json.loads(args.anatomy.expanduser().read_text(encoding="utf-8")))
 
     try:
         artifact = build(anatomy, args.accessories, args.style_heads)

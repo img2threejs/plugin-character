@@ -13,7 +13,6 @@ Pure Python 3.10+ stdlib. No pip installs.
 
 from __future__ import annotations
 
-import os
 import sys
 import unittest
 from pathlib import Path
@@ -27,8 +26,11 @@ from character_spec_template import (  # noqa: E402
     make_character_component_tree,
 )
 
-DEFAULT_BASE = ROOT.parent / "img2threejs"
 BASE_RELATIVE_RIG_SPEC = Path("forge/stage5_rig/rig_spec.py")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _base_checkout import on_base_path, require_base  # noqa: E402
 
 SPINE = ("pelvis", "abdomen", "chest", "neck", "head")
 
@@ -190,19 +192,10 @@ class AdmittedByTheBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        configured = os.environ.get("IMG2THREEJS_BASE")
-        root = Path(configured).expanduser().resolve() if configured else DEFAULT_BASE
-        if not (root / BASE_RELATIVE_RIG_SPEC).is_file():
-            where = "from IMG2THREEJS_BASE" if configured else "the default; IMG2THREEJS_BASE is unset"
-            message = ("the rig admission pin needs the base checkout: set IMG2THREEJS_BASE to an "
-                       f"img2threejs checkout containing {BASE_RELATIVE_RIG_SPEC}. Looked in {root} "
-                       f"({where}).")
-            if os.environ.get("IMG2THREEJS_REQUIRE_BASE") == "1":
-                raise RuntimeError(message + " IMG2THREEJS_REQUIRE_BASE=1 forbids skipping this.")
-            raise unittest.SkipTest(message + " Skipping: the derivation's own properties are still "
-                                              "pinned above, but this run did NOT gate the rig.")
-        sys.path[:0] = [str(root / "forge"), str(root / "forge" / "_shared"),
-                        str(root / "forge" / "stage2_spec")]
+        root = require_base(BASE_RELATIVE_RIG_SPEC, "the rig admission pin",
+                            "the derivation's own properties are still pinned above, but this run "
+                            "did NOT gate the rig.")
+        on_base_path(root, "forge", "forge/_shared", "forge/stage2_spec")
         from stage5_rig.rig_spec import BoneSpec, RigSpec, validate_rig_spec  # noqa: PLC0415
         from validate_sculpt_spec import validate_rig_admission  # noqa: PLC0415
         cls.validate_rig_spec = staticmethod(validate_rig_spec)
