@@ -7,6 +7,24 @@ Character rigging and animation for [img2threejs](https://github.com/img2threejs
 img2 add img2threejs/plugin-character
 ```
 
+## Public installer
+
+A public npm installer is published separately so users do not need to clone the plugin
+manually. The installer is a thin launcher for the shared `@img2threejs/img2` runtime and
+fetches this plugin's source on first run; it does not include any rig, gate or skeleton
+implementation. See [`CLI_QUICKSTART.md`](CLI_QUICKSTART.md) and [`cli/README.md`](cli/README.md).
+
+```bash
+npx --yes @img2threejs/character install --dry-run
+npx --yes @img2threejs/character install --yes
+npx --yes @img2threejs/character doctor
+```
+
+The npm package is scoped to `@img2threejs/character`; the executable installed into `PATH`
+stays unscoped as `img2-character`. CLI executable version (`0.2.0`) and plugin source
+version (`v0.2.0`) are released on separate tracks. This package is an installer only —
+installing it is not a claim that a rig build, rig measurement, or rig gate has passed.
+
 ## What it is for
 
 An img2threejs reconstruction produces a static mesh. This plugin takes it from there: a skeleton read

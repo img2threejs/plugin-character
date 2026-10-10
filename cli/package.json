@@ -1,0 +1,38 @@
+{
+  "name": "@img2threejs/character",
+  "version": "0.2.0",
+  "description": "Public installer-only npm package for the img2threejs/plugin-character plugin.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "img2-character": "bin/cli.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/cli.mjs"
+  ],
+  "scripts": {
+    "test": "node --test tests/cli.test.mjs"
+  },
+  "dependencies": {
+    "@img2threejs/img2": "0.4.0"
+  },
+  "img2Plugin": {
+    "id": "character",
+    "source": "img2threejs/plugin-character",
+    "ref": "796dd9caf3f299958cf75b2294f54b37dc23ada9"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/img2threejs/plugin-character.git",
+    "directory": "cli"
+  },
+  "homepage": "https://www.npmjs.com/package/@img2threejs/character"
+}
