@@ -1,0 +1,16 @@
+{
+  "collections": {
+    "character": {
+      "source_roots": [],
+      "optional_source_roots": [
+        "grimoire/character/"
+      ],
+      "distilled_records": [
+        "docs/specs/vocabulary/core_3d.jsonl",
+        "docs/specs/vocabulary/core_3d_reconstruction.jsonl"
+      ],
+      "documentation": "docs/specs/vocabulary/README.md",
+      "cache": ".cache/spec-search/character.json"
+    }
+  }
+}

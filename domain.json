@@ -1,16 +1,21 @@
 {
-  "id": "animated-character",
+  "id": "character",
   "setupSteps": [
     [
       "character-contract-read",
-      "Read grimoire/character/reconstruction.md and grimoire/character/likeness_maximization.md completely"
+      "Read {plugin_dir}/grimoire/character/reconstruction.md and {plugin_dir}/grimoire/character/likeness_maximization.md completely"
     ],
     [
       "character-landmarks",
       "python3 forge/stage1_intake/extract_landmarks.py {reference} --out anatomy.json --overlay landmarks.png"
+    ],
+    [
+      "character-spec-augmentation",
+      "python3 {plugin_dir}/tools/emit_spec_augmentation.py --anatomy anatomy.json --out spec-augmentation.json"
     ]
   ],
   "setupAnchorBefore": "local-spec-search",
+  "specCollection": "character",
   "rigSteps": [
     [
       "rig-contract-read",

@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import importlib.util
 import math
-import os
 import sys
 import unittest
 from pathlib import Path
@@ -31,28 +30,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 from rig_spec import derive_envelope_radius as plugin_derive  # noqa: E402
 
-DEFAULT_BASE = Path.home() / "Documents" / "personal" / "img2threejs"
 BASE_RELATIVE_RIG_SPEC = Path("forge") / "stage5_rig" / "rig_spec.py"
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _base_checkout import require_base  # noqa: E402
+
+# The default used to be `~/Documents/personal/img2threejs`, one developer's layout. In a normal
+# checkout -- plugin beside base -- these nine drift pins therefore skipped SILENTLY with the base
+# sitting right next door: the reason named a path nobody has, so the skip read as "no base here"
+# rather than "looking in the wrong place". Found by a review, adjacent to the commit that unified
+# the three other copies of this lookup and left this one standing.
 
 
 def _base_rig_spec_path() -> Path:
-    configured = os.environ.get("IMG2THREEJS_BASE")
-    root = Path(configured).expanduser().resolve() if configured else DEFAULT_BASE
-    candidate = root / BASE_RELATIVE_RIG_SPEC
-    if candidate.is_file():
-        return candidate
-    where = "from IMG2THREEJS_BASE" if configured else "the default; IMG2THREEJS_BASE is unset"
-    message = (
-        "the rig_spec drift pin needs the base skill checkout: set IMG2THREEJS_BASE to an "
-        f"img2threejs checkout containing {BASE_RELATIVE_RIG_SPEC}. Looked in {root} ({where}) "
-        "and found no such file."
-    )
-    if os.environ.get("IMG2THREEJS_REQUIRE_BASE") == "1":
-        raise RuntimeError(message + " IMG2THREEJS_REQUIRE_BASE=1 forbids skipping this check.")
-    raise unittest.SkipTest(
-        message + " Skipping: the plugin's own copy is still exercised by the rest of the suite, "
-        "but this run did NOT check it against the base."
-    )
+    return require_base(BASE_RELATIVE_RIG_SPEC, "the rig_spec drift pin",
+                        "the plugin's own copy is still exercised by the rest of the suite, but "
+                        "this run did NOT check it against the base.") / BASE_RELATIVE_RIG_SPEC
 
 
 def _load_base_derive():
