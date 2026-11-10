@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f6f3ed"><title>Nami — Adapted Character Studio</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <header class="masthead"><a class="wordmark" href="./" aria-label="Character Studio"><span class="mark" aria-hidden="true">N</span><span>CHARACTER <b>STUDIO</b></span></a><span class="edition">ADAPTED SOURCE / 02</span><a class="reference-link" href="https://sketchfab.com/3d-models/nami-one-piece-3d-model-b382d37e085444e69eb3cdd306243830" target="_blank" rel="noreferrer">Model gốc · fatymazali <span aria-hidden="true">↗</span></a></header>
+  <main>
+    <section class="stage" aria-label="Nami 3D tương tác">
+      <div class="stage-title"><p class="eyebrow">ONE PIECE · POST-TIMESKIP · 20 TUỔI</p><h1>Nami<span>.</span></h1><p class="subtitle">Tạo hình gốc. Chín vùng mô mềm.</p></div>
+      <canvas id="character" aria-label="Model Nami 3D. Giữ để bóp mô mềm; chọn Nắm-kéo để kéo, thả để quan sát hồi phục." tabindex="0"></canvas>
+      <div id="loading" class="loading" role="status">Đang tải model thực…</div>
+      <div class="view-bar" role="group" aria-label="Góc nhìn"><button data-view="front" aria-pressed="false">Trước</button><button data-view="quarter" aria-pressed="true">3/4</button><button data-view="profile" aria-pressed="false">Nghiêng</button><button data-view="rear" aria-pressed="false">Sau</button><button data-view="torso" aria-pressed="false">Thân</button><button data-view="face" aria-pressed="false">Mặt</button></div>
+      <div class="stage-foot"><span><i class="status-dot"></i><span id="status" role="status">Đang khởi tạo</span></span><span id="performance" aria-label="Tốc độ khung hình"></span></div>
+    </section>
+    <aside class="panel" aria-label="Điều khiển mô mềm">
+      <div class="panel-heading"><p class="eyebrow">INTERACTION LAB</p><h2>Chạm. Kéo. Thả.</h2><p>Chọn vùng để xem cận, giữ để bóp hoặc nắm–kéo. Kéo trên nền để xoay; cuộn hoặc dùng hai ngón trên nền để thu phóng.</p></div>
+      <fieldset class="mode-picker"><legend>Cách tương tác</legend><div class="segmented"><button id="squeeze" aria-pressed="true">Bóp</button><button id="grab" aria-pressed="false">Nắm–kéo</button><button id="fabric" aria-pressed="false">Kéo vải áo</button></div></fieldset>
+      <fieldset class="mode-picker"><legend>Bề mặt da</legend><select id="surface" aria-label="Bề mặt da"><option value="skin">Da bắt sáng · PBR</option><option value="artist">Màu anime gốc · unlit</option></select></fieldset>
+      <fieldset class="mode-picker"><legend>Trang phục · biến hình</legend><div class="segmented"><button id="outfit-green" aria-pressed="true">Xanh</button><button id="outfit-orange" aria-pressed="false">Cam–trắng</button></div></fieldset>
+      <div class="region-box"><div class="label-row"><label for="region">Vùng kiểm tra</label><span id="tissue-label">Mềm · quán tính</span></div><select id="region"><option value="chest-left">Ngực trái</option><option value="chest-right">Ngực phải</option><option value="hips-left">Mông trái</option><option value="hips-right">Mông phải</option><option value="waist-left">Eo trái</option><option value="waist-right">Eo phải</option><option value="abdomen">Bụng</option><option value="cheek-left">Má trái</option><option value="cheek-right">Má phải</option></select><div class="readouts"><div><span>TẦN SỐ RIÊNG</span><strong id="frequency">—</strong></div><div><span>GIẢM CHẤN</span><strong id="damping">—</strong></div></div><button id="impulse" class="outline-button">Thử nẩy vùng này <span aria-hidden="true">↗</span></button></div>
+      <button id="motion" class="primary-button" aria-pressed="false"><span class="play-icon" aria-hidden="true">▷</span> Chuyển động thử</button><button id="reset" class="reset-button">Khôi phục trạng thái nghỉ</button>
+      <div class="method-note"><span class="tiny-index">01 / PHẢN HỒI</span><p>Má giữ căng mượt, chỉ giãn nhẹ khi bóp hoặc kéo. Bầu ngực tròn, mịn và phản hồi đều ở mọi hướng quanh bầu ngực: trên, dưới và hai bên. Dây, vòng cổ và vải áo là một khối liền: kéo một mảnh vải sẽ kéo theo khoảng một nửa tấm áo; kéo một dây sẽ kéo cả vòng cổ, dây còn lại và hai mảnh vải, càng xa càng nhẹ (đo dọc theo áo), chỉ phần viền dưới ngực được giữ cố định. Kéo dây còn nhấc tam giác vải khỏi da, hở ra một mảng da ở phía ngược lại; vải vẫn che vùng đầu ngực. Áo là lớp ngoài: kéo mạnh tới đâu thì da cũng không bao giờ nhô ra phía trước vải. Nên chọn góc nhìn “Thân” để thấy rõ. Chọn “Kéo vải áo” để nắm vải; dây kéo được ở mọi chế độ. Thả tay để áo hồi phục và mô mềm đàn hồi theo. Biến hình: dây tuột ở đầu cổ, rơi cùng một mảnh vải nhỏ xuống ngực, làn sáng đổi màu áo rồi dây được nâng lên và nối lại.</p><span class="tiny-index">02 / GIỚI HẠN</span><p>Ràng buộc bề mặt cục bộ, không phải FEM, va chạm toàn thân hay lực phản hồi xúc giác. Atlas màu do tác giả vẽ; da PBR không đồng nghĩa da quét thực. Rig điều khiển thân và đầu, không có rig mặt/ngón tay. Tương tác áo và biến hình nằm trong viewer, không có trong GLB tải riêng.</p></div>
+      <div class="downloads"><a href="native/character.blend" download>Blender nguồn <span aria-hidden="true">↓</span></a><a href="native/export/character.glb" download>Model GLB <span aria-hidden="true">↓</span></a></div>
+    </aside>
+  </main>
+  <footer><span>ADAPTED FROM FATYMAZALI · <a href="ATTRIBUTION.txt">CC BY 4.0 / THAY ĐỔI</a></span><span>Project cũ và file tải gốc được giữ nguyên. · <strong id="build-stamp">build guard-1</strong></span></footer>
+  <script type="module" src="viewer.mjs"></script>
+</body>
+</html>

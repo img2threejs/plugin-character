@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "route": "garment-character",
+  "jobPath": "~/.img2/jobs/nami-sketchfab-8e496e5a",
+  "buildStamp": "guard-1",
+  "buildStampSource": "viewer.mjs: window.namiStudio = { ..., build: 'guard-1' }",
+  "sourcePaths": "Each file's `source` is relative to jobPath. Runtime files are byte-identical copies (cp). Test files differ from their source only by the listed changedLines (relative import specifiers).",
+  "hashCheck": "sha256 and bytes are of the copy at `path` (relative to the plugin root); sourceSha256/sourceBytes are of the job file it was copied from. tests/test_garment_character_provenance.py enforces the former.",
+  "attribution": {
+    "model": "Nami one piece 3d model by fatymazali (Sketchfab, https://sketchfab.com/3d-models/nami-one-piece-3d-model-b382d37e085444e69eb3cdd306243830), licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); the job adapts this author's model, it is not a reconstruction created from scratch.",
+    "note": "The delivered job mesh and hand-painted textures are NOT part of this plugin and are not reproduced from images; only the runtime layer, tests and parameters are. Redistributing or reusing the adapted asset requires the CC BY 4.0 attribution above and implies no endorsement by fatymazali. One Piece/Nami franchise rights are not established by the asset license.",
+    "jobAttributionFile": "ATTRIBUTION.txt in jobPath"
+  },
+  "runtimeLicense": "Apache-2.0: the .mjs files carry `SPDX-License-Identifier: Apache-2.0` headers (viewer.mjs, index.html, styles.css and serve.py carry none); the full text is runtime/garment-character/LICENSE-runtime. Three.js 0.186.1 is MIT.",
+  "files": [
+    {
+      "path": "runtime/garment-character/softbody.mjs",
+      "kind": "runtime",
+      "source": "softbody.mjs",
+      "sha256": "55ea91d763d6da6dd518527ac7380c1dc9e2226d1716fba2acdf081d0176fc8c",
+      "bytes": 39132,
+      "sourceSha256": "55ea91d763d6da6dd518527ac7380c1dc9e2226d1716fba2acdf081d0176fc8c",
+      "sourceBytes": 39132,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/garment.mjs",
+      "kind": "runtime",
+      "source": "garment.mjs",
+      "sha256": "4c34308aeb98bc3bd9338993304725a2a83ee2deb486b7e92ae2d7a6a3e30304",
+      "bytes": 45897,
+      "sourceSha256": "4c34308aeb98bc3bd9338993304725a2a83ee2deb486b7e92ae2d7a6a3e30304",
+      "sourceBytes": 45897,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/garment-field.mjs",
+      "kind": "runtime",
+      "source": "garment-field.mjs",
+      "sha256": "ffc1064b8cb3199d8b363afbe31865fdf243728765ac06f0b5985e9ce8df6417",
+      "bytes": 4975,
+      "sourceSha256": "ffc1064b8cb3199d8b363afbe31865fdf243728765ac06f0b5985e9ce8df6417",
+      "sourceBytes": 4975,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/cloth-contact.mjs",
+      "kind": "runtime",
+      "source": "cloth-contact.mjs",
+      "sha256": "bb4c13fe0927a3887036b1027492b809c433025df73bcded7e731ac0872b1616",
+      "bytes": 8440,
+      "sourceSha256": "bb4c13fe0927a3887036b1027492b809c433025df73bcded7e731ac0872b1616",
+      "sourceBytes": 8440,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/chest-field.mjs",
+      "kind": "runtime",
+      "source": "chest-field.mjs",
+      "sha256": "f772e5f5c220859a112c273a862e65067c7fbc5304f71d727f4cb534716e0de4",
+      "bytes": 6539,
+      "sourceSha256": "f772e5f5c220859a112c273a862e65067c7fbc5304f71d727f4cb534716e0de4",
+      "sourceBytes": 6539,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/picking.mjs",
+      "kind": "runtime",
+      "source": "picking.mjs",
+      "sha256": "744fc093695a90d1bd570f13268e4dfa5fa796ed603777c24a991ba23e47e31c",
+      "bytes": 6184,
+      "sourceSha256": "744fc093695a90d1bd570f13268e4dfa5fa796ed603777c24a991ba23e47e31c",
+      "sourceBytes": 6184,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/viewer.mjs",
+      "kind": "runtime",
+      "source": "viewer.mjs",
+      "sha256": "170b054cc7ef9b8864834abe02ce2fcd250cf00cde12ecc66e9261490ef1a52c",
+      "bytes": 19252,
+      "sourceSha256": "170b054cc7ef9b8864834abe02ce2fcd250cf00cde12ecc66e9261490ef1a52c",
+      "sourceBytes": 19252,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/index.html",
+      "kind": "runtime",
+      "source": "index.html",
+      "sha256": "f734b58c476d883c30a512236c92b88e8d5cf8a82b6984d9282ce775bed78eee",
+      "bytes": 6503,
+      "sourceSha256": "f734b58c476d883c30a512236c92b88e8d5cf8a82b6984d9282ce775bed78eee",
+      "sourceBytes": 6503,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/styles.css",
+      "kind": "runtime",
+      "source": "styles.css",
+      "sha256": "2ee2cecff0e6c8fac69de31d48afd5b40f6ef82d67ec792ba6667d42040618d1",
+      "bytes": 7184,
+      "sourceSha256": "2ee2cecff0e6c8fac69de31d48afd5b40f6ef82d67ec792ba6667d42040618d1",
+      "sourceBytes": 7184,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/serve.py",
+      "kind": "runtime",
+      "source": "serve.py",
+      "sha256": "f4fd056da7219475c123834b48a6231c8d8bd78ed3c8edf5d79790e898a0c4c5",
+      "bytes": 528,
+      "sourceSha256": "f4fd056da7219475c123834b48a6231c8d8bd78ed3c8edf5d79790e898a0c4c5",
+      "sourceBytes": 528,
+      "identicalToSource": true
+    },
+    {
+      "path": "runtime/garment-character/LICENSE-runtime",
+      "kind": "runtime",
+      "source": "LICENSE-runtime",
+      "sha256": "4595055948a67e91177115c57e154804046878e77ff223de22accc880012827a",
+      "bytes": 11337,
+      "sourceSha256": "4595055948a67e91177115c57e154804046878e77ff223de22accc880012827a",
+      "sourceBytes": 11337,
+      "identicalToSource": true
+    },
+    {
+      "path": "tests/garment-character/softbody.test.mjs",
+      "kind": "test",
+      "source": "softbody.test.mjs",
+      "sha256": "e0bb810a6c5f46bc94b10c1488680dafd255d538abf720d187ce2da9b3d0702c",
+      "bytes": 34772,
+      "sourceSha256": "b312df2c032d628ad0e723fee88d47f55f4ddcecf8e796d3401f41741d478d4d",
+      "sourceBytes": 34712,
+      "identicalToSource": false,
+      "changedLines": [
+        {
+          "line": 6,
+          "from": "import { createSoftRig, PROFILES, REGION_IDS } from './softbody.mjs';",
+          "to": "import { createSoftRig, PROFILES, REGION_IDS } from '../../runtime/garment-character/softbody.mjs';"
+        },
+        {
+          "line": 7,
+          "from": "import { createPicker } from './picking.mjs';",
+          "to": "import { createPicker } from '../../runtime/garment-character/picking.mjs';"
+        }
+      ]
+    },
+    {
+      "path": "tests/garment-character/garment.test.mjs",
+      "kind": "test",
+      "source": "garment.test.mjs",
+      "sha256": "11c3a56fb6aa8dae5cd605abe7aabb4b533ba0dbfe26dd9f5a97058d7fab5c44",
+      "bytes": 37493,
+      "sourceSha256": "7f9a0687c64540ccf6e73bbaf5727ede2cf5985744abbaf1628338c4504837e1",
+      "sourceBytes": 37433,
+      "identicalToSource": false,
+      "changedLines": [
+        {
+          "line": 5,
+          "from": "import { CONTACT_STEADY, CUP_LIFT, PANEL, PULL_PATCH, SKIN_GUARD, STRAP, STRAP_FIELD, TRANSITION, createGarments, fallProfile, limitPull, recolorPixels, strapCoordinate, transitionPhase } from './garment.mjs';",
+          "to": "import { CONTACT_STEADY, CUP_LIFT, PANEL, PULL_PATCH, SKIN_GUARD, STRAP, STRAP_FIELD, TRANSITION, createGarments, fallProfile, limitPull, recolorPixels, strapCoordinate, transitionPhase } from '../../runtime/garment-character/garment.mjs';"
+        },
+        {
+          "line": 6,
+          "from": "import { buildGraph, distanceField, falloffSlope } from './garment-field.mjs';",
+          "to": "import { buildGraph, distanceField, falloffSlope } from '../../runtime/garment-character/garment-field.mjs';"
+        }
+      ]
+    },
+    {
+      "path": "tests/garment-character/garment-field.test.mjs",
+      "kind": "test",
+      "source": "garment-field.test.mjs",
+      "sha256": "381df5551e3037dfbb5f7bbe242e2f3c66448123f32e58b96fddc015a85410f3",
+      "bytes": 3486,
+      "sourceSha256": "83774d90048a1ff0a56fb7beda68519d07b6275d0296168d3c1dff6e8267cbe8",
+      "sourceBytes": 3456,
+      "identicalToSource": false,
+      "changedLines": [
+        {
+          "line": 4,
+          "from": "import { buildGraph, distanceField, falloff, falloffSlope, geodesic } from './garment-field.mjs';",
+          "to": "import { buildGraph, distanceField, falloff, falloffSlope, geodesic } from '../../runtime/garment-character/garment-field.mjs';"
+        }
+      ]
+    },
+    {
+      "path": "tests/garment-character/chest-field.test.mjs",
+      "kind": "test",
+      "source": "chest-field.test.mjs",
+      "sha256": "7b5c852f25c144e602c9329c0ae7523246cd118cb1451685bfa0c9b13123526c",
+      "bytes": 5181,
+      "sourceSha256": "4753762b08880b2168d057334db674e03403c7068e8149c171ac3405197b8620",
+      "sourceBytes": 5151,
+      "identicalToSource": false,
+      "changedLines": [
+        {
+          "line": 5,
+          "from": "import { ROUND_CHEST, roundChestMasks, roundChestWeight } from './chest-field.mjs';",
+          "to": "import { ROUND_CHEST, roundChestMasks, roundChestWeight } from '../../runtime/garment-character/chest-field.mjs';"
+        }
+      ]
+    }
+  ]
+}

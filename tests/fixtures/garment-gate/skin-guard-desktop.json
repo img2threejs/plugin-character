@@ -1,0 +1,1422 @@
+{
+  "build": "chain-1 (identical code to guard-1; only the footer stamp was renamed afterwards)",
+  "createdAt": "2026-10-26T10:13:59.982Z",
+  "probe": "tools/skin-probes.js",
+  "cases": [
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 731,
+        "measuredTriangles": 1094,
+        "liftedVertices": 311,
+        "passes": 3,
+        "violations": [
+          141,
+          11,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 45,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 390,
+        "measuredTriangles": 688,
+        "liftedVertices": 87,
+        "passes": 3,
+        "violations": [
+          16,
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 90,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 308,
+        "measuredTriangles": 613,
+        "liftedVertices": 78,
+        "passes": 3,
+        "violations": [
+          25,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 135,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 358,
+        "measuredTriangles": 649,
+        "liftedVertices": 120,
+        "passes": 3,
+        "violations": [
+          73,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 180,
+      "pullMm": 32.91,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 575,
+        "measuredTriangles": 772,
+        "liftedVertices": 239,
+        "passes": 3,
+        "violations": [
+          145,
+          7,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 225,
+      "pullMm": 25.93,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 815,
+        "measuredTriangles": 1170,
+        "liftedVertices": 416,
+        "passes": 5,
+        "violations": [
+          297,
+          15,
+          3,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 270,
+      "pullMm": 32.06,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 852,
+        "measuredTriangles": 1157,
+        "liftedVertices": 450,
+        "passes": 3,
+        "violations": [
+          419,
+          30,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 315,
+      "pullMm": 34.04,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 879,
+        "measuredTriangles": 1315,
+        "liftedVertices": 435,
+        "passes": 3,
+        "violations": [
+          338,
+          8,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 0,
+      "pullMm": 32.91,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 561,
+        "measuredTriangles": 766,
+        "liftedVertices": 233,
+        "passes": 3,
+        "violations": [
+          149,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 45,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 357,
+        "measuredTriangles": 656,
+        "liftedVertices": 120,
+        "passes": 3,
+        "violations": [
+          73,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 90,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 297,
+        "measuredTriangles": 610,
+        "liftedVertices": 73,
+        "passes": 3,
+        "violations": [
+          24,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 135,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 379,
+        "measuredTriangles": 687,
+        "liftedVertices": 82,
+        "passes": 3,
+        "violations": [
+          15,
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 180,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 720,
+        "measuredTriangles": 1091,
+        "liftedVertices": 306,
+        "passes": 3,
+        "violations": [
+          140,
+          11,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 225,
+      "pullMm": 34.04,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 868,
+        "measuredTriangles": 1309,
+        "liftedVertices": 430,
+        "passes": 3,
+        "violations": [
+          337,
+          8,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 270,
+      "pullMm": 32.06,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 841,
+        "measuredTriangles": 1151,
+        "liftedVertices": 445,
+        "passes": 3,
+        "violations": [
+          418,
+          30,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 315,
+      "pullMm": 25.92,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 421,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 804,
+        "measuredTriangles": 1162,
+        "liftedVertices": 411,
+        "passes": 5,
+        "violations": [
+          296,
+          15,
+          3,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 0,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 277,
+        "measuredTriangles": 552,
+        "liftedVertices": 97,
+        "passes": 3,
+        "violations": [
+          24,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 45,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 214,
+        "measuredTriangles": 510,
+        "liftedVertices": 68,
+        "passes": 3,
+        "violations": [
+          22,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 90,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 284,
+        "measuredTriangles": 565,
+        "liftedVertices": 101,
+        "passes": 3,
+        "violations": [
+          45,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 135,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 380,
+        "measuredTriangles": 623,
+        "liftedVertices": 148,
+        "passes": 3,
+        "violations": [
+          90,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 180,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 392,
+        "measuredTriangles": 641,
+        "liftedVertices": 160,
+        "passes": 3,
+        "violations": [
+          82,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 225,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 330,
+        "measuredTriangles": 597,
+        "liftedVertices": 128,
+        "passes": 3,
+        "violations": [
+          37,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 270,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 232,
+        "measuredTriangles": 511,
+        "liftedVertices": 83,
+        "passes": 3,
+        "violations": [
+          45,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 315,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 264,
+        "measuredTriangles": 572,
+        "liftedVertices": 92,
+        "passes": 3,
+        "violations": [
+          36,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 0,
+      "pullMm": 23.5,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 273,
+        "measuredTriangles": 576,
+        "liftedVertices": 100,
+        "passes": 3,
+        "violations": [
+          60,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 45,
+      "pullMm": 23.77,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 297,
+        "measuredTriangles": 576,
+        "liftedVertices": 110,
+        "passes": 3,
+        "violations": [
+          60,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 90,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 249,
+        "measuredTriangles": 527,
+        "liftedVertices": 84,
+        "passes": 3,
+        "violations": [
+          40,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 135,
+      "pullMm": 23.64,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 307,
+        "measuredTriangles": 604,
+        "liftedVertices": 105,
+        "passes": 3,
+        "violations": [
+          39,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 180,
+      "pullMm": 23.5,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 344,
+        "measuredTriangles": 573,
+        "liftedVertices": 133,
+        "passes": 3,
+        "violations": [
+          61,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 225,
+      "pullMm": 23.77,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 344,
+        "measuredTriangles": 625,
+        "liftedVertices": 135,
+        "passes": 3,
+        "violations": [
+          49,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 270,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 283,
+        "measuredTriangles": 576,
+        "liftedVertices": 104,
+        "passes": 3,
+        "violations": [
+          48,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "green",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 315,
+      "pullMm": 23.64,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 365,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 197,
+        "measuredTriangles": 518,
+        "liftedVertices": 66,
+        "passes": 3,
+        "violations": [
+          24,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 731,
+        "measuredTriangles": 1090,
+        "liftedVertices": 311,
+        "passes": 3,
+        "violations": [
+          141,
+          11,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 45,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 390,
+        "measuredTriangles": 678,
+        "liftedVertices": 87,
+        "passes": 3,
+        "violations": [
+          16,
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 90,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 308,
+        "measuredTriangles": 609,
+        "liftedVertices": 78,
+        "passes": 3,
+        "violations": [
+          25,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 135,
+      "pullMm": 34.05,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 358,
+        "measuredTriangles": 647,
+        "liftedVertices": 120,
+        "passes": 3,
+        "violations": [
+          73,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 180,
+      "pullMm": 32.91,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 575,
+        "measuredTriangles": 771,
+        "liftedVertices": 239,
+        "passes": 3,
+        "violations": [
+          145,
+          7,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 225,
+      "pullMm": 25.93,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 815,
+        "measuredTriangles": 1163,
+        "liftedVertices": 416,
+        "passes": 5,
+        "violations": [
+          297,
+          15,
+          3,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 270,
+      "pullMm": 32.06,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 852,
+        "measuredTriangles": 1150,
+        "liftedVertices": 450,
+        "passes": 3,
+        "violations": [
+          419,
+          30,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 315,
+      "pullMm": 34.04,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 688,
+        "y": 316
+      },
+      "guard": {
+        "measuredVertices": 879,
+        "measuredTriangles": 1312,
+        "liftedVertices": 435,
+        "passes": 3,
+        "violations": [
+          338,
+          8,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 0,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 277,
+        "measuredTriangles": 552,
+        "liftedVertices": 97,
+        "passes": 3,
+        "violations": [
+          24,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 45,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 214,
+        "measuredTriangles": 510,
+        "liftedVertices": 68,
+        "passes": 3,
+        "violations": [
+          22,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 90,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 284,
+        "measuredTriangles": 565,
+        "liftedVertices": 101,
+        "passes": 3,
+        "violations": [
+          45,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 135,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 380,
+        "measuredTriangles": 623,
+        "liftedVertices": 148,
+        "passes": 3,
+        "violations": [
+          90,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 180,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 392,
+        "measuredTriangles": 641,
+        "liftedVertices": 160,
+        "passes": 3,
+        "violations": [
+          82,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 225,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 330,
+        "measuredTriangles": 597,
+        "liftedVertices": 128,
+        "passes": 3,
+        "violations": [
+          37,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 270,
+      "pullMm": 23.82,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 232,
+        "measuredTriangles": 511,
+        "liftedVertices": 83,
+        "passes": 3,
+        "violations": [
+          45,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "outfit": "orange",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 315,
+      "pullMm": 23.83,
+      "inside": 0,
+      "deepestMm": 0,
+      "byPart": {},
+      "examples": [],
+      "samples": 9,
+      "trusted": true,
+      "grabbedAtFirstSample": 1,
+      "grabPoint": {
+        "x": 744,
+        "y": 504
+      },
+      "guard": {
+        "measuredVertices": 264,
+        "measuredTriangles": 572,
+        "liftedVertices": 92,
+        "passes": 3,
+        "violations": [
+          36,
+          2,
+          0
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "cases": 48,
+    "errors": 0,
+    "withAnyInside": 0,
+    "worstDeepestMm": 0,
+    "worstCase": {
+      "outfit": "green",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "pullMm": 34.05,
+      "inside": 0
+    },
+    "maxPullMm": 34.05,
+    "minPullMm": 23.5,
+    "maxGuardLastViolations": 0
+  }
+}
