@@ -1,0 +1,15 @@
+{
+  "name": "@img2threejs/character-runtime",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:softbody": "node --test tests/softbody.test.mjs",
+    "test:garment": "node --test tests/garment-character/*.test.mjs",
+    "test:probes": "node --test tests/skin-probes.test.mjs",
+    "demo:softbody": "python3 -m http.server 8768 --bind 127.0.0.1"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  }
+}

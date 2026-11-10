@@ -1,0 +1,3 @@
+# Optional authoring runtime; install in an isolated Python 3.11 environment.
+# Pure Python rig tools and unit tests do not require bpy.
+bpy==4.5.15
