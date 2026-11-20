@@ -3,6 +3,7 @@ import {PropertyBinding, Vector3} from 'three';
 
 const fail = message => { throw new Error(`Rig measurements: ${message}`); };
 const finite = values => values.every(Number.isFinite);
+const finiteVector = value => Number.isFinite(value.x) && Number.isFinite(value.y) && Number.isFinite(value.z);
 
 function transforms(node) {
   return [...node.position.toArray(), ...node.quaternion.toArray(), ...node.scale.toArray()];
@@ -69,6 +70,21 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
   for (const mesh of skinned) deformation[meshIds.get(mesh)] = {frames: 0, verticesPerFrame: []};
   let maxDelta = 0, restoreDelta = 0, nonFiniteCount = 0;
   const vertex = new Vector3();
+  let restoreVertexDelta = 0;
+  const restVertices = new Map();
+  for (const mesh of skinned) {
+    const position = mesh.geometry.getAttribute('position');
+    const values = new Float64Array(position.count * 3);
+    for (let i = 0; i < position.count; i++) {
+      vertex.fromBufferAttribute(position, i);
+      mesh.applyBoneTransform(i, vertex);
+      if (!finiteVector(vertex)) fail('non-finite initial bind deformation');
+      values[i * 3] = vertex.x;
+      values[i * 3 + 1] = vertex.y;
+      values[i * 3 + 2] = vertex.z;
+    }
+    restVertices.set(mesh, values);
+  }
   try {
     for (const clip of clips) {
       if (!(clip.duration > 0) || !Number.isFinite(clip.duration) || !clip.tracks.length) fail('empty clip');
@@ -99,7 +115,7 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
             for (let j = 0; j < count; j++) {
               vertex.fromBufferAttribute(position, j);
               mesh.applyBoneTransform(j, vertex);
-              if (!finite(vertex.toArray())) nonFiniteCount++;
+              if (!finiteVector(vertex)) nonFiniteCount++;
             }
             deformation[meshIds.get(mesh)].frames++;
             deformation[meshIds.get(mesh)].verticesPerFrame.push(count);
@@ -111,6 +127,16 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
           const actual = transforms(nodes[i]);
           if (!finite(actual)) fail('non-finite restored transform');
           for (let j = 0; j < actual.length; j++) restoreDelta = Math.max(restoreDelta, Math.abs(actual[j] - rest[i][j]));
+        }
+        for (const mesh of skinned) {
+          const position = mesh.geometry.getAttribute('position'), expected = restVertices.get(mesh);
+          for (let i = 0; i < position.count; i++) {
+            vertex.fromBufferAttribute(position, i);
+            mesh.applyBoneTransform(i, vertex);
+            if (!finiteVector(vertex)) fail('non-finite restored bind deformation');
+            restoreVertexDelta = Math.max(restoreVertexDelta, Math.abs(vertex.x - expected[i * 3]),
+              Math.abs(vertex.y - expected[i * 3 + 1]), Math.abs(vertex.z - expected[i * 3 + 2]));
+          }
         }
       } finally {
         for (const track of tracks) track.binding.unbind();
@@ -128,7 +154,8 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
     measurements: {
       bindingSamples: {maxSampledBindingDelta: maxDelta, clips: sampled},
       deformation: {nonFiniteCount, allFinite: nonFiniteCount === 0, meshes: deformation},
-      bindRestore: {maxBindRestoreDelta: restoreDelta},
+      bindRestore: {maxBindRestoreDelta: restoreDelta, maxBindRestoreVertexDelta: restoreVertexDelta,
+        meshes: Object.fromEntries(skinned.map(mesh => [meshIds.get(mesh), {vertexCount: mesh.geometry.getAttribute('position').count}]))},
       meshVisibility: {
         visibleMeshCount: visible.length, visibleSkinnedMeshCount: skinned.length,
         unboundMeshes: visible.filter(mesh => !mesh.isSkinnedMesh).map(mesh => meshIds.get(mesh)),

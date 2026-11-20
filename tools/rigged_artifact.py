@@ -53,9 +53,10 @@ def atomic(path, data):
 
 
 class Evidence:
-    def __init__(self, workspace):
+    def __init__(self, workspace, *, publish=True):
         self.root = Path(workspace).resolve(strict=True)
         self.files = {}
+        self.publish = publish
 
     def path(self, name):
         if not isinstance(name, str) or not name or Path(name).is_absolute() or ".." in Path(name).parts:
@@ -87,7 +88,8 @@ class Evidence:
         if name in self.files:
             raise ValueError("artifact output aliases an input")
         data = canonical(value)
-        atomic(self.path(name), data)
+        if self.publish:
+            atomic(self.path(name), data)
         ref = {"path": name, "sha256": digest(data)}
         self.files[name] = ref
         return ref
@@ -340,8 +342,15 @@ def measure_sweep(evidence, spec, clip_names, source_sha, candidate):
                          "creasePx": totals["baseline"][1]}}
 
 
-def admit(workspace, request):
-    evidence = Evidence(workspace)
+class RigAdmissionFailure(ValueError):
+    def __init__(self, message, report):
+        super().__init__(message)
+        self.gate_report = report
+
+
+def admit(workspace, request, *, publish=True):
+    """Publish admission, or return a read-only recomputation for the terminal gate."""
+    evidence = Evidence(workspace, publish=publish)
     object_id = request["objectId"]
     if not isinstance(object_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}", object_id):
         raise ValueError("invalid objectId")
@@ -442,7 +451,7 @@ def admit(workspace, request):
     gate_ref = evidence.save(f".img2/artifacts/character/gates/{digest(canonical(gate_record))}.json", gate_record)
     if not report.ok:
         problems = [f"{row.id}:{row.status}:{row.reason}" for row in report.results if not row.passed]
-        raise ValueError("rig admission blocked: " + "; ".join(problems) + f"; evidence: {gate_ref['path']}")
+        raise RigAdmissionFailure("rig admission blocked: " + "; ".join(problems) + f"; evidence: {gate_ref['path']}", report.to_dict())
     metric = request["metricAnchor"]
     evidence.read(metric["source"], json_data=False)
     if not isinstance(metric.get("method"), str) or not metric["method"].strip() or not positive(metric["metres"]):
@@ -480,8 +489,10 @@ def admit(workspace, request):
                 "files": sorted((ref for ref in evidence.files.values()
                                  if ref["path"] != sweep_spec["baselineGlb"]["path"]
                                  or ref["path"] == request["glb"]["path"]), key=lambda ref: ref["path"])}
-    atomic(evidence.path("artifact.json"), canonical(artifact))
-    return artifact
+    if publish:
+        atomic(evidence.path("artifact.json"), canonical(artifact))
+        return artifact
+    return {"artifact": artifact, "gateReport": report.to_dict()}
 
 
 def snapshot_fragment(workspace, source, assets=()):
