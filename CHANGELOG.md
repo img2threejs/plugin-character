@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- D18 rigged artifact extraction/admission from actual embedded GLB accessors: skin order,
+  inverse binds, canonical skeleton/animation evidence, measured bounds and metric-anchor scale.
+  Admission re-evaluates the twelve checks against hash-bound runtime, motion, freeze and raw
+  rendered-sweep inputs; missing/stale producers block rather than producing an artifact.
+- Delivered-controller Three.js measurement producer for binding, distinct-vertex deformation,
+  stop restoration and visible mesh coverage; raw RGBA seam-ROI sweep measurement with matched
+  camera/pose evidence and the same subject's blend-off baseline.
+  The baseline remains hash-bound source evidence outside the D18 renderable inventory.
+- Rig-intent route card with dependency probes, fresh decision-context binding/observation
+  fragments, retained diagnostic gate evidence and focused negative/actual-CPU-data tests.
+
+### Qualification limits
+
+- The global rigging gate remains non-blocking, and this route remains ineligible, until an actual
+  complete browser/oracle run proves producer readiness. Synthetic sweep fixtures are not that proof.
+- Static rigs can be extracted, but routed static delivery requires an approved measured static-rig
+  gate applicability policy. Unsupported morph/multi-skin/external-resource representations block
+  this new adapter without changing existing optional authoring or interaction paths.
+
 ## [0.3.0] - 2026-11-10
 
 ### Fixed

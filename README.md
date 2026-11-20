@@ -174,8 +174,99 @@ violation at once.
 
 **`unevaluated` maps to `error`, and never appears in `status`.** A check whose input is absent is not
 a pass. The verdict parser accepts only `pass|fail|error`, and an unrecognised status makes it discard
-every reason supplied — so the distinction lives in `reasons` and `evidence` instead. Four of the
-twelve checks have no input producer yet, so `error` is the honest verdict on a real run today.
+every reason supplied — so the distinction lives in `reasons` and `evidence` instead. The new
+runtime and RGBA measurers below do not establish a complete real-subject browser/oracle run.
+The legacy aggregate remains non-blocking until that proof exists; missing evidence still fails
+routed terminal admission.
+
+## Routed rig artifacts (D18, not release-qualified)
+
+`route.json` requires explicit `rig` intent and declares local dependencies. It does **not** make
+this plugin eligible: the required release-qualified blocking rig gate is still absent. Existing
+optional authoring/interaction routes and the legacy gate declaration are unchanged.
+
+`tools/rigged_artifact.py` has three offline entry points:
+
+```bash
+python3 tools/rigged_artifact.py extract character.glb --out extracted-rig
+python3 tools/rigged_artifact.py admit --workspace WORKSPACE --request rig-admission-request.json
+python3 tools/rigged_artifact.py snapshot --workspace WORKSPACE --request snapshot-input.json --out rig-snapshot.json
+```
+
+Extraction decodes the actual embedded GLB, skin joint order, inverse-bind matrices, hierarchy/rest
+transforms, mesh attributes and animation input/output accessors. Skeleton and per-clip sidecars
+are strict sorted compact UTF-8 JSON without a trailing newline. Their hashes are not the GLB hash.
+Extraction alone is **not admission**. Unsupported morph/multi-skin/external-resource representations
+fail explicitly; they are not converted or silently dropped.
+
+Admission requests contain `objectId`, and `{path,sha256}` references for `glb`, `runtime`,
+`freezeManifest`, `motion`, `sweep`. All evidence paths are relative to the child workspace; symlinks,
+escapes and hash mismatches block. `metricAnchor` contains `nodes:[nodeA,nodeB]`, an independently
+measured positive `metres` distance, a nonempty `method`, and a `{path,sha256}` `source`. Scale is
+computed from that distance divided by the GLB nodes' actual rest-world separation. The GLB must
+already have a measured bottom-centre pivot in glTF's Y-up/+Z-forward frame; normalize **before**
+freezing, never by changing geometry or bind matrices during admission.
+
+- **Runtime producer:** import `measureRig` from `runtime/rig-measurements.mjs` in the viewer and
+  pass `{root,clips,controller,glbSha256,meshIds}`. Hash the exact GLB bytes given to GLTFLoader.
+  `controller.seek(name,time)` / `stop()` must be the **delivered** controller, not a second mixer.
+  Pause external tickers and use a disposable loaded copy initially in bind pose.
+  `meshIds` maps loaded meshes to `node:N/primitive:P` from GLTFLoader's actual parser associations;
+  use the same stable identities for the pre-bind freeze. Persist the returned JSON as `runtime`.
+  The probe compares actual PropertyBinding values to track interpolants over every clip, transforms
+  every distinct vertex, measures post-stop restoration, and records actual visible mesh coverage.
+  Missing bindings/controllers fail; tiny meshes are not padded to claim 64 distinct vertices.
+- **Motion evidence:** `motion` contains the current `glbSha256`, explicit `landmarkNodes` for
+  `hip/head/hand.l/hand.r/foot.l/foot.r`, independent node-id `sideLabels`, and `stance` intervals
+  keyed by actual clip name. `sideLabelSource` and `stanceSource` are hash-bound evidence references.
+  Stance/contact evidence must come from the subject, not an inferred gait label. The adapter samples
+  positions/scales from the GLB again; missing stance never becomes a passing foot-contact check.
+- **Rendered sweep:** `sweep` is `img2.character-sweep` v1, with current `glbSha256`, a `baselineGlb`
+  evidence reference for the blend-off control, `roiSource` reference for independent ROI authorship,
+  declared `creaseLuminanceMax` (0–255), and `axes` arrays for `clips/times/sides/azimuths`.
+  Times are normalized clip fractions including 0 and 1; azimuths are degrees in [0,360).
+  The control must preserve this subject's actual skeleton, clips and frozen geometry.
+  `frames` cover the complete Cartesian product without duplicates. Each has
+  `clip/time/side/azimuth`, integer `width/height`, and evidence references
+  `candidate/baseline/roi/camera`. Candidate/baseline are raw RGBA8 transparent-background diagnostic
+  captures at that same camera/pose.
+  `camera` records both `glbSha256` and `baselineGlbSha256`, matching `clip/time/side/azimuth`,
+  and actual finite 16-component `projectionMatrix` / `matrixWorld` values.
+  ROI is one 0/1 byte per pixel marking expected interior skin seams, never the silhouette.
+  Transparent ROI pixels measure background-through-split;
+  opaque dark pixels are a separately reported crease diagnostic, **not** a skin classifier.
+  Ambiguous antialiased/translucent ROI pixels, missing raw bytes/views or missing control block.
+  Capturing those views and authoring trustworthy seam ROIs still require the actual browser harness.
+
+Admission re-runs all twelve checks using actual GLB binding, freshly sampled clips, runtime evidence,
+raw sweep pixels and the pre-bind freeze. A failure retains a content-addressed diagnostic gate record
+but emits no new `artifact.json`. Success writes the D18 manifest with hashed GLB/evidence files,
+canonical skeleton/clip references and measured scale. Receipts alone cannot authorize it.
+The blend-off baseline GLB remains available in the workspace and hash-verified through the bound
+gate/admission inputs, but is excluded from D18 `files[]` when distinct from the delivery GLB.
+It is source evidence, not an alternate renderable. Delivery remains bound by
+`rig-admission.json.inputs.glb`; consumers must never select the first filename by extension.
+Static skeletons can be extracted with `clips:[]`, but routed delivery remains blocked: the existing
+animated gate has no approved measured static-rig applicability policy.
+
+`snapshot-input.json` contains `source:{path,sha256}` and optional
+`assets:[{role,path,sha256}]`. The result is a fresh `{bindings,observations}` fragment for the base
+controller's strategy/review/repair contexts. A `gate` asset must bind the current GLB and every
+measurement input; changed evidence invalidates the snapshot. Unavailable views/candidates are not
+invented. The base owns candidates, allowed operations, revision scope, consent/budget, decisions and
+acceptance; this plugin neither imports it nor makes provider calls.
+
+Focused checks (requires the existing img2 core link and declared Three.js dependency):
+
+```bash
+node --test tests/rig-measurements.test.mjs
+python3 -m unittest discover -s tests -p test_rigged_artifact.py
+python3 -m unittest discover -s tests -p test_gate_rigging.py
+python3 -m unittest discover -s tests -p test_domain_declaration.py
+```
+
+The new Python positive case executes real GLB/Three CPU data but uses explicitly synthetic RGBA
+fixtures. It is protocol evidence, **not** real-browser, Blender parity, visual quality or release proof.
 
 ## Tests
 
