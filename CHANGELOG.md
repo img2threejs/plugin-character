@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The baseline remains hash-bound source evidence outside the D18 renderable inventory.
 - Rig-intent route card with dependency probes, fresh decision-context binding/observation
   fragments, retained diagnostic gate evidence and focused negative/actual-CPU-data tests.
+- A distinct routed-only terminal gate, registered as data in the route card without changing
+  global legacy gates. It binds child/reference/artifact identity, recomputes admission read-only,
+  executes fresh local Chromium/CDP runtime and RGBA producers, and retains every resulting
+  capture plus executable/producer hashes. Missing or stale producers cannot pass on old receipts.
+  Bind restoration now also measures every deformed vertex. Host-only scoped Node/Chromium
+  probes use the same exact executable resolution as the gate, with no downloads or alternate-install
+  fallback. Includes negative/read-only tests and a separately opt-in real-browser diagnostic.
+- Closed the pinned GLTFLoader browser module inventory with `SkeletonUtils.js`, including serving
+  and receipt hashing, plus an offline native-ESM linking regression that rejects its omission.
+- Allowlisted Node/Chromium child environments exclude loader/preload hooks and API credentials.
+  Production Three selection now requires an explicit host root and reviewed canonical package
+  digest, verified before/after capture and labelled host-approved rather than third-party attested.
+  Missing approval or changed bytes fail closed; environment injection and pin mismatch have
+  dedicated negative regressions.
 
 ### Qualification limits
 

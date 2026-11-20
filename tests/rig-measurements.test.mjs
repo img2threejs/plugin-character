@@ -50,6 +50,8 @@ test('real mixer binding, distinct deformed vertices and stop restoration are me
   assert.equal(result.measurements.deformation.nonFiniteCount, 0);
   assert.deepEqual(result.measurements.deformation.meshes['node:1/primitive:0'].verticesPerFrame, [66, 66, 66, 66, 66]);
   assert.equal(result.measurements.bindRestore.maxBindRestoreDelta, 0);
+  assert.equal(result.measurements.bindRestore.maxBindRestoreVertexDelta, 0);
+  assert.deepEqual(result.measurements.bindRestore.meshes, {'node:1/primitive:0': {vertexCount: 66}});
   assert.equal(input.root.getObjectByName('Joint').position.x, 0);
 });
 
@@ -61,6 +63,7 @@ test('silently nonbinding delivered controller produces a failing G1 number', ()
 test('broken stop is measured rather than fixed by the probe', () => {
   const result = measureRig(fixture({brokenStop: true}));
   assert.equal(result.measurements.bindRestore.maxBindRestoreDelta, 1);
+  assert.equal(result.measurements.bindRestore.maxBindRestoreVertexDelta, 1);
 });
 
 test('tiny meshes are never padded with duplicate vertex samples', () => {

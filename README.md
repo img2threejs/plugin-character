@@ -181,9 +181,10 @@ routed terminal admission.
 
 ## Routed rig artifacts (D18, not release-qualified)
 
-`route.json` requires explicit `rig` intent and declares local dependencies. It does **not** make
-this plugin eligible: the required release-qualified blocking rig gate is still absent. Existing
-optional authoring/interaction routes and the legacy gate declaration are unchanged.
+`route.json` requires explicit `rig` intent and declares local dependencies. Its distinct routed-only
+terminal gate is data-registered for independent base whitelisting/pinning, not added to global
+`gates.json`. This is not release qualification or acceptance authority. Existing optional
+authoring/interaction routes and the legacy non-blocking gate remain unchanged.
 
 `tools/rigged_artifact.py` has three offline entry points:
 
@@ -256,11 +257,87 @@ measurement input; changed evidence invalidates the snapshot. Unavailable views/
 invented. The base owns candidates, allowed operations, revision scope, consent/budget, decisions and
 acceptance; this plugin neither imports it nor makes provider calls.
 
+### Program-owned routed terminal gate
+
+Registration is `routedTerminalGate: {id:"character-routed-terminal",
+script:"tools/gate_routed_terminal.py"}`. The base must approve/pin this exact script and its
+producer resources under the reviewed 3D gate contract, and independently rerun it. No marker,
+old receipt, synthetic saved sweep or plugin decision can mark a child terminal.
+
+```bash
+IMG2_CHARACTER_NODE=/absolute/path/to/node22-or-newer \
+IMG2_CHARACTER_BROWSER=/absolute/path/to/chromium \
+IMG2_CHARACTER_THREE_ROOT=/absolute/path/to/reviewed/three-package \
+IMG2_CHARACTER_THREE_SHA256=HOST_APPROVED_CANONICAL_PACKAGE_DIGEST \
+python3 tools/gate_routed_terminal.py --workspace CHILD_DIRECTORY --artifact artifact.json
+```
+
+The two host-only overrides select existing absolute executables, never filenames/commands from
+child JSON. Without them the gate uses **PATH `node` / PATH `chromium` only**, with no application
+directory or alternate-install fallback. Route probes are `character-node>=22.0` and
+`character-chromium>=1.0`, plus `python3>=3.10`; discovery must resolve the same exact binaries.
+Both `--version` probes are bounded/no-shell; actual Node must be at least 22. Chromium's required
+CDP methods are exercised and checked, not inferred from its version. Executable paths, versions,
+hashes and owned producer hashes are retained. PATH Node 20 fails even if another Node is installed.
+No executable, package or browser download is performed.
+
+Three.js additionally requires the absolute host-owned `IMG2_CHARACTER_THREE_ROOT` and an
+independently reviewed `IMG2_CHARACTER_THREE_SHA256`; neither can come from child/model/workspace
+JSON. There is no production Node resolver override or self-approved digest fallback.
+The approved digest is SHA256 of strict canonical UTF-8 JSON (sorted keys, compact separators,
+no trailing newline) for `{kind:"img2.character-three-package",version:1,files:[{path,sha256}]}`,
+with files sorted by path. The exact inventory is:
+
+- `build/three.core.js`
+- `build/three.module.js`
+- `examples/jsm/loaders/GLTFLoader.js`
+- `examples/jsm/utils/BufferGeometryUtils.js`
+- `examples/jsm/utils/SkeletonUtils.js`
+- `package.json`
+
+Both gate and producer verify those actual bytes before and after execution and require version
+0.186.1. Provenance is labelled **host-approved**, not third-party cryptographic attestation.
+The fixed served/hashed module map includes both GLTFLoader utility imports; it never fetches
+unlisted dependencies.
+
+Node/version probes and Chromium receive allowlisted environments: OS temp/home/locale essentials,
+a fixed system PATH, and only the explicit approved host selectors needed by Node. Chromium gets
+OS essentials only. `NODE_OPTIONS`, `NODE_PATH`, native/script preload variables, proxies and API
+credentials are not forwarded. A temporary ESM loader may aid offline tests only; it is not a
+production dependency-selection or approval mechanism.
+
+The gate requires child-local `state.json` with the base-created `routeChild` identity and
+`artifacts.reference` bound by `routeChild.cropSha256`. It validates the exact D18 artifact hash,
+object, all files and actual GLB skeleton/clip sidecars, then recomputes authoritative admission
+read-only. It launches its own isolated local Chromium profile with pinned Three.js 0.186.1, runs
+the actual runtime producer, and renders every required matched candidate/control frame. All new
+RGBA buffers are measured again; missing views, empty/off-camera ROIs, dependencies, invalid
+bindings, frozen-mesh drift or stale inputs block. Fresh stop restoration includes **every actual
+skinned vertex**, in addition to node transforms.
+
+The consumer uses an opaque, source-sided normal diagnostic in WebGL. It proves stock GLB
+binding/deformation and the measured seam sweep, **not** arbitrary custom viewer behavior, material
+fidelity, likeness or Blender equivalence. Independent stance/side-label sources, trustworthy
+interior seam ROIs, metric anchors and pre-bind freeze evidence remain required inputs.
+
+No original artifact, incumbent capture, mesh, skeleton or bind matrix is rewritten. Actual new
+captures and their measurement index are retained under `.img2/artifacts/character/terminal-live/`
+and `terminal-measurements/`. The verdict is `img2.gate-verdict` v1 with
+`evidence.artifact:{path,sha256}` binding the exact checked artifact, separate reference/subject
+bindings and actual measurement evidence. Missing producers return a non-passing verdict.
+
+Read-only checks and negative coverage do not require enabling the live integration test.
+To execute the separately opt-in **real-browser synthetic-geometry diagnostic**, configure the
+same existing executables and host-approved Three package above and set `IMG2_CHARACTER_RUN_LIVE_TESTS=1`; that diagnostic still
+does not constitute real-subject/oracle or Blender qualification.
+
 Focused checks (requires the existing img2 core link and declared Three.js dependency):
 
 ```bash
 node --test tests/rig-measurements.test.mjs
+node --experimental-vm-modules --test tests/rig-capture-modules.test.mjs
 python3 -m unittest discover -s tests -p test_rigged_artifact.py
+python3 -m unittest discover -s tests -p test_gate_routed_terminal.py
 python3 -m unittest discover -s tests -p test_gate_rigging.py
 python3 -m unittest discover -s tests -p test_domain_declaration.py
 ```
