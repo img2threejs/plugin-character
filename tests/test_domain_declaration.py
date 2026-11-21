@@ -118,12 +118,6 @@ class DeclarationShape(unittest.TestCase):
         for step_id in ("glb-rig-reference", "rig-payload-validate", "clip-measure", "rig-gates"):
             self.assertTrue(commands[step_id].startswith("Run "), step_id)
 
-    def test_the_rigging_gate_is_declared_non_blocking(self):
-        # Four of twelve checks have no producer yet, so the gate cannot return pass on a healthy
-        # rig; a blocking declaration would halt any post-rig sweep on an honest verdict.
-        # Re-block trigger: the producers exist and the oracle rig passes (CHANGELOG v0.2.0).
-        rigging = next(g for g in GATES if g["id"] == "rigging")
-        self.assertIs(rigging["blocking"], False)
 
 
 class ReferenceDocDriftPins(unittest.TestCase):

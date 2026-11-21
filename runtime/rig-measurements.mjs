@@ -72,6 +72,7 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
   const vertex = new Vector3();
   let restoreVertexDelta = 0;
   const restVertices = new Map();
+  const poseSamples = {};
   for (const mesh of skinned) {
     const position = mesh.geometry.getAttribute('position');
     const values = new Float64Array(position.count * 3);
@@ -95,6 +96,7 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
         return {binding, interpolant: track.createInterpolant(), actual: new Array(size), size};
       });
       const times = [];
+      const poseFrames = [];
       let clipDelta = 0;
       try {
         for (let i = 0; i < sampleCount; i++) {
@@ -109,17 +111,24 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
             if (!finite(track.actual) || !finite(Array.from(expected))) fail('unresolved/non-finite track binding');
             for (let j = 0; j < track.size; j++) clipDelta = Math.max(clipDelta, Math.abs(track.actual[j] - expected[j]));
           }
+          const posedMeshes = {};
           for (const mesh of skinned) {
             const position = mesh.geometry.getAttribute('position');
             const count = position.count; // All DISTINCT vertices, never duplicate a tiny mesh to reach 64.
+            const worldPositions = [];
             for (let j = 0; j < count; j++) {
               vertex.fromBufferAttribute(position, j);
               mesh.applyBoneTransform(j, vertex);
               if (!finiteVector(vertex)) nonFiniteCount++;
+              vertex.applyMatrix4(mesh.matrixWorld);
+              if (!finiteVector(vertex)) fail('non-finite world deformation');
+              worldPositions.push(vertex.x, vertex.y, vertex.z);
             }
             deformation[meshIds.get(mesh)].frames++;
             deformation[meshIds.get(mesh)].verticesPerFrame.push(count);
+            posedMeshes[meshIds.get(mesh)] = worldPositions;
           }
+          poseFrames.push({fraction: i / (sampleCount - 1), meshes: posedMeshes});
         }
         controller.stop();
         update(root, skinned);
@@ -143,6 +152,7 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
       }
       maxDelta = Math.max(maxDelta, clipDelta);
       sampled[clip.name] = {sampleCount: times.length, sampleTimes: times, maxSampledBindingDelta: clipDelta};
+      poseSamples[clip.name] = poseFrames;
     }
   } finally {
     controller.stop();
@@ -151,6 +161,7 @@ export function measureRig({root, clips, controller, glbSha256, meshIds, sampleC
   return {
     kind: 'img2.character-runtime-measurements', version: 1, glbSha256,
     producer: 'character/runtime/rig-measurements.mjs', meshBuffers,
+    poseSamples,
     measurements: {
       bindingSamples: {maxSampledBindingDelta: maxDelta, clips: sampled},
       deformation: {nonFiniteCount, allFinite: nonFiniteCount === 0, meshes: deformation},

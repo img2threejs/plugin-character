@@ -359,6 +359,17 @@ def admit(workspace, request, *, publish=True):
     source_sha = request["glb"]["sha256"]
     if extracted["skeleton"]["glbSha256"] != source_sha:
         raise ValueError("GLB changed while extracting evidence")
+    if "native" in request:
+        native = request["native"]
+        if not isinstance(native, dict) or set(native) != {"source", "spec"}:
+            raise ValueError("native binding requires source blend and explicit spec")
+        evidence.read(native["source"], json_data=False)
+        capture = evidence.read(request["nativeCapture"])
+        if (capture.get("kind") != "img2.character-native-capture"
+                or capture.get("sourceSha256") != native["source"]["sha256"]
+                or capture.get("glbSha256") != source_sha or capture.get("spec") != native["spec"]):
+            raise ValueError("native capture does not bind this source/spec/delivery")
+        evidence.read(request["nativeMaster"], json_data=False)
     runtime = evidence.read(request["runtime"])
     if (runtime.get("kind") != "img2.character-runtime-measurements" or runtime.get("version") != 1
             or runtime.get("glbSha256") != source_sha):
