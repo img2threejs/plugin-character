@@ -174,17 +174,17 @@ violation at once.
 
 **`unevaluated` maps to `error`, and never appears in `status`.** A check whose input is absent is not
 a pass. The verdict parser accepts only `pass|fail|error`, and an unrecognised status makes it discard
-every reason supplied — so the distinction lives in `reasons` and `evidence` instead. The new
-runtime and RGBA measurers below do not establish a complete real-subject browser/oracle run.
-The legacy aggregate remains non-blocking until that proof exists; missing evidence still fails
-routed terminal admission.
+every reason supplied — so the distinction lives in `reasons` and `evidence` instead. The aggregate
+is blocking: its workspace mode executes the owned native and browser producers below, not a saved
+diagnostic payload. Missing evidence/dependencies fail closed; wiring is not release qualification.
 
 ## Routed rig artifacts (D18, not release-qualified)
 
 `route.json` requires explicit `rig` intent and declares local dependencies. Its distinct routed-only
 terminal gate is data-registered for independent base whitelisting/pinning, not added to global
 `gates.json`. This is not release qualification or acceptance authority. Existing optional
-authoring/interaction routes and the legacy non-blocking gate remain unchanged.
+authoring/interaction routes are unchanged; the blocking `rigging` workspace gate shares the actual
+routed evaluator. Explicit `--payload` mode is a diagnostic checklist check, not terminal authority.
 
 `tools/rigged_artifact.py` has three offline entry points:
 
@@ -250,6 +250,59 @@ It is source evidence, not an alternate renderable. Delivery remains bound by
 Static skeletons can be extracted with `clips:[]`, but routed delivery remains blocked: the existing
 animated gate has no approved measured static-rig applicability policy.
 
+### Native build → freeze → bind → browser delivery
+
+The source is a saved, unbound `.blend` with an explicitly named armature, complete renderable mesh
+and action rosters, and authored finite normalized one-to-four bone influences per vertex.
+Destructive modifiers must already be applied. Already-bound meshes, morphs, imported NLA composition,
+linked libraries and unpacked file images fail rather than being silently rebound or converted.
+The native producer opens with scripts disabled, records the source frame and canonicalizes each
+working mesh into world coordinates **before** freezing (source master and rig rest stay unchanged).
+It measures source-world correspondence, exports the actual pre-bind mesh, freezes native geometry,
+then adds only linear Armature modifiers. POSITION/UV/index accessors and vertex order must remain
+byte-identical. bpy's extra skin-normal normalization is handled by preserving the actual pre-bind
+NORMAL payload, never by tolerating normal-buffer drift; raw-bound export and correction hashes are
+retained. No position, bind, skeleton, skin or clip bytes are repaired after freeze. Actual evaluated
+native/browser world parity is still required independently.
+
+`native-request.json` has exactly the native input below (paths/hashes are child-local):
+
+```json
+{"native":{"source":{"path":"source.blend","sha256":"ACTUAL_SOURCE_SHA256"},"spec":{"armature":"Rig","meshes":["Body"],"actions":["idle"]}}}
+```
+
+```bash
+IMG2_CHARACTER_BPY_PYTHON=/absolute/path/to/venv/bin/python \
+python3 tools/produce_routed_rig.py native --workspace CHILD_DIRECTORY \
+  --request native-request.json --out .img2/artifacts/character/native-build
+```
+
+The new directory contains actual pre-bind `base.glb`, unmodified exporter `raw-bound.glb`, frozen-
+normal-preserving `character.glb`, editable bound `character.blend`, measured `native.json`,
+pre-bind `freeze.json`, and `native-inputs.json`.
+Merge those input references with the admission request's `objectId`, independently authored `motion`,
+`metricAnchor`, and a `sweep` reference. The sweep is an authored capture **plan** in the existing
+format below, without frame `candidate`/`baseline` refs; cameras, interior ROIs, baseline GLB and
+authorship sources must already be present and hash-bound. No automatic seam ROI, stance or metric
+measurement is invented. Use a real blend-off control; an explicitly declared stock-linear
+self-control proves only that no custom blend treatment was present.
+
+```bash
+python3 tools/produce_routed_rig.py deliver --workspace CHILD_DIRECTORY \
+  --request delivery-request.json --out .img2/artifacts/character/delivery
+```
+
+`deliver` requires the approved Node/browser/Three selectors below. It creates fresh runtime/RGBA
+files, compares every exported vertex at five matched clip fractions with real bpy evaluated
+positions, and runs existing admission before emitting D18. The existing documented native parity
+limit is `1e-4 H`; no rig gate thresholds are changed. Split vertices are matched through actual
+rest-world positions; ambiguous coincident vertices with differing deformation fail.
+The routed terminal gate then independently repeats native export, binary freeze verification,
+bound-master export and browser measurement. A saved native receipt or passing boolean never
+substitutes for fresh execution; exact delivery GLB bytes and canonical freeze must reproduce.
+The source master is never saved or modified.
+
+
 `snapshot-input.json` contains `source:{path,sha256}` and optional
 `assets:[{role,path,sha256}]`. The result is a fresh `{bindings,observations}` fragment for the base
 controller's strategy/review/repair contexts. A `gate` asset must bind the current GLB and every
@@ -269,16 +322,20 @@ IMG2_CHARACTER_NODE=/absolute/path/to/node22-or-newer \
 IMG2_CHARACTER_BROWSER=/absolute/path/to/chromium \
 IMG2_CHARACTER_THREE_ROOT=/absolute/path/to/reviewed/three-package \
 IMG2_CHARACTER_THREE_SHA256=HOST_APPROVED_CANONICAL_PACKAGE_DIGEST \
+IMG2_CHARACTER_BPY_PYTHON=/absolute/path/to/venv/bin/python \
 python3 tools/gate_routed_terminal.py --workspace CHILD_DIRECTORY --artifact artifact.json
 ```
 
-The two host-only overrides select existing absolute executables, never filenames/commands from
-child JSON. Without them the gate uses **PATH `node` / PATH `chromium` only**, with no application
-directory or alternate-install fallback. Route probes are `character-node>=22.0` and
-`character-chromium>=1.0`, plus `python3>=3.10`; discovery must resolve the same exact binaries.
-Both `--version` probes are bounded/no-shell; actual Node must be at least 22. Chromium's required
-CDP methods are exercised and checked, not inferred from its version. Executable paths, versions,
-hashes and owned producer hashes are retained. PATH Node 20 fails even if another Node is installed.
+Node/browser overrides select existing absolute executables, never filenames/commands from child JSON.
+Without them the gate uses **PATH `node` / PATH `chromium` only**, with no alternate-install fallback.
+The native selector preserves the venv interpreter symlink invocation (realpath would discard its
+site-packages); target executable bytes are hashed separately. Its fallback is exact PATH `python3`.
+Route probes are `character-node>=22.0`, `character-chromium>=1.0`, `character-bpy>=4.3` and
+`python3>=3.10`. Probe native availability using the selected interpreter with
+`-I -B tools/bpy_capture_routed_rig.py --probe`: successful JSON binds `executable`, `bpyVersion`,
+`bpyModule`; missing bpy or an older runtime exits 2. Native jobs use `-I -B` and OS-only environments.
+Both browser executable version probes are bounded/no-shell. CDP and actual native/browser parity
+are exercised, not inferred from versions. Paths, versions and executable/producer hashes are retained.
 No executable, package or browser download is performed.
 
 Three.js additionally requires the absolute host-owned `IMG2_CHARACTER_THREE_ROOT` and an
@@ -315,10 +372,10 @@ RGBA buffers are measured again; missing views, empty/off-camera ROIs, dependenc
 bindings, frozen-mesh drift or stale inputs block. Fresh stop restoration includes **every actual
 skinned vertex**, in addition to node transforms.
 
-The consumer uses an opaque, source-sided normal diagnostic in WebGL. It proves stock GLB
-binding/deformation and the measured seam sweep, **not** arbitrary custom viewer behavior, material
-fidelity, likeness or Blender equivalence. Independent stance/side-label sources, trustworthy
-interior seam ROIs, metric anchors and pre-bind freeze evidence remain required inputs.
+The consumer uses an opaque, source-sided normal diagnostic in WebGL. It measures stock GLB
+binding/deformation, the seam sweep and the sampled native evaluated-pose parity, **not** arbitrary
+custom viewer behavior, material fidelity, likeness or unseen-pose Blender equivalence.
+Independent stance/side-label sources, trustworthy seam ROIs and metric anchors remain required.
 
 No original artifact, incumbent capture, mesh, skeleton or bind matrix is rewritten. Actual new
 captures and their measurement index are retained under `.img2/artifacts/character/terminal-live/`
@@ -327,9 +384,9 @@ and `terminal-measurements/`. The verdict is `img2.gate-verdict` v1 with
 bindings and actual measurement evidence. Missing producers return a non-passing verdict.
 
 Read-only checks and negative coverage do not require enabling the live integration test.
-To execute the separately opt-in **real-browser synthetic-geometry diagnostic**, configure the
-same existing executables and host-approved Three package above and set `IMG2_CHARACTER_RUN_LIVE_TESTS=1`; that diagnostic still
-does not constitute real-subject/oracle or Blender qualification.
+To execute the separately opt-in **real-bpy/browser synthetic-geometry diagnostic**, configure the
+same existing native/Node/browser executables and host-approved Three package and set
+`IMG2_CHARACTER_RUN_LIVE_TESTS=1`; this is not independent-subject or release qualification.
 
 Focused checks (requires the existing img2 core link and declared Three.js dependency):
 
@@ -338,12 +395,24 @@ node --test tests/rig-measurements.test.mjs
 node --experimental-vm-modules --test tests/rig-capture-modules.test.mjs
 python3 -m unittest discover -s tests -p test_rigged_artifact.py
 python3 -m unittest discover -s tests -p test_gate_routed_terminal.py
+python3 -m unittest discover -s tests -p test_routed_native.py
 python3 -m unittest discover -s tests -p test_gate_rigging.py
 python3 -m unittest discover -s tests -p test_domain_declaration.py
 ```
 
 The new Python positive case executes real GLB/Three CPU data but uses explicitly synthetic RGBA
 fixtures. It is protocol evidence, **not** real-browser, Blender parity, visual quality or release proof.
+
+The complete real-producer diagnostic is also directly runnable (the directory must be new):
+
+```bash
+python3 tests/native_routed_smoke.py --workspace /absolute/new/disposable-character-smoke
+```
+
+It creates explicitly synthetic native geometry with nonzero deformation, executes native build,
+owned browser delivery and the actual terminal CLI's independent replay, and retains
+`smoke-result.json`. It never substitutes Chrome for bpy or calls fixture data an expert corpus.
+
 
 ## Tests
 

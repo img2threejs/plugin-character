@@ -3,9 +3,7 @@
 The opt-in integration test launches the actual available Chromium, owns its capture,
 and measures the fixture GLB; even that is not real-subject/Blender qualification.
 """
-import hashlib
 import json
-import math
 import os
 from pathlib import Path
 import struct
@@ -56,14 +54,9 @@ class RoutedTerminalGateTests(unittest.TestCase):
                                "--workspace", str(self.workspace)], text=True, capture_output=True,
                               env=env, timeout=300)
 
-    def test_route_registration_is_data_only_and_legacy_registry_is_unchanged(self):
+    def test_routed_terminal_has_a_distinct_program_identity(self):
         card = json.loads((ROOT / "route.json").read_bytes())
         self.assertEqual(card["routedTerminalGate"], {"id": "character-routed-terminal", "script": "tools/gate_routed_terminal.py"})
-        self.assertEqual(card["deps"], [{"probe": "python3>=3.10"}, {"probe": "character-node>=22.0"}, {"probe": "character-chromium>=1.0"}])
-        registry = json.loads((ROOT / "gates.json").read_bytes())
-        self.assertEqual(len(registry), 1)
-        self.assertEqual(registry[0]["id"], "rigging")
-        self.assertFalse(registry[0]["blocking"])
 
     def test_host_override_and_exact_path_fallback_never_select_another_install(self):
         # Resolve paths only: these bytes are never executed or claimed to be Node.
@@ -232,46 +225,60 @@ class RoutedTerminalGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "workspace-relative"):
             gate.preflight(self.workspace)
 
-    @unittest.skipUnless(os.environ.get("IMG2_CHARACTER_RUN_LIVE_TESTS") == "1", "requires explicitly enabled real Chromium capture")
-    def test_real_browser_produces_all_frames_and_binds_exact_artifact(self):
-        # Give the synthetic test geometry actual non-placeholder cameras and opaque,
-        # two-sided source material so every required orbit has observable geometry.
-        artifact_tests.fixture_glb(self.workspace / "character.glb")
-        document, binary, _ = api.glb.parse_glb(self.workspace / "character.glb")
-        document["materials"] = [{"doubleSided": True}]
-        document["meshes"][0]["primitives"][0]["material"] = 0
-        encoded = json.dumps(document).encode()
-        encoded += b" " * (-len(encoded) % 4)
-        body = struct.pack("<II", len(encoded), 0x4e4f534a) + encoded + struct.pack("<II", len(binary), 0x004e4942) + binary
-        (self.workspace / "character.glb").write_bytes(struct.pack("<4sII", b"glTF", 2, 12 + len(body)) + body)
-        request = self.fixture.case(real_runtime=True)
-        sweep = json.loads((self.workspace / "sweep.json").read_bytes())
-        white = self.fixture.put("white.rgba", bytes([220, 220, 220, 255] * (64 * 64)))
-        roi = self.fixture.put("render.roi", bytes([1] * (64 * 64)))
-        for i, frame in enumerate(sweep["frames"]):
-            angle = math.radians(frame["azimuth"] + (180 if frame["side"] == "back" else 0))
-            c, s = math.cos(angle), math.sin(angle)
-            camera = {**{key: frame[key] for key in ("clip", "time", "side", "azimuth")},
-                      "glbSha256": request["glb"]["sha256"], "baselineGlbSha256": sweep["baselineGlb"]["sha256"],
-                      "matrixWorld": [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 3*s, .5, 3*c, 1],
-                      "projectionMatrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -2/9.9, 0, 0, 0, -10.1/9.9, 1]}
-            frame.update(width=64, height=64, roi=roi, candidate=white, baseline=white,
-                         camera=self.fixture.put(f"live-camera-{i}.json", camera))
-        request["sweep"] = self.fixture.put("sweep.json", sweep)
-        artifact = api.admit(self.workspace, request)
-        self.state()
-        result = self.run_gate()
-        value = json.loads(result.stdout)
+    def test_identical_browser_receipt_retains_distinct_exact_native_closures(self):
+        # Persistence-only bytes: not a purported Blender/visual qualification.
+        output = self.workspace / "fresh-native"
+        output.mkdir()
+        (output / "character.glb").write_bytes(b"unchanged delivered GLB storage fixture")
+        (output / "character.blend").write_bytes(b"first native container")
+        (output / "native.json").write_bytes(api.canonical({"container": "first"}))
+        browser = api.canonical({"browser": "identical receipt storage fixture"})
+        browser_path = f".img2/artifacts/character/terminal-live/{api.digest(browser)}/capture.json"
+        first_browser = gate.retain_measurement(api.Evidence(self.workspace), browser_path, browser)
+        first = gate.retain_native_bundle(api.Evidence(self.workspace), output)
+        old = {ref["path"]: ((self.workspace / ref["path"]).read_bytes(),
+                             (self.workspace / ref["path"]).stat().st_mtime_ns) for ref in first}
+        (output / "character.blend").write_bytes(b"second native container")
+        (output / "native.json").write_bytes(api.canonical({"container": "second"}))
+        # Reopen persistence for the next replay, not a shared in-memory dedup map.
+        second_browser = gate.retain_measurement(api.Evidence(self.workspace), browser_path, browser)
+        second = gate.retain_native_bundle(api.Evidence(self.workspace), output)
+        self.assertEqual(first_browser, second_browser)
+        self.assertNotEqual({ref["path"] for ref in first}, {ref["path"] for ref in second})
+        for refs in (first, second):
+            inventory = {"kind": "img2.character-terminal-native-bundle", "version": 1,
+                         "files": [{"path": Path(ref["path"]).name, "sha256": ref["sha256"]} for ref in refs]}
+            directory = ".img2/artifacts/character/terminal-native/" + api.digest(api.canonical(inventory))
+            self.assertEqual({str(Path(ref["path"]).parent) for ref in refs}, {directory})
+            for ref in refs:
+                api.Evidence(self.workspace).read(ref, json_data=False)
+        for name, expected in old.items():
+            path = self.workspace / name
+            self.assertEqual((path.read_bytes(), path.stat().st_mtime_ns), expected)
+        self.assertEqual(gate.retain_native_bundle(api.Evidence(self.workspace), output), second)
+        # The roster, not just the bag of file digests, participates in the identity.
+        (output / "character.blend").rename(output / "renamed.blend")
+        renamed = gate.retain_native_bundle(api.Evidence(self.workspace), output)
+        self.assertNotEqual(Path(second[0]["path"]).parent, Path(renamed[0]["path"]).parent)
+        (self.workspace / renamed[0]["path"]).write_bytes(b"altered retained proof")
+        with self.assertRaisesRegex(ValueError, "immutable terminal measurement was altered"):
+            gate.retain_native_bundle(api.Evidence(self.workspace), output)
+
+    @unittest.skipUnless(os.environ.get("IMG2_CHARACTER_RUN_LIVE_TESTS") == "1",
+                         "requires explicitly enabled real bpy and Chromium producers")
+    def test_native_browser_delivery_replays_source_and_binds_exact_artifact(self):
+        result = subprocess.run([sys.executable, str(ROOT / "tests/native_routed_smoke.py"),
+                                 "--workspace", str(self.workspace / "native-live")],
+                                capture_output=True, text=True, timeout=600)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertEqual(value["status"], "pass")
-        self.assertEqual(value["evidence"]["measurementOrigin"], "live-browser")
-        self.assertEqual(value["evidence"]["artifact"]["sha256"], hashlib.sha256(api.canonical(artifact)).hexdigest())
-        self.assertEqual(len(value["evidence"]["gates"]), 12)
-        record = value["evidence"]["measurement"]
-        self.assertEqual(value["evidence"]["three"]["approval"], "host-approved")
-        self.assertEqual(value["evidence"]["three"]["sha256"], os.environ["IMG2_CHARACTER_THREE_SHA256"])
-        self.assertIn("three/examples/jsm/utils/SkeletonUtils.js", value["evidence"]["producerFiles"])
-        self.assertEqual(api.digest((self.workspace / record["path"]).read_bytes()), record["sha256"])
+        value = json.loads(result.stdout)
+        self.assertFalse(value["qualification"])
+        self.assertGreater(value["nativeDeformation"], 0)
+        self.assertGreater(value["nativeParity"]["vertexComparisons"], 0)
+        self.assertEqual(len(value["gates"]), 12)
+        self.assertTrue(all(row["status"] == "pass" for row in value["gates"]))
+        record = value["measurement"]
+        self.assertEqual(api.digest((self.workspace / "native-live" / record["path"]).read_bytes()), record["sha256"])
 
 
 if __name__ == "__main__":

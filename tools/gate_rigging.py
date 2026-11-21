@@ -85,7 +85,7 @@ def main(argv=None):
     # pipeline's workspace IS its checkout, which resolve_workspace refuses on the SKILL.md marker,
     # and {workspace} is not domain.json vocabulary -- so the per-pass rig-gates step passes the
     # payload directly, at the workspace root, matching the base CLI's old positional argument.
-    # --workspace remains the terminal gates.json mode, reading the confined artifact path.
+    # --workspace is the production terminal mode: fresh owned native/browser producers.
     parser.add_argument("--payload", type=Path, default=None)
     args = parser.parse_args(argv)
     if args.payload is not None:
@@ -96,7 +96,12 @@ def main(argv=None):
         except ValueError as err:
             emit("error", [str(err)], {})
             return 2
-        payload_path = workspace / ".img2" / "artifacts" / PLUGIN_ID / PAYLOAD_NAME
+        # A saved diagnostic payload cannot authorize production delivery.
+        from gate_routed_terminal import evaluate
+        verdict, code = evaluate(workspace)
+        verdict["gate"] = GATE_ID
+        print(json.dumps(verdict, allow_nan=False))
+        return code
     evidence = {"payload": str(payload_path), "ok": False, "gates": [], "failed": [], "unevaluated": []}
     if not payload_path.is_file():
         emit("error", ["rig gate payload not found at %s" % payload_path], evidence)

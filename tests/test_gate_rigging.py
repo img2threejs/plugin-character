@@ -277,7 +277,7 @@ class GateRiggingTest(unittest.TestCase):
 
     def run_gate(self):
         return subprocess.run(
-            [sys.executable, str(GATE), "--workspace", str(self.workspace)],
+            [sys.executable, str(GATE), "--payload", str(self.payload_path)],
             capture_output=True, text=True, env=self.env, cwd=self.workspace,
         )
 
@@ -404,35 +404,25 @@ class GateRiggingTest(unittest.TestCase):
             capture_output=True, text=True, env=env, cwd=self.workspace,
         )
 
-    def test_gate_runner_end_to_end_pass(self):
+    def test_saved_passing_payload_cannot_authorize_production_terminal(self):
         self.write_payload(full_payload())
         proc = self.run_gate_runner()
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         doc = json.loads(proc.stdout)
-        self.assertEqual(doc["kind"], "img2.gate-run")
-        self.assertFalse(doc["stopped"])
+        self.assertTrue(doc["stopped"])
         [result] = doc["results"]
         self.assertEqual(result["gate"], "rigging")
-        self.assertEqual(result["status"], "pass")
-        self.assertEqual(result["envelope"]["plugin"], "character")
+        self.assertEqual(result["status"], "error")
+        self.assertTrue(result["envelope"]["reasons"])
 
-    def test_gate_runner_end_to_end_fail_is_recorded_but_not_blocking(self):
-        # `rigging` is declared blocking: false until the four producer-less checks gain producers
-        # (extract-animated-character, design D1): an honest fail must be VISIBLE in the aggregate
-        # without halting the sweep -- with rig-aware participation the sweep only evaluates the
-        # gate post-rig, where a fail should be recorded, not fatal. Re-block trigger in CHANGELOG.
-        payload = full_payload()
-        payload["bindRestore"]["maxBindRestoreDelta"] = 1.0e-6
-        self.write_payload(payload)
+    def test_missing_native_artifact_is_not_a_green_exemption(self):
         proc = self.run_gate_runner()
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         doc = json.loads(proc.stdout)
-        self.assertFalse(doc["stopped"])
+        self.assertTrue(doc["stopped"])
         [result] = doc["results"]
-        self.assertEqual(result["status"], "fail")
-        self.assertEqual(result["exitCode"], 1)
-        # The runner keeps the envelope, so every one of the twelve checks reaches the reader.
-        self.assertEqual(len(result["envelope"]["evidence"]["gates"]), 12)
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["exitCode"], 2)
 
 
 if __name__ == "__main__":

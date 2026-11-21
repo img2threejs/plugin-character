@@ -113,8 +113,9 @@ only by measuring.
 4. **`updateMatrixWorld(true)` before `new THREE.Skeleton(...)`.** `calculateInverses()` reads each
    bone's current world matrix; constructed first it captures identity, the rest pose never cancels,
    and the model renders a corpse while reporting `bound: true`.
-5. **An unmeasured check is not a pass.** The gate reports `error` when an input is absent, and says
-   which input. Four of the twelve checks have no producer yet, so that is the honest verdict today.
+5. **An unmeasured check is not a pass.** The blocking workspace gate executes native source replay,
+   actual browser binding/deformation/stop/visibility measurements, and evaluated-pose parity.
+   Missing dependencies or inputs return `error`; saved passing payloads are not terminal authority.
 
 ## Garment hard rules
 
@@ -140,7 +141,11 @@ The static `character` domain stays in-repo and owns those assets.
 
 Rig steps run from the base checkout/workspace. Always pass `--out <name>` or `--payload <path>`; auto-resolution refuses checkout-shaped directories.
 `rig-gates` writes workspace-root `rig-gate-payload.json` and runs `gate_rigging.py --payload rig-gate-payload.json`.
-The terminal sweep reads `.img2/artifacts/character/rig-gate-payload.json`: copy the payload there. The gate stays `blocking: false` until four missing producers exist (see CHANGELOG); an honest fail remains recorded.
+The terminal sweep is blocking and independently executes owned native/browser producers against the
+hash-bound routed artifact, source blend and reference. Copying `rig-gate-payload.json` cannot pass it.
+Use `tools/produce_routed_rig.py native` then `deliver` (README command contract); the terminal gate
+replays the source again. Explicit `--payload` remains diagnostic only. Synthetic native wiring
+diagnostics do not establish real-reference likeness or release qualification.
 
 ## Reference material
 

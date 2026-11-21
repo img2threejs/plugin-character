@@ -33,11 +33,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   digest, verified before/after capture and labelled host-approved rather than third-party attested.
   Missing approval or changed bytes fail closed; environment injection and pin mismatch have
   dedicated negative regressions.
+- Blocking rigging workspace evaluation now shares the routed native/browser evaluator; arbitrary
+  saved diagnostic payloads no longer authorize terminal delivery. Explicit payload checks remain
+  diagnostic. Missing native runtime or measurement inputs are non-passing, not exemptions.
+- Owned native base-mesh → pre-bind binary freeze → additive linear bind → exported GLB/editable
+  master production and D18 browser-delivery commands. Terminal admission reopens the bound source
+  and master, reproduces exact delivery bytes, and compares real evaluated native poses with fresh
+  browser vertices. Existing native `1e-4 H` parity and all twelve rig thresholds are preserved.
+  Native Python invocation preserves isolated-venv symlinks; capture environments exclude hooks and
+  credentials. Includes counterexamples and an explicitly synthetic, opt-in real bpy/browser smoke.
+- Native working geometry is canonicalized to world space before freeze, preserving the source
+  frame/snapshot and measured world correspondence. Frozen POSITION/UV/index/order remain exact;
+  the authored pre-bind NORMAL payload is preserved through bpy's extra skin-normal normalization,
+  with raw-bound bytes retained. No tolerance aliases frozen buffers or bypasses evaluated poses.
 
 ### Qualification limits
 
-- The global rigging gate remains non-blocking, and this route remains ineligible, until an actual
-  complete browser/oracle run proves producer readiness. Synthetic sweep fixtures are not that proof.
+- Real-reference likeness, independent held-out visual quality and release eligibility remain
+  unqualified. Native/browser diagnostics demonstrate only their explicitly measured boundaries.
 - Static rigs can be extracted, but routed static delivery requires an approved measured static-rig
   gate applicability policy. Unsupported morph/multi-skin/external-resource representations block
   this new adapter without changing existing optional authoring or interaction paths.

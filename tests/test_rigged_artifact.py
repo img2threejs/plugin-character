@@ -294,14 +294,12 @@ class RiggedArtifactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "stale evidence"):
             subject.snapshot_fragment(self.workspace, stale)
 
-    def test_route_requires_rig_intent_and_does_not_claim_global_gate_readiness(self):
+    def test_route_requires_rig_intent(self):
         card = json.loads((ROOT / "route.json").read_bytes())
         self.assertEqual(card["kind"], "img2.route-card")
         self.assertEqual(card["outputKind"], "rigged-3d")
         self.assertEqual(card["requires"], {"intent": ["rig"]})
         self.assertTrue(all(isinstance(dep["probe"], str) for dep in card["deps"]))
-        gate = json.loads((ROOT / "gates.json").read_bytes())[0]
-        self.assertFalse(gate["blocking"], "promotion needs the real oracle/browser proof")
 
     def test_workspace_escape_and_symlink_evidence_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "workspace-relative"):
