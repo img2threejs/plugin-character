@@ -81,7 +81,7 @@ def deliver(workspace, request, out):
     with tempfile.TemporaryDirectory(prefix="img2-delivery-job-") as temporary:
         job_path = Path(temporary) / "job.json"
         job_path.write_bytes(api.canonical(job))
-        result = subprocess.run([node, str(gate.PLUGIN / "tools/capture_routed_rig.mjs"),
+        result = subprocess.run([node, str(gate.TOOLS / "capture_routed_rig.mjs"),
                                  "--input", str(job_path), "--out", str(output)],
                                 capture_output=True, text=True, timeout=240,
                                 env=gate.child_environment(node=node, browser=browser, three=three))

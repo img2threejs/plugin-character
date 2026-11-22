@@ -12,7 +12,7 @@ import tempfile
 
 import rigged_artifact as api
 
-PLUGIN = Path(__file__).resolve().parents[1]
+TOOLS = Path(__file__).resolve().parent
 # Existing documented native neutral/pose parity limit, reference/blender-rig-interaction.md.
 NATIVE_PARITY_OVER_H = 1e-4
 
@@ -38,11 +38,11 @@ def run_native(evidence, native, output, *, master=None):
         raise ValueError("native capture requires source blend and explicit binding spec")
     evidence.read(native["source"], json_data=False)
     python = native_python()
-    program = PLUGIN / "tools/bpy_capture_routed_rig.py"
+    program = TOOLS / "bpy_capture_routed_rig.py"
     identities = {"executable": python, "sha256": file_sha(python),
                   "programSha256": file_sha(program),
-                  "exportHelperSha256": file_sha(PLUGIN / "tools/prepare_softbody.py"),
-                  "freezeHelperSha256": file_sha(PLUGIN / "tools/native_glb_freeze.py")}
+                  "exportHelperSha256": file_sha(TOOLS / "prepare_softbody.py"),
+                  "freezeHelperSha256": file_sha(TOOLS / "native_glb_freeze.py")}
     job = {"sourcePath": str(evidence.path(native["source"]["path"])),
            "sourceSha256": native["source"]["sha256"], "spec": native["spec"]}
     if master is not None:
@@ -66,8 +66,8 @@ def run_native(evidence, native, output, *, master=None):
         if file_sha(output / ref["path"]) != ref["sha256"]:
             raise ValueError("native capture bytes changed")
     if (file_sha(python) != identities["sha256"] or file_sha(program) != identities["programSha256"]
-            or file_sha(PLUGIN / "tools/prepare_softbody.py") != identities["exportHelperSha256"]
-            or file_sha(PLUGIN / "tools/native_glb_freeze.py") != identities["freezeHelperSha256"]):
+            or file_sha(TOOLS / "prepare_softbody.py") != identities["exportHelperSha256"]
+            or file_sha(TOOLS / "native_glb_freeze.py") != identities["freezeHelperSha256"]):
         raise ValueError("owned native executable/program changed")
     evidence.read(native["source"], json_data=False)
     return receipt, identities

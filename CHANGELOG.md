@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Closed the pinned GLTFLoader browser module inventory with `SkeletonUtils.js`, including serving
   and receipt hashing, plus an offline native-ESM linking regression that rejects its omission.
 - Allowlisted Node/Chromium child environments exclude loader/preload hooks and API credentials.
+- Resolve terminal/native producer resources from the adjacent tools directory, independently
+  of any project checkout root or workspace; isolated harness doctor can inspect the package.
   Production Three selection now requires an explicit host root and reviewed canonical package
   digest, verified before/after capture and labelled host-approved rather than third-party attested.
   Missing approval or changed bytes fail closed; environment injection and pin mismatch have

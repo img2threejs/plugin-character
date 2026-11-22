@@ -21,7 +21,7 @@ import sys
 import tempfile
 
 GATE_ID = "character-routed-terminal"
-PLUGIN = Path(__file__).resolve().parents[1]
+TOOLS = Path(__file__).resolve().parent
 ADMISSION = ".img2/artifacts/character/rig-admission.json"
 SHA = re.compile(r"[0-9a-f]{64}\Z")
 THREE_FILES = ("build/three.core.js", "build/three.module.js",
@@ -256,14 +256,14 @@ def live_measurement(context):
     import routed_native
     api, original = context["api"], context["evidence"]
     program_sha = file_sha(__file__)
-    producer_paths = {"tools/capture_routed_rig.mjs": PLUGIN / "tools/capture_routed_rig.mjs",
-                      "runner.mjs": PLUGIN / "runtime/rig-terminal-capture.mjs",
-                      "rig-measurements.mjs": PLUGIN / "runtime/rig-measurements.mjs"}
-    producer_paths.update({name: PLUGIN / name for name in
-                           ("tools/bpy_capture_routed_rig.py", "tools/routed_native.py",
-                            "tools/prepare_softbody.py", "tools/rigged_artifact.py",
-                            "tools/rig_glb_reference.py", "tools/rig_mesh_parity.py",
-                            "tools/rig_gate_core.py", "tools/native_glb_freeze.py")})
+    producer_paths = {"tools/capture_routed_rig.mjs": TOOLS / "capture_routed_rig.mjs",
+                      "runner.mjs": TOOLS.parent / "runtime/rig-terminal-capture.mjs",
+                      "rig-measurements.mjs": TOOLS.parent / "runtime/rig-measurements.mjs"}
+    producer_paths.update({"tools/" + name: TOOLS / name for name in
+                           ("bpy_capture_routed_rig.py", "routed_native.py",
+                            "prepare_softbody.py", "rigged_artifact.py",
+                            "rig_glb_reference.py", "rig_mesh_parity.py",
+                            "rig_gate_core.py", "native_glb_freeze.py")})
     producer_hashes = {name: file_sha(path) for name, path in producer_paths.items()}
     node = executable("IMG2_CHARACTER_NODE", "node")
     node_sha = file_sha(node)
@@ -325,8 +325,8 @@ def live_measurement(context):
         job_path = root / "job.json"
         job_path.write_bytes(api.canonical(job))
         output = root / "capture"
-        command = [node, str(PLUGIN / "tools/capture_routed_rig.mjs"), "--input", str(job_path), "--out", str(output)]
-        result = subprocess.run(command, capture_output=True, text=True, timeout=240, cwd=PLUGIN,
+        command = [node, str(TOOLS / "capture_routed_rig.mjs"), "--input", str(job_path), "--out", str(output)]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=240, cwd=TOOLS,
                                 env=child_environment(node=node, browser=browser, three=three))
         if result.returncode:
             raise ValueError("live measurement producer failed: " + (result.stderr or result.stdout).strip())
