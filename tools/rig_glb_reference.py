@@ -72,7 +72,7 @@ from img2_core.paths import resolve_workspace  # noqa: E402
 PLUGIN_ID = "character"
 ARTIFACT_KIND = "rigging.glb-rig-v1"
 ARTIFACT_NAME = "glb-rig.json"
-PROVENANCE = {"provider": "character", "version": "0.1.0"}
+PROVENANCE = {"provider": "character", "version": "0.4.0"}
 
 
 def artifact_path(workspace: Path) -> Path:

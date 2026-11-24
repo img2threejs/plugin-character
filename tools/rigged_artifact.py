@@ -267,6 +267,47 @@ def extract_glb(path):
     return result
 
 
+def _skin_binding(extracted):
+    """Compare effective joint influences, not padding slots or container bytes."""
+    joints = extracted["skeleton"]["skin"]["joints"]
+    meshes = []
+    for mesh in extracted["meshBuffers"]["meshes"]:
+        attributes = mesh["attributes"]
+        vertices = []
+        for offset in range(0, len(attributes["skinWeight"]), 4):
+            influences = {}
+            for index, weight in zip(attributes["skinIndex"][offset:offset + 4],
+                                     attributes["skinWeight"][offset:offset + 4]):
+                if not math.isfinite(weight) or weight < 0 or not 0 <= index < len(joints):
+                    raise ValueError("blend-off baseline has invalid skin influences")
+                if weight:
+                    influences.setdefault(joints[int(index)], []).append(weight)
+            vertices.append(tuple((joint, math.fsum(weights))
+                                  for joint, weights in sorted(influences.items())))
+        meshes.append((mesh["name"], tuple(vertices)))
+    return tuple(meshes)
+
+
+def _independent_baseline(evidence, spec, source_sha, candidate):
+    evidence.read(spec["baselineGlb"], json_data=False)
+    if spec["baselineGlb"]["sha256"] == source_sha:
+        raise ValueError("independent blend-off baseline required: candidate GLB is its own control")
+    baseline = extract_glb(evidence.path(spec["baselineGlb"]["path"]))
+    without_source = lambda value: {key: data for key, data in value.items() if key != "glbSha256"}
+    if (without_source(baseline["skeleton"]) != without_source(candidate["skeleton"])
+            or [without_source(clip) for clip in baseline["clips"]] != [without_source(clip) for clip in candidate["clips"]]
+            or not parity.verify(parity.freeze(candidate["meshBuffers"]), baseline["meshBuffers"]).ok):
+        raise ValueError("blend-off baseline does not preserve this subject's skeleton, clips and frozen geometry")
+    if _skin_binding(baseline) == _skin_binding(candidate):
+        raise ValueError("independent blend-off baseline required: equivalent skin weights are not a control")
+    source = spec.get("baselineSource")
+    if not isinstance(source, dict):
+        raise ValueError("independent blend-off baseline source must be hash-bound")
+    evidence.read(source, json_data=False)
+    if source["sha256"] in (source_sha, spec["baselineGlb"]["sha256"]):
+        raise ValueError("independent blend-off baseline source must name its authoring source, not a delivered GLB")
+
+
 def measure_sweep(evidence, spec, clip_names, source_sha, candidate):
     """Count transparent pixels inside independently authored seam ROIs in actual RGBA buffers.
 
@@ -276,13 +317,7 @@ def measure_sweep(evidence, spec, clip_names, source_sha, candidate):
     """
     if spec.get("kind") != "img2.character-sweep" or spec.get("version") != 1 or spec.get("glbSha256") != source_sha:
         raise ValueError("missing/stale rendered sweep producer")
-    evidence.read(spec["baselineGlb"], json_data=False)
-    baseline = extract_glb(evidence.path(spec["baselineGlb"]["path"]))
-    without_source = lambda value: {key: data for key, data in value.items() if key != "glbSha256"}
-    if (without_source(baseline["skeleton"]) != without_source(candidate["skeleton"])
-            or [without_source(clip) for clip in baseline["clips"]] != [without_source(clip) for clip in candidate["clips"]]
-            or not parity.verify(parity.freeze(candidate["meshBuffers"]), baseline["meshBuffers"]).ok):
-        raise ValueError("blend-off baseline does not preserve this subject's skeleton, clips and frozen geometry")
+    _independent_baseline(evidence, spec, source_sha, candidate)
     evidence.read(spec["roiSource"], json_data=False)
     axes = spec["axes"]
     if set(axes) != {"clips", "times", "sides", "azimuths"} or axes["clips"] != clip_names:
@@ -304,6 +339,11 @@ def measure_sweep(evidence, spec, clip_names, source_sha, candidate):
         if key not in expected or key in seen:
             raise ValueError("unexpected/duplicate sweep frame")
         seen.add(key)
+        if "materialCapture" in spec:
+            if spec["materialCapture"] != "original-material-fixed-lighting-v1":
+                raise ValueError("unsupported material capture producer")
+            for role in ("material", "materialRgba"):
+                evidence.read(frame[role], json_data=False)
         width, height = frame["width"], frame["height"]
         if type(width) is not int or type(height) is not int or min(width, height) <= 0:
             raise ValueError("invalid render dimensions")

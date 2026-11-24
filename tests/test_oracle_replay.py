@@ -13,11 +13,11 @@ removed by copying the functions it supplied. Each of those is a change that com
 passes a unit test while producing different bytes. `rig_glb_reference` is the module most exposed:
 it lost a base import, and the replacement was hand-copied.
 
-WHAT IS FROZEN, AND THE ONE THING THAT IS NOT. The frozen artifact is the full rig report for a
-real 113-node GLB carrying a real skin and eleven real clips. The `path` key is dropped before
-comparison and before freezing: it is the absolute path of the input on whichever machine ran it,
-so freezing it would make the oracle fail on every other machine for a reason that has nothing to
-do with correctness. Everything else is compared verbatim.
+WHAT IS FROZEN. The historical artifact is the full rig report for a real 113-node GLB carrying
+a real skin and eleven real clips, including its original 0.1.0 producer stamp. It stays unchanged.
+The expected current envelope uses the product manifest's producer version, after validating
+the historical stamp exactly. Actual producer output is never normalized. The `path` key alone
+is volatile because it names the input on whichever machine ran it; every other field is compared.
 
 THE SUBJECT. `tripo.glb` from the showcase checkout -- the asset the 1.5.2 pipeline was distilled
 from, and the one Slice 0 observed running. The oracle and the damage baseline therefore describe
@@ -58,6 +58,14 @@ DEFAULT_GLB = Path(
 
 # Machine-specific, and therefore excluded from the comparison. See the module docstring.
 VOLATILE_KEYS = ("path",)
+HISTORICAL_PROVENANCE = {"provider": "character", "version": "0.1.0"}
+
+
+def expected_current_report(historical: dict, product_version: str) -> dict:
+    """Adapt only the expected release stamp; never rewrite output or discard fields."""
+    if historical.get("provenance") != HISTORICAL_PROVENANCE:
+        raise ValueError("unexpected historical oracle producer provenance")
+    return {**historical, "provenance": {"provider": "character", "version": product_version}}
 
 
 def canonical(payload: dict) -> bytes:
@@ -70,6 +78,57 @@ def digest(payload: dict) -> str:
     return hashlib.sha256(canonical(payload)).hexdigest()
 
 
+class OracleProducerVersions(unittest.TestCase):
+    def test_current_cli_and_historical_expected_versions_are_separate(self) -> None:
+        from test_rig_glb_reference import build_glb, hip_walk_animation
+
+        product_version = json.loads((PLUGIN / "plugin.json").read_text(encoding="utf-8"))["version"]
+        with tempfile.TemporaryDirectory(prefix="owned-oracle-version-") as directory:
+            root = Path(directory)
+            glb = build_glb(root / "owned.glb", animations=[hip_walk_animation()])
+            workspace = root / "workspace"
+            workspace.mkdir()
+            completed = subprocess.run(
+                [sys.executable, str(TOOLS / "rig_glb_reference.py"), str(glb),
+                 "--workspace", str(workspace)],
+                capture_output=True, text=True, timeout=30)
+            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            current = json.loads(completed.stdout)
+        historical = {**current, "provenance": dict(HISTORICAL_PROVENANCE)}
+        before = json.dumps(historical, sort_keys=True)
+        expected = expected_current_report(historical, product_version)
+        self.assertEqual(current["provenance"], {"provider": "character", "version": product_version})
+        self.assertEqual(digest(current), digest(expected))
+        self.assertEqual(json.dumps(historical, sort_keys=True), before)
+        self.assertEqual(historical["provenance"], HISTORICAL_PROVENANCE)
+
+    def test_current_report_drift_is_not_normalized(self) -> None:
+        historical = {"kind": "rigging.glb-rig-v1", "provenance": dict(HISTORICAL_PROVENANCE),
+                      "nodeCount": 8, "joints": [{"nodeIndex": 1, "nodeName": "hips"}]}
+        expected = expected_current_report(historical, "0.4.0")
+        changed = {
+            "old producer": {**expected, "provenance": dict(HISTORICAL_PROVENANCE)},
+            "wrong producer": {**expected, "provenance": {"provider": "other", "version": "0.4.0"}},
+            "new producer": {**expected, "provenance": {"provider": "character", "version": "0.5.0"}},
+            "node count": {**expected, "nodeCount": 9},
+            "joint identity": {**expected, "joints": [{"nodeIndex": 2, "nodeName": "hips"}]},
+            "extra field": {**expected, "unexpected": True},
+        }
+        for label, current in changed.items():
+            with self.subTest(change=label):
+                self.assertNotEqual(digest(current), digest(expected))
+
+    def test_unknown_historical_provenance_is_rejected(self) -> None:
+        for provenance in (
+            {"provider": "character", "version": "0.4.0"},
+            {"provider": "other", "version": "0.1.0"},
+            {**HISTORICAL_PROVENANCE, "unexpected": True},
+        ):
+            with self.subTest(provenance=provenance):
+                with self.assertRaisesRegex(ValueError, "historical oracle producer"):
+                    expected_current_report({"provenance": provenance}, "0.4.0")
+
+
 class OracleReplay(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -80,7 +139,9 @@ class OracleReplay(unittest.TestCase):
                 f"oracle subject missing at {DEFAULT_GLB}; set IMG2_ORACLE_GLB to a GLB with a "
                 f"skin and clips, or re-freeze the fixture"
             )
-        cls.frozen = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        historical = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        product_version = json.loads((PLUGIN / "plugin.json").read_text(encoding="utf-8"))["version"]
+        cls.frozen = expected_current_report(historical, product_version)
         # An explicit throwaway workspace, deliberately not the checkout: `resolve_workspace`
         # refuses a directory holding SKILL.md/plugin.json, which is the anti-footgun working --
         # a tool that wrote into its own checkout would leave artifacts in git rather than in the

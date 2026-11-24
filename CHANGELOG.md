@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Require a separately authored, source-bound G10 blend-off control; reject candidate-equal
+  GLBs and equivalent effective skin influences even when containers or influence slots differ.
+- Author the synthetic native control from the same saved subject before changing weights,
+  preserving exact polygon/index order rather than regenerating a nondeterministically ordered sphere.
+- Observe browser navigation/load promises together so a timeout closes the owned browser
+  instead of escaping cleanup through an unhandled rejection.
+- Keep disposable headless capture off the desktop credential store, avoiding cookie-store
+  initialization stalls without retries, timeout increases or acceptance-threshold changes.
+- Keep normal diagnostics for seam checks and separately capture original GLB materials as
+  pose-bound PNG/RGBA evidence under fixed lighting. Core must consume actual material evidence
+  as `render`; local paths remain outside semantic observations.
+- Prepare plugin/runtime version 0.4.0 and matching current extraction/parity producer provenance.
+  Keep the historical oracle byte-original; validate its old stamp and derive only the expected
+  current producer stamp from product metadata, without normalizing output or excluding more fields.
+  External-subject replay remains unverified.
+- Add complete Node and Python test CI and a runnable VM-module capture command. Native/browser
+  qualification and missing external oracle/showcase/base fixtures remain separate evidence.
+
 ### Added
 
 - D18 rigged artifact extraction/admission from actual embedded GLB accessors: skin order,
@@ -56,6 +76,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Static rigs can be extracted, but routed static delivery requires an approved measured static-rig
   gate applicability policy. Unsupported morph/multi-skin/external-resource representations block
   this new adapter without changing existing optional authoring or interaction paths.
+- Third-party-derived garment/transfer measurements and missing source rights remain unresolved.
+  Existing material is preserved pending a scoped provenance decision; source licensing is not
+  an asset permission grant.
 
 ## [0.3.0] - 2026-11-10
 

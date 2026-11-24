@@ -54,7 +54,7 @@ def deliver(workspace, request, out):
     sweep = evidence.read(request["sweep"])
     if sweep["glbSha256"] != request["glb"]["sha256"]:
         raise ValueError("sweep plan refers to foreign delivery")
-    evidence.read(sweep["baselineGlb"], json_data=False)
+    api._independent_baseline(evidence, sweep, request["glb"]["sha256"], extracted)
     frames = []
     for frame in sweep["frames"]:
         if "candidate" in frame or "baseline" in frame:
@@ -101,6 +101,7 @@ def deliver(workspace, request, out):
     for index, frame in enumerate(sweep["frames"]):
         frame["candidate"] = files[f"{index}-candidate.rgba"]
         frame["baseline"] = files[f"{index}-baseline.rgba"]
+    gate.bind_material_frames(evidence, sweep, files, receipt)
     request["sweep"] = evidence.save(f"{out}/sweep.json", sweep)
     evidence.save(f"{out}/native-parity.json", parity)
     evidence.save(f"{out}/admission-request.json", request)

@@ -21,7 +21,8 @@ import rig_mesh_parity as parity
 from test_gate_rigging import JOINTS, SIDE_LABELS
 
 
-def fixture_glb(path, *, skin=True, animation=True, bad_inverse=False, scene=0):
+def fixture_glb(path, *, skin=True, animation=True, bad_inverse=False, scene=0,
+                weights=(1, 0, 0, 0), joints=None, generator=None, base_color=None):
     binary, views, accessors = bytearray(), [], []
     def add(values, kind, components, fmt="f", component_type=5126):
         binary.extend(b"\0" * (-len(binary) % 4))
@@ -46,13 +47,20 @@ def fixture_glb(path, *, skin=True, animation=True, bad_inverse=False, scene=0):
                   "NORMAL": add([0, 0, 1] * 66, "VEC3", 3),
                   "TEXCOORD_0": add([0, 0] * 66, "VEC2", 2)}
     if skin:
-        attributes["JOINTS_0"] = add([order.index(0), 0, 0, 0] * 66, "VEC4", 4, "H", 5123)
-        attributes["WEIGHTS_0"] = add([1, 0, 0, 0] * 66, "VEC4", 4)
+        slots = joints if joints is not None else [order.index(0), 0, 0, 0]
+        attributes["JOINTS_0"] = add(list(slots) * 66, "VEC4", 4, "H", 5123)
+        attributes["WEIGHTS_0"] = add(list(weights) * 66, "VEC4", 4)
     mesh_node = len(nodes)
     nodes[0]["children"].append(mesh_node)
     nodes.append({"name": "Body", "mesh": 0, **({"skin": 0} if skin else {})})
     document = {"asset": {"version": "2.0"}, "scene": scene, "scenes": [{"nodes": [0]}],
                 "nodes": nodes, "meshes": [{"primitives": [{"attributes": attributes}]}]}
+    if generator is not None:
+        document["asset"]["generator"] = generator
+    if base_color is not None:
+        document["materials"] = [{"doubleSided": True, "pbrMetallicRoughness": {
+            "baseColorFactor": base_color, "metallicFactor": 0, "roughnessFactor": 1}}]
+        document["meshes"][0]["primitives"][0]["material"] = 0
     if skin:
         inverse = []
         for index in order:
@@ -118,7 +126,14 @@ class RiggedArtifactTests(unittest.TestCase):
                           "sideLabels": {str(self.ids[name]): label for name, label in SIDE_LABELS.items()},
                           "sideLabelSource": notes, "stanceSource": notes,
                           "stance": {"nod": {"foot.l": [[0, 1]], "foot.r": [[0, 1]]}}})
-        baseline = self.put("baseline.glb", (self.workspace / "character.glb").read_bytes())
+        # A separate owned recipe produces the control; same skeleton/geometry, different weights.
+        baseline_source = self.put("baseline-weights.json", {
+            "kind": "owned-synthetic-blend-off-recipe", "weights": [.75, .25, 0, 0],
+            "joints": ["root", "hips", "root", "root"]})
+        order = extracted["skeleton"]["skin"]["joints"]
+        fixture_glb(self.workspace / "baseline.glb", weights=(.75, .25, 0, 0),
+                    joints=[order.index(self.ids["root"]), order.index(self.ids["hips"]), 0, 0])
+        baseline = self.ref("baseline.glb")
         candidate_pixels = self.put("candidate.rgba", bytes([200, 150, 120, 255] * 4))
         baseline_pixels = self.put("baseline.rgba", bytes([200, 150, 120, 255] * 3 + [0, 0, 0, 0]))
         roi = self.put("interior.roi", bytes([1, 1, 1, 1]))
@@ -135,6 +150,7 @@ class RiggedArtifactTests(unittest.TestCase):
                            "baseline": baseline_pixels, "roi": roi, "camera": camera})
         sweep = self.put("sweep.json", {"kind": "img2.character-sweep", "version": 1,
                          "glbSha256": glb_ref["sha256"], "baselineGlb": baseline,
+                         "baselineSource": baseline_source,
                          "creaseLuminanceMax": 32, "roiSource": notes, "axes": axes, "frames": frames})
         return {"objectId": "character-1", "glb": glb_ref, "runtime": runtime, "freezeManifest": frozen,
                 "motion": motion, "sweep": sweep,
@@ -207,6 +223,52 @@ class RiggedArtifactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "stale evidence"):
             subject.measure_sweep(subject.Evidence(self.workspace), sweep, ["nod"], request["glb"]["sha256"],
                                   subject.extract_glb(self.workspace / "character.glb"))
+
+    def test_sweep_rejects_the_candidate_as_its_own_blend_off_control(self):
+        request = self.case()
+        sweep = json.loads((self.workspace / "sweep.json").read_bytes())
+        sweep["baselineGlb"] = request["glb"]
+        with self.assertRaisesRegex(ValueError, "independent blend-off baseline"):
+            subject.measure_sweep(subject.Evidence(self.workspace), sweep, ["nod"],
+                                  request["glb"]["sha256"],
+                                  subject.extract_glb(self.workspace / "character.glb"))
+
+    def test_sweep_rejects_equivalent_weights_in_different_containers(self):
+        request = self.case()
+        extracted = subject.extract_glb(self.workspace / "character.glb")
+        root_slot = extracted["skeleton"]["skin"]["joints"].index(0)
+        for weights, joints in (((1, 0, 0, 0), None),
+                                ((.5, .5, 0, 0), [root_slot, root_slot, 0, 0])):
+            with self.subTest(weights=weights):
+                fixture_glb(self.workspace / "control.glb", weights=weights, joints=joints,
+                            generator="owned synthetic independent-container counterexample")
+                sweep = json.loads((self.workspace / "sweep.json").read_bytes())
+                sweep["baselineGlb"] = self.ref("control.glb")
+                for index, frame in enumerate(sweep["frames"]):
+                    camera = json.loads((self.workspace / frame["camera"]["path"]).read_bytes())
+                    camera["baselineGlbSha256"] = sweep["baselineGlb"]["sha256"]
+                    frame["camera"] = self.put(f"equivalent-camera-{index}.json", camera)
+                with self.assertRaisesRegex(ValueError, "independent blend-off baseline"):
+                    subject.measure_sweep(subject.Evidence(self.workspace), sweep, ["nod"],
+                                          request["glb"]["sha256"], extracted)
+
+    def test_independent_control_exposes_torn_pixels_and_binds_its_source(self):
+        request = self.case()
+        sweep = json.loads((self.workspace / "sweep.json").read_bytes())
+        self.put("candidate.rgba", bytes([0, 0, 0, 0] * 4))
+        self.put("baseline.rgba", bytes([200, 150, 120, 255] * 4))
+        for frame in sweep["frames"]:
+            frame["candidate"] = self.ref("candidate.rgba")
+            frame["baseline"] = self.ref("baseline.rgba")
+        extracted = subject.extract_glb(self.workspace / "character.glb")
+        measured = subject.measure_sweep(subject.Evidence(self.workspace), sweep, ["nod"],
+                                         request["glb"]["sha256"], extracted)
+        self.assertGreater(measured["backgroundThroughSplitPx"], measured["baseline"]["backgroundThroughSplitPx"])
+        self.assertFalse(subject.gates.gate_g10({"skinIntegritySweep": measured}).passed)
+        (self.workspace / sweep["baselineSource"]["path"]).write_bytes(b"changed authoring recipe")
+        with self.assertRaisesRegex(ValueError, "stale evidence"):
+            subject.measure_sweep(subject.Evidence(self.workspace), sweep, ["nod"],
+                                  request["glb"]["sha256"], extracted)
 
     def test_missing_camera_measurements_and_foreign_baseline_are_not_accepted(self):
         request = self.case()

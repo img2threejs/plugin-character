@@ -35,7 +35,10 @@ ROOT = Path(__file__).resolve().parents[1]
 # CC5/soft-body/garment tests bring discovery to 326; construction priors add 118.
 # Skin/body tools (texture, atlas, head/hair, body parts, standards gate, measurers, plan generator) add 121 on top of
 # the 444 above: probed total 565; exclude these two self-checks.
-COLLECTED_FLOOR = 563
+# Independent-control/material regressions add seven tests without removing any prior cases.
+# One real-browser navigation-timeout regression additionally checks owned-process cleanup.
+# Three owned-fixture cases separate historical oracle stamps from current product metadata.
+COLLECTED_FLOOR = 574
 
 _PROBE = """
 import json, unittest

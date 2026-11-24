@@ -27,6 +27,7 @@ SHA = re.compile(r"[0-9a-f]{64}\Z")
 THREE_FILES = ("build/three.core.js", "build/three.module.js",
                "examples/jsm/loaders/GLTFLoader.js", "examples/jsm/utils/BufferGeometryUtils.js",
                "examples/jsm/utils/SkeletonUtils.js", "package.json")
+MATERIAL_CAPTURE = "original-material-fixed-lighting-v1"
 OS_ENVIRONMENT = ("HOME", "TMPDIR", "TMP", "TEMP", "LANG", "LC_ALL", "LC_CTYPE", "SYSTEMROOT", "WINDIR")
 
 
@@ -252,6 +253,27 @@ def retain_native_bundle(evidence, output):
     return refs
 
 
+def bind_material_frames(evidence, sweep, files, receipt):
+    """Bind actual material pixels separately from G10's normal diagnostics."""
+    if receipt.get("measurement", {}).get("materialCapture") != MATERIAL_CAPTURE:
+        raise ValueError("original-material capture is missing; normal diagnostics are not material evidence")
+    for index, frame in enumerate(sweep["frames"]):
+        for key, suffix in (("material", "png"), ("materialRgba", "rgba")):
+            ref = files.get(f"{index}-material.{suffix}")
+            if ref is None:
+                raise ValueError("original-material capture is incomplete")
+            data = evidence.read(ref, json_data=False)
+            if suffix == "rgba":
+                if len(data) != frame["width"] * frame["height"] * 4:
+                    raise ValueError("material RGBA dimensions do not match the pose")
+            elif (data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR"
+                  or int.from_bytes(data[16:20], "big") != frame["width"]
+                  or int.from_bytes(data[20:24], "big") != frame["height"]):
+                raise ValueError("material PNG dimensions do not match the pose")
+            frame[key] = ref
+    sweep["materialCapture"] = MATERIAL_CAPTURE
+
+
 def live_measurement(context):
     import routed_native
     api, original = context["api"], context["evidence"]
@@ -360,7 +382,7 @@ def live_measurement(context):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
             capture_files[ref["path"]] = {"path": name, "sha256": ref["sha256"]}
-        if len(capture_files) != 1 + 2 * len(frames):
+        if len(capture_files) != 1 + 4 * len(frames):
             raise ValueError("live capture omitted/repeated output files")
         for i, frame in enumerate(sweep["frames"]):
             for kind in ("candidate", "baseline"):
@@ -370,6 +392,7 @@ def live_measurement(context):
                 if not any(selected and data[index * 4 + 3] == 255 for index, selected in enumerate(roi)):
                     raise ValueError("live sweep ROI contains no observed opaque subject; placeholder/off-camera view")
         request["runtime"] = capture_files["runtime.json"]
+        bind_material_frames(fresh, sweep, capture_files, receipt)
         request["sweep"] = fresh.save(f"{relative}/sweep.json", sweep)
         measured = api.admit(working, request, publish=False)
         native_parity = routed_native.compare_poses(

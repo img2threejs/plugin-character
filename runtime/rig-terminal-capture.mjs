@@ -1,4 +1,4 @@
-// Owned diagnostic consumer of the exact delivered GLB; not arbitrary viewer/Blender parity.
+// Owned diagnostic and original-material consumer of the exact delivered GLB.
 import * as THREE from 'three';
 import {GLTFLoader} from './three/examples/jsm/loaders/GLTFLoader.js';
 import {measureRig} from './rig-measurements.mjs';
@@ -63,9 +63,16 @@ export async function capture() {
   const rendererName = debug ? renderer.getContext().getParameter(debug.UNMASKED_RENDERER_WEBGL) : renderer.getContext().getParameter(renderer.getContext().RENDERER);
   const scenes = [];
   const materials = [];
+  const materialBindings = [];
   for (const input of [candidate, baseline]) {
     const scene = new THREE.Scene();
     scene.add(input.root);
+    const bindings = [];
+    input.root.traverse(object => { if (object.isLight) object.visible = false; });
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3);
+    keyLight.position.set(3, 5, 4);
+    scene.add(keyLight);
     input.root.traverse(mesh => {
       if (!mesh.isMesh) return;
       const originals = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
@@ -74,14 +81,18 @@ export async function capture() {
         materials.push(diagnostic);
         return diagnostic;
       });
-      mesh.material = Array.isArray(mesh.material) ? replacement : replacement[0];
+      const diagnostic = Array.isArray(mesh.material) ? replacement : replacement[0];
+      bindings.push({mesh, original: mesh.material, diagnostic});
+      mesh.material = diagnostic;
     });
     scenes.push(scene);
+    materialBindings.push(bindings);
   }
   try {
     for (let i = 0; i < plan.frames.length; i++) {
       const frame = plan.frames[i];
-      const camera = new THREE.Camera();
+      const camera = frame.camera.projectionMatrix[15] === 1
+        ? new THREE.OrthographicCamera() : new THREE.PerspectiveCamera();
       camera.matrixAutoUpdate = false;
       camera.matrix.fromArray(frame.camera.matrixWorld);
       camera.projectionMatrix.fromArray(frame.camera.projectionMatrix);
@@ -104,6 +115,31 @@ export async function capture() {
           if (renderer.getContext().isContextLost()) throw new Error('WebGL context lost');
           // RGBA and ROI rows are both WebGL bottom-up. No screenshot/canvas orientation guess.
           await post(`${i}-${j === 0 ? 'candidate' : 'baseline'}.rgba`, pixels);
+          if (j === 0) {
+            for (const binding of materialBindings[j]) binding.mesh.material = binding.original;
+            try {
+              renderer.clear();
+              renderer.render(scenes[j], camera);
+              renderer.readRenderTargetPixels(target, 0, 0, frame.width, frame.height, pixels);
+              if (renderer.getContext().isContextLost()) throw new Error('WebGL material context lost');
+              await post(`${i}-material.rgba`, pixels);
+              // PNG consumers use top-down rows; the G10 buffers above remain bottom-up.
+              const upright = new Uint8ClampedArray(pixels.length);
+              const stride = frame.width * 4;
+              for (let y = 0; y < frame.height; y++) {
+                upright.set(pixels.subarray((frame.height - y - 1) * stride, (frame.height - y) * stride), y * stride);
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = frame.width;
+              canvas.height = frame.height;
+              canvas.getContext('2d').putImageData(new ImageData(upright, frame.width, frame.height), 0, 0);
+              const image = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+              if (!image) throw new Error('material PNG encoding failed');
+              await post(`${i}-material.png`, new Uint8Array(await image.arrayBuffer()));
+            } finally {
+              for (const binding of materialBindings[j]) binding.mesh.material = binding.diagnostic;
+            }
+          }
           input.controller.stop();
         }
       } finally { target.dispose(); }
@@ -114,5 +150,6 @@ export async function capture() {
     for (const material of materials) material.dispose();
     renderer.dispose();
   }
-  return {threeRevision: THREE.REVISION, renderer: String(rendererName), diagnostic: 'opaque-source-sided-normal-v1', frameCount: plan.frames.length};
+  return {threeRevision: THREE.REVISION, renderer: String(rendererName), diagnostic: 'opaque-source-sided-normal-v1',
+    materialCapture: 'original-material-fixed-lighting-v1', frameCount: plan.frames.length};
 }

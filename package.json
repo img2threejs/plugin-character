@@ -1,9 +1,11 @@
 {
   "name": "@img2threejs/character-runtime",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --experimental-vm-modules --test tests/*.test.mjs tests/garment-character/*.test.mjs",
+    "test:capture": "node --experimental-vm-modules --test tests/rig-capture-modules.test.mjs",
     "test:softbody": "node --test tests/softbody.test.mjs",
     "test:garment": "node --test tests/garment-character/*.test.mjs",
     "test:probes": "node --test tests/skin-probes.test.mjs",

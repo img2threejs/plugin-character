@@ -51,7 +51,11 @@ def build(path):
     root = body.vertex_groups.new(name="root")
     head = body.vertex_groups.new(name="head")
     for vertex in body.data.vertices:
-        (head if vertex.co.z > .2 else root).add([vertex.index], 1, "REPLACE")
+        weight = min(1, max(0, (vertex.co.z - .1) / .2))
+        if weight < 1:
+            root.add([vertex.index], 1 - weight, "REPLACE")
+        if weight > 0:
+            head.add([vertex.index], weight, "REPLACE")
     rig.animation_data_create()
     bone = rig.pose.bones["head"]
     for frame, offset in ((1, 0), (13, .025), (25, 0)):
@@ -69,10 +73,30 @@ def build(path):
     bpy.ops.wm.save_as_mainfile(filepath=str(path), check_existing=False)
 
 
+def build_control(source, path):
+    # Preserve the subject's exact polygon order; a fresh sphere can reorder faces.
+    bpy.ops.wm.open_mainfile(filepath=str(source), load_ui=False, use_scripts=False)
+    body = bpy.data.objects["DiagnosticBody"]
+    root = body.vertex_groups["root"]
+    head = body.vertex_groups["head"]
+    indices = range(len(body.data.vertices))
+    root.remove(indices)
+    head.remove(indices)
+    for vertex in body.data.vertices:
+        group = head if vertex.co.z > .2 else root
+        group.add([vertex.index], 1, "REPLACE")
+    bpy.ops.wm.save_as_mainfile(filepath=str(path), check_existing=False)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--blend-off-source", type=Path,
+                        help="author hard weights from this same frozen native subject")
     args = parser.parse_args()
     if args.out.exists():
         raise SystemExit("fixture refuses an existing source")
-    build(args.out)
+    if args.blend_off_source is not None:
+        build_control(args.blend_off_source, args.out)
+    else:
+        build(args.out)

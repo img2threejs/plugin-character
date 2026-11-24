@@ -21,8 +21,8 @@ npx --yes @img2threejs/character doctor
 ```
 
 The npm package is scoped to `@img2threejs/character`; the executable installed into `PATH`
-stays unscoped as `img2-character`. CLI executable version (`0.2.0`) and plugin source
-version (`v0.2.0`) are released on separate tracks. This package is an installer only —
+stays unscoped as `img2-character`. CLI and plugin implementation versions are released on
+separate tracks; `cli/package.json` records the exact installer version and source pin. The package is installer-only —
 installing it is not a claim that a rig build, rig measurement, or rig gate has passed.
 
 ## What it is for
@@ -223,10 +223,14 @@ freezing, never by changing geometry or bind matrices during admission.
   Stance/contact evidence must come from the subject, not an inferred gait label. The adapter samples
   positions/scales from the GLB again; missing stance never becomes a passing foot-contact check.
 - **Rendered sweep:** `sweep` is `img2.character-sweep` v1, with current `glbSha256`, a `baselineGlb`
-  evidence reference for the blend-off control, `roiSource` reference for independent ROI authorship,
-  declared `creaseLuminanceMax` (0–255), and `axes` arrays for `clips/times/sides/azimuths`.
+  evidence reference for a separately authored blend-off control, a `baselineSource` reference
+  for its authoring source/recipe, `roiSource` for independent ROI authorship, declared
+  `creaseLuminanceMax` (0–255), and `axes` arrays for `clips/times/sides/azimuths`.
   Times are normalized clip fractions including 0 and 1; azimuths are degrees in [0,360).
   The control must preserve this subject's actual skeleton, clips and frozen geometry.
+  Candidate-equal GLB hashes and equivalent effective skin weights (including reordered or
+  duplicated influence slots) are refused. Both control bytes and authoring source stay hash-bound;
+  source binding establishes freshness, not ownership or permission.
   `frames` cover the complete Cartesian product without duplicates. Each has
   `clip/time/side/azimuth`, integer `width/height`, and evidence references
   `candidate/baseline/roi/camera`. Candidate/baseline are raw RGBA8 transparent-background diagnostic
@@ -284,8 +288,9 @@ Merge those input references with the admission request's `objectId`, independen
 `metricAnchor`, and a `sweep` reference. The sweep is an authored capture **plan** in the existing
 format below, without frame `candidate`/`baseline` refs; cameras, interior ROIs, baseline GLB and
 authorship sources must already be present and hash-bound. No automatic seam ROI, stance or metric
-measurement is invented. Use a real blend-off control; an explicitly declared stock-linear
-self-control proves only that no custom blend treatment was present.
+measurement is invented. Use a separately produced blend-off control with different effective skin
+weights and a hash-bound `baselineSource`; renaming/repacking the candidate or declaring a
+stock-linear self-control cannot authorize G10.
 
 ```bash
 python3 tools/produce_routed_rig.py deliver --workspace CHILD_DIRECTORY \
@@ -372,10 +377,17 @@ RGBA buffers are measured again; missing views, empty/off-camera ROIs, dependenc
 bindings, frozen-mesh drift or stale inputs block. Fresh stop restoration includes **every actual
 skinned vertex**, in addition to node transforms.
 
-The consumer uses an opaque, source-sided normal diagnostic in WebGL. It measures stock GLB
-binding/deformation, the seam sweep and the sampled native evaluated-pose parity, **not** arbitrary
-custom viewer behavior, material fidelity, likeness or unseen-pose Blender equivalence.
-Independent stance/side-label sources, trustworthy seam ROIs and metric anchors remain required.
+The consumer keeps the opaque, source-sided normal diagnostic for G10 only, then renders the
+candidate's original GLB materials at the same pose/camera with fixed neutral hemisphere and
+directional lights. Every pose gets separate `N-material.rgba` (WebGL bottom-up) and
+`N-material.png` (top-down) evidence; original materials/textures are not replaced or recoloured.
+The fresh sweep records `materialCapture: "original-material-fixed-lighting-v1"` and binds
+`frame.material` (PNG) / `frame.materialRgba` separately from diagnostic `candidate` / `baseline`.
+Core integration must select the first actual material image as role `render` and retain the
+remaining pose images; it must not score normals as materials or disclose local paths in observations.
+These captures do not by themselves prove material fidelity, likeness, arbitrary viewer behavior
+or unseen-pose Blender equivalence. Independent stance/side-label sources, ROIs and metric anchors
+remain required.
 
 No original artifact, incumbent capture, mesh, skeleton or bind matrix is rewritten. Actual new
 captures and their measurement index are retained under `.img2/artifacts/character/terminal-live/`
@@ -392,7 +404,7 @@ Focused checks (requires the existing img2 core link and declared Three.js depen
 
 ```bash
 node --test tests/rig-measurements.test.mjs
-node --experimental-vm-modules --test tests/rig-capture-modules.test.mjs
+npm run test:capture
 python3 -m unittest discover -s tests -p test_rigged_artifact.py
 python3 -m unittest discover -s tests -p test_gate_routed_terminal.py
 python3 -m unittest discover -s tests -p test_routed_native.py
@@ -416,14 +428,29 @@ owned browser delivery and the actual terminal CLI's independent replay, and ret
 
 ## Tests
 
-```bash
-python3 -m unittest discover -s tests
-```
+The non-native suite needs the pinned NumPy/Pillow test dependencies and declared Three.js.
+Python tools load `img2_core` from the exact CLI dependency, not an unrelated pip package.
+Use a disposable home; absent oracle/showcase/base fixtures are explicitly unverified, not passes.
 
 ```bash
 npm ci --ignore-scripts
-npm run test:softbody
-npm run test:garment
+npm --prefix cli install --ignore-scripts --no-audit --no-fund
+python3 -m pip install --only-binary=:all: -r requirements-test.txt
+npm test
+npm --prefix cli test
+TEST_HOME=$(mktemp -d)
+mkdir -p "$TEST_HOME/img2"
+HARNESS="$PWD/cli/node_modules/@img2threejs/img2"
+ln -s "$HARNESS" "$TEST_HOME/img2/harness"
+HOME="$TEST_HOME" IMG2_HOME="$TEST_HOME/img2" IMG2_HARNESS_DIR="$HARNESS" \
+  PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+CI is configured to run the complete Node suite (including experimental VM modules) and one-process Python
+discovery on Python 3.10/3.12 with Node 24; native/browser and external subject qualification
+remain separate, opt-in gates.
+
+```bash
 # Optional real Blender preparation regressions:
 IMG2_CC5_PYTHON=/absolute/path/to/python-with-bpy \
 python3 -m unittest discover -s tests -p test_prepare_softbody.py
@@ -446,3 +473,8 @@ to enumerate what matters, and the point of an oracle is to catch the change nob
 ## Licence
 
 Apache-2.0.
+
+Third-party asset-derived garment measurements, transfer-study claims and unshipped
+`ATTRIBUTION.txt` references remain a release blocker pending a scoped provenance/rights decision.
+Existing identifiers and evidence are preserved, not renamed or removed to obscure their source.
+The source license and hash-bound evidence do not establish rights to donor heads or character assets.

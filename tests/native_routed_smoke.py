@@ -35,6 +35,15 @@ def smoke(workspace):
     native = {"source": {"path": source.name, "sha256": gate.file_sha(source)},
               "spec": {"armature": "DiagnosticRig", "meshes": ["DiagnosticBody"], "actions": ["nod"]}}
     inputs = producer.native_build(workspace, {"native": native}, "native-build")
+    baseline_source = workspace / "blend-off-source.blend"
+    result = subprocess.run([python, "-I", "-B", str(ROOT / "tests/build_native_rig_fixture.py"),
+                             "--out", str(baseline_source), "--blend-off-source", str(source)],
+                            env=gate.child_environment(), capture_output=True, text=True, timeout=120)
+    if result.returncode:
+        raise ValueError("independent native control creation failed: " + result.stderr + result.stdout)
+    baseline_native = {"source": {"path": baseline_source.name, "sha256": gate.file_sha(baseline_source)},
+                       "spec": native["spec"]}
+    baseline_inputs = producer.native_build(workspace, {"native": baseline_native}, "blend-off-build")
     captured = evidence.read(inputs["nativeCapture"])
     displacement = max(math.dist(a, b) for sample in captured["poseSamples"]["nod"]
                        for a, b in zip(sample["meshes"]["DiagnosticBody"], captured["restWorld"]["DiagnosticBody"]))
@@ -51,7 +60,7 @@ def smoke(workspace):
         "stance": "Authored nod action moves only head; fixture feet are stationary",
         "metric": "Authored root-to-hips distance is exactly 0.5 metres",
         "roi": "Authored interior centre patch of synthetic sphere, not real-character segmentation",
-        "control": "Explicit stock-linear self-control: no custom weight blending is used"})
+        "control": "Separately authored hard weights on the same frozen native subject; candidate uses smooth transition weights"})
     def chunk(kind, data):
         return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
     image = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
@@ -80,12 +89,13 @@ def smoke(workspace):
         angle = math.radians(azimuth + (180 if side == "back" else 0))
         c, s = math.cos(angle), math.sin(angle)
         camera = evidence.save(f"camera-{index}.json", {**pose,
-                  "glbSha256": inputs["glb"]["sha256"], "baselineGlbSha256": inputs["glb"]["sha256"],
+                  "glbSha256": inputs["glb"]["sha256"], "baselineGlbSha256": baseline_inputs["glb"]["sha256"],
                   "matrixWorld": [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 3*s, .5, 3*c, 1],
                   "projectionMatrix": [4/3, 0, 0, 0, 0, 4/3, 0, 0, 0, 0, -2/9.9, 0, 0, 0, -10.1/9.9, 1]})
         frames.append({**pose, "width": 64, "height": 64, "camera": camera, "roi": roi})
     sweep = evidence.save("sweep-plan.json", {"kind": "img2.character-sweep", "version": 1,
-                          "glbSha256": inputs["glb"]["sha256"], "baselineGlb": inputs["glb"],
+                          "glbSha256": inputs["glb"]["sha256"], "baselineGlb": baseline_inputs["glb"],
+                          "baselineSource": baseline_native["source"],
                           "roiSource": notes, "creaseLuminanceMax": 32, "axes": axes, "frames": frames})
     request = {**inputs, "objectId": "character-1", "motion": motion, "sweep": sweep,
                "metricAnchor": {"nodes": [nodes["root"], nodes["hips"]], "metres": .5,

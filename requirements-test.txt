@@ -1,0 +1,4 @@
+# Non-native Python tests; bpy/browser integration remains explicitly opt-in.
+# Both pins support the advertised Python 3.10 minimum.
+numpy==2.2.6
+Pillow==12.0.0

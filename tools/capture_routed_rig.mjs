@@ -139,7 +139,8 @@ export async function runCapture(jobPath, output) {
   const threeIdentity = await approvedThree(threeRoot, sources);
   const token = randomBytes(24).toString('hex');
   const stored = new Map();
-  const expected = new Set(['runtime.json', ...job.frames.flatMap((_, i) => [`${i}-candidate.rgba`, `${i}-baseline.rgba`])]);
+  const expected = new Set(['runtime.json', ...job.frames.flatMap((_, i) =>
+    [`${i}-candidate.rgba`, `${i}-baseline.rgba`, `${i}-material.rgba`, `${i}-material.png`])]);
   await mkdir(output); // Refuse an existing output directory, never overwrite source evidence.
   let origin;
   const server = createServer(async (request, response) => {
@@ -153,14 +154,16 @@ export async function runCapture(jobPath, output) {
         const chunks = [];
         let count = 0;
         const index = Number(file.split('-')[0]);
-        const limit = file === 'runtime.json' ? 128 * 1024 * 1024 : job.frames[index].width * job.frames[index].height * 4;
+        const rawBytes = file === 'runtime.json' ? 0 : job.frames[index].width * job.frames[index].height * 4;
+        const limit = file === 'runtime.json' ? 128 * 1024 * 1024
+          : file.endsWith('.png') ? 2 * rawBytes + 4096 : rawBytes;
         for await (const chunk of request) {
           count += chunk.length;
           if (count > limit) throw new Error('capture exceeds expected byte size');
           chunks.push(chunk);
         }
         const data = Buffer.concat(chunks);
-        if (file !== 'runtime.json' && data.length !== limit) throw new Error('incomplete RGBA capture');
+        if (file.endsWith('.rgba') && data.length !== rawBytes) throw new Error('incomplete RGBA capture');
         await writeFile(join(output, file), data, {flag: 'wx'});
         stored.set(file, {path: file, sha256: hash(data)});
         response.writeHead(204).end();
@@ -194,6 +197,8 @@ export async function runCapture(jobPath, output) {
       child = spawn(browser, ['--headless=new', '--remote-debugging-port=0', '--remote-debugging-address=127.0.0.1',
         `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--disable-extensions',
         '--disable-background-networking', '--disable-sync', '--disable-component-update',
+        // The disposable, unauthenticated capture must not open the desktop credential store.
+        '--password-store=basic', '--use-mock-keychain',
         '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1', 'about:blank'], {stdio: ['ignore', 'ignore', 'pipe'], env: browserEnvironment()});
       let diagnostic = '';
       child.stderr.on('data', chunk => {
@@ -215,8 +220,9 @@ export async function runCapture(jobPath, output) {
     await cdp.call('Network.enable', {}, sessionId);
     await cdp.call('Network.setBlockedURLs', {urls: ['https://*', 'http://localhost:*', 'http://[::1]:*']}, sessionId);
     const loaded = cdp.event('Page.loadEventFired', sessionId);
-    await cdp.call('Page.navigate', {url: `${origin}/`}, sessionId);
-    await loaded;
+    const navigation = cdp.call('Page.navigate', {url: `${origin}/`}, sessionId);
+    // Observe both promises immediately so a load timeout still reaches owned cleanup.
+    await Promise.all([loaded, navigation]);
     const result = await cdp.call('Runtime.evaluate', {expression: `import(${JSON.stringify(`${origin}/runner.mjs`)}).then(module=>module.capture())`, awaitPromise: true, returnByValue: true}, sessionId);
     if (result.exceptionDetails || !result.result?.value) throw new Error(`live capture failed: ${JSON.stringify(result.exceptionDetails ?? result)}`);
     if (stored.size !== expected.size) throw new Error('live capture did not produce every required file');
