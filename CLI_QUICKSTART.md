@@ -19,8 +19,8 @@ npx --yes @img2threejs/character doctor
 Installation creates the canonical img2 harness if missing, fetches
 `img2threejs/plugin-character`, and links this plugin into detected hosts. It does not
 run a model, a reconstruction, or a rig build. The plugin source commit pinned in
-`cli/package.json` is `796dd9caf3f299958cf75b2294f54b37dc23ada9` (plugin source tag
-`v0.2.0`). The CLI executable version (`0.2.0`) is released on a separate track.
+`cli/package.json` is `5dcf7e53631aabd5e931b8fcc5e0f14da04bea3c` (implementation
+version `0.4.0`, not a release/qualification claim). CLI version `0.3.0` follows a separate track.
 
 ## Develop this installer
 
@@ -69,11 +69,11 @@ releases flow through trusted publishing and ship with provenance enabled.
 
 Bump `cli/package.json` and the CLI release notes inside `cli/README.md`, review and
 commit only intended changes, then push a matching annotated `cli-vX.Y.Z` tag. For
-example, after bumping to `0.2.1`:
+example, after bumping to `0.3.1`:
 
 ```bash
-git tag -a cli-v0.2.1 -m 'img2-character CLI 0.2.1'
-git push origin cli-v0.2.1
+git tag -a cli-v0.3.1 -m 'img2-character CLI 0.3.1'
+git push origin cli-v0.3.1
 ```
 
 `.github/workflows/cli-publish.yml` tests, packs and publishes the exact tested tarball.
