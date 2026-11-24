@@ -10,6 +10,7 @@ import argparse
 from copy import deepcopy
 from contextlib import redirect_stdout
 import hashlib
+import io
 import json
 import math
 import os
@@ -257,20 +258,37 @@ def bind_material_frames(evidence, sweep, files, receipt):
     """Bind actual material pixels separately from G10's normal diagnostics."""
     if receipt.get("measurement", {}).get("materialCapture") != MATERIAL_CAPTURE:
         raise ValueError("original-material capture is missing; normal diagnostics are not material evidence")
+    from PIL import Image
+
     for index, frame in enumerate(sweep["frames"]):
-        for key, suffix in (("material", "png"), ("materialRgba", "rgba")):
-            ref = files.get(f"{index}-material.{suffix}")
-            if ref is None:
-                raise ValueError("original-material capture is incomplete")
-            data = evidence.read(ref, json_data=False)
-            if suffix == "rgba":
-                if len(data) != frame["width"] * frame["height"] * 4:
-                    raise ValueError("material RGBA dimensions do not match the pose")
-            elif (data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR"
-                  or int.from_bytes(data[16:20], "big") != frame["width"]
-                  or int.from_bytes(data[20:24], "big") != frame["height"]):
-                raise ValueError("material PNG dimensions do not match the pose")
-            frame[key] = ref
+        image_ref = files.get(f"{index}-material.png")
+        rgba_ref = files.get(f"{index}-material.rgba")
+        if image_ref is None or rgba_ref is None:
+            raise ValueError("original-material capture is incomplete")
+        png = evidence.read(image_ref, json_data=False)
+        rgba = evidence.read(rgba_ref, json_data=False)
+        width, height = frame["width"], frame["height"]
+        if (png[:8] != b"\x89PNG\r\n\x1a\n" or png[12:16] != b"IHDR"
+                or int.from_bytes(png[16:20], "big") != width
+                or int.from_bytes(png[20:24], "big") != height):
+            raise ValueError("material PNG dimensions do not match the pose")
+        if len(rgba) != width * height * 4:
+            raise ValueError("material RGBA dimensions do not match the pose")
+        try:
+            with Image.open(io.BytesIO(png)) as image:
+                if image.format != "PNG" or image.mode not in ("RGB", "RGBA") or png[24] != 8:
+                    raise ValueError("material PNG must contain 8-bit RGB or RGBA pixels")
+                image.verify()
+            with Image.open(io.BytesIO(png)) as image:
+                decoded = image.convert("RGBA").tobytes()
+        except (OSError, SyntaxError, ValueError) as error:
+            raise ValueError(f"material PNG cannot be decoded and verified: {error}") from error
+        stride = width * 4
+        upright = b"".join(rgba[y * stride:(y + 1) * stride] for y in range(height - 1, -1, -1))
+        if decoded != upright:
+            raise ValueError("material PNG pixels do not match bottom-up material RGBA")
+        frame["material"] = image_ref
+        frame["materialRgba"] = rgba_ref
     sweep["materialCapture"] = MATERIAL_CAPTURE
 
 

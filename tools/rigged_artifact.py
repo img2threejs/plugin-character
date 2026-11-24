@@ -562,14 +562,16 @@ def snapshot_fragment(workspace, source, assets=()):
     observations = {"rig": {"jointCount": len(extracted["rig"].joints),
                             "clipNames": [clip["name"] for clip in extracted["clips"]],
                             "bounds": extracted["bounds"]}}
-    seen = {("source", source["path"])}
+    seen_roles = {"source"}
+    gate_inputs = set()
     for asset in assets:
         if set(asset) != {"role", "path", "sha256"} or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}", asset["role"]):
             raise ValueError("invalid decision evidence binding")
-        key = (asset["role"], asset["path"])
-        if key in seen:
-            raise ValueError("duplicate decision evidence binding")
-        seen.add(key)
+        if asset["role"] == "gate-input" or asset["role"].startswith("gate-input:"):
+            raise ValueError("reserved decision evidence binding role")
+        if asset["role"] in seen_roles:
+            raise ValueError("duplicate decision evidence binding role")
+        seen_roles.add(asset["role"])
         data = evidence.read({name: asset[name] for name in ("path", "sha256")}, json_data=False)
         bindings.append(dict(asset))
         if asset["role"] == "gate":
@@ -581,9 +583,11 @@ def snapshot_fragment(workspace, source, assets=()):
                 raise ValueError("gate snapshot has no bound measurement inputs")
             for ref in report["boundInputs"]:
                 evidence.read(ref, json_data=False)
-                if ("gate-input", ref["path"]) not in seen:
-                    bindings.append({"role": "gate-input", **ref})
-                    seen.add(("gate-input", ref["path"]))
+                if ref["path"] not in gate_inputs:
+                    role = f"gate-input:{len(gate_inputs)}"
+                    bindings.append({"role": role, **ref})
+                    seen_roles.add(role)
+                    gate_inputs.add(ref["path"])
             checks = report["gateReport"].get("gates", [])
             if ({row.get("id") for row in checks} != set(gates.GATE_SPEC_BY_ID)
                     or len(checks) != len(gates.GATE_SPECS)

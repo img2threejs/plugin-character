@@ -80,6 +80,39 @@ class RoutedTerminalGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "stale evidence"):
             gate.bind_material_frames(api.Evidence(self.workspace), sweep, files, receipt)
 
+    def test_material_png_must_decode_and_have_valid_crc(self):
+        receipt = {"measurement": {"materialCapture": gate.MATERIAL_CAPTURE}}
+        invalid_crc = bytearray(png())
+        invalid_crc[29] ^= 1
+        for data in (png()[:24], bytes(invalid_crc)):
+            with self.subTest(data=data), self.assertRaisesRegex(ValueError, "material PNG"):
+                image = self.fixture.put("invalid-material.png", data)
+                rgba = self.fixture.put("material.rgba", bytes([127, 127, 127, 255]))
+                gate.bind_material_frames(api.Evidence(self.workspace),
+                                          {"frames": [{"width": 1, "height": 1}]},
+                                          {"0-material.png": image, "0-material.rgba": rgba}, receipt)
+
+    def test_material_png_pixels_must_equal_flipped_rgba_including_alpha(self):
+        import io
+        from PIL import Image
+        raw = bytes([255, 0, 0, 255, 17, 31, 63, 1,
+                     0, 0, 0, 0, 0, 255, 0, 128])
+        upright = raw[8:] + raw[:8]
+        encoded = io.BytesIO()
+        Image.frombytes("RGBA", (2, 2), upright).save(encoded, format="PNG")
+        image = self.fixture.put("owned-material.png", encoded.getvalue())
+        receipt = {"measurement": {"materialCapture": gate.MATERIAL_CAPTURE}}
+        rgba = self.fixture.put("material.rgba", raw)
+        gate.bind_material_frames(api.Evidence(self.workspace), {"frames": [{"width": 2, "height": 2}]},
+                                  {"0-material.png": image, "0-material.rgba": rgba}, receipt)
+        for incorrect in (upright, raw[:7] + bytes([2]) + raw[8:], bytes(len(raw))):
+            with self.subTest(raw=incorrect), self.assertRaisesRegex(ValueError, "material PNG pixels"):
+                rgba = self.fixture.put("material.rgba", incorrect)
+                gate.bind_material_frames(api.Evidence(self.workspace),
+                                          {"frames": [{"width": 2, "height": 2}]},
+                                          {"0-material.png": image, "0-material.rgba": rgba}, receipt)
+
+
     @unittest.skipUnless(os.environ.get("IMG2_CHARACTER_RUN_LIVE_TESTS") == "1" and hasattr(os, "setsid"),
                          "requires explicitly enabled real Chromium navigation/cleanup diagnostic")
     def test_navigation_timeout_closes_its_real_browser(self):
@@ -200,6 +233,70 @@ class RoutedTerminalGateTests(unittest.TestCase):
             captures.append((normal, material))
         self.assertEqual(captures[0][0], captures[1][0], "material edits changed the normal diagnostic")
         self.assertNotEqual(captures[0][1], captures[1][1], "material edits disappeared from review pixels")
+
+    @unittest.skipUnless(os.environ.get("IMG2_CHARACTER_RUN_LIVE_TESTS") == "1",
+                         "requires explicitly enabled real Chromium transparent material capture")
+    def test_material_pixels_are_straight_alpha_and_png_is_lossless(self):
+        from PIL import Image
+        node = gate.executable("IMG2_CHARACTER_NODE", "node")
+        browser = gate.executable("IMG2_CHARACTER_BROWSER", "chromium")
+        three = gate.reviewed_three()
+        control = self.workspace / "control.glb"
+        order = api.extract_glb(self.workspace / "character.glb")["skeleton"]["skin"]["joints"]
+        artifact_tests.fixture_glb(control, weights=(.75, .25, 0, 0),
+                                   joints=[order.index(0), order.index(self.fixture.ids["hips"]), 0, 0])
+        normals = []
+        for name, alpha, colour in (("opaque", 1, (1, 0, 0)), ("half", .5, (1, 0, 0)),
+                                    ("quarter", .25, (1, 0, 0)), ("low", 1 / 255, (1, 0, 0)),
+                                    ("clear", 0, (1, 0, 0)), ("mixed-half", .5, (.18, .41, .73)),
+                                    ("mixed-low", 1 / 255, (.18, .41, .73))):
+            with self.subTest(alpha=alpha):
+                source = self.workspace / f"{name}.glb"
+                artifact_tests.fixture_glb(source, base_color=[*colour, alpha],
+                                           alpha_mode="BLEND", unlit=True)
+                frame = {"clip": "nod", "time": 0, "side": "front", "azimuth": 0,
+                         "width": 64, "height": 64, "camera": {
+                             "matrixWorld": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, .5, 3, 1],
+                             "projectionMatrix": [4/3, 0, 0, 0, 0, 4/3, 0, 0, 0, 0, -2/9.9, 0, 0, 0, -10.1/9.9, 1]}}
+                job = self.fixture.put(f"{name}-job.json", {
+                    "candidatePath": str(source), "baselinePath": str(control),
+                    "glbSha256": gate.file_sha(source), "baselineGlbSha256": gate.file_sha(control),
+                    "frames": [frame]})
+                output = self.workspace / f"{name}-capture"
+                result = subprocess.run([node, str(ROOT / "tools/capture_routed_rig.mjs"),
+                                         "--input", str(self.workspace / job["path"]), "--out", str(output)],
+                                        env=gate.child_environment(node=node, browser=browser, three=three),
+                                        text=True, capture_output=True, timeout=240)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                material = (output / "0-material.rgba").read_bytes()
+                pixels = [material[i:i + 4] for i in range(0, len(material), 4)]
+                subject = [pixel for pixel in pixels if pixel[3] > 0]
+                if alpha == 0:
+                    self.assertEqual(set(material), {0})
+                else:
+                    self.assertTrue(subject)
+                    if alpha < 1:
+                        self.assertTrue(any(0 < pixel[3] < 255 for pixel in subject))
+                    if colour == (1, 0, 0):
+                        for pixel in subject:
+                            self.assertEqual(tuple(pixel[:3]), (255, 0, 0),
+                                             f"premultiplied RGB escaped as straight alpha at opacity {alpha}")
+                    if name == "mixed-half":
+                        for pixel in subject:
+                            for actual, expected in zip(pixel[:3], (118, 172, 222)):
+                                self.assertLessEqual(abs(actual - expected), 1,
+                                                     "sRGB association must be removed in linear light")
+                self.assertTrue(all(pixel[:3] == b"\0\0\0" for pixel in pixels if pixel[3] == 0))
+                with Image.open(output / "0-material.png") as image:
+                    upright = b"".join(material[y * 256:(y + 1) * 256] for y in range(63, -1, -1))
+                    self.assertEqual(image.convert("RGBA").tobytes(), upright)
+                normals.append((output / "0-candidate.rgba").read_bytes())
+        self.assertTrue(all(normal == normals[0] for normal in normals[1:]),
+                        "opacity edits changed normal diagnostics")
+        receipt = json.loads((output / "capture.json").read_bytes())
+        self.assertEqual(receipt["measurement"]["materialPixels"], {
+            "format": "RGBA8", "rawRowOrigin": "bottom-left", "pngRowOrigin": "top-left",
+            "colorSpace": "srgb", "alphaMode": "straight"})
 
     def test_routed_program_refuses_self_control_before_live_capture(self):
         request, artifact = self.admitted()

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Decode and CRC-verify material PNGs and require exact upright RGBA equality with their
+  bottom-up raw evidence, rather than accepting dimensions or matching filenames alone.
+- Emit declared straight-alpha sRGB material pixels; unassociate framebuffer color in linear
+  light and encode PNG bytes directly so partially transparent colors survive losslessly.
+- Reject duplicate decision binding roles across distinct paths and give retained gate inputs
+  individually addressable reserved roles; semantic image selection remains core-owned.
 - Require a separately authored, source-bound G10 blend-off control; reject candidate-equal
   GLBs and equivalent effective skin influences even when containers or influence slots differ.
 - Author the synthetic native control from the same saved subject before changing weights,

@@ -22,7 +22,8 @@ from test_gate_rigging import JOINTS, SIDE_LABELS
 
 
 def fixture_glb(path, *, skin=True, animation=True, bad_inverse=False, scene=0,
-                weights=(1, 0, 0, 0), joints=None, generator=None, base_color=None):
+                weights=(1, 0, 0, 0), joints=None, generator=None, base_color=None,
+                alpha_mode="OPAQUE", unlit=False):
     binary, views, accessors = bytearray(), [], []
     def add(values, kind, components, fmt="f", component_type=5126):
         binary.extend(b"\0" * (-len(binary) % 4))
@@ -61,6 +62,10 @@ def fixture_glb(path, *, skin=True, animation=True, bad_inverse=False, scene=0,
         document["materials"] = [{"doubleSided": True, "pbrMetallicRoughness": {
             "baseColorFactor": base_color, "metallicFactor": 0, "roughnessFactor": 1}}]
         document["meshes"][0]["primitives"][0]["material"] = 0
+        document["materials"][0]["alphaMode"] = alpha_mode
+        if unlit:
+            document["extensionsUsed"] = ["KHR_materials_unlit"]
+            document["materials"][0]["extensions"] = {"KHR_materials_unlit": {}}
     if skin:
         inverse = []
         for index in order:
@@ -341,10 +346,26 @@ class RiggedArtifactTests(unittest.TestCase):
         gate = {"role": "gate", **self.ref(str(records[0].relative_to(self.workspace)))}
         fragment = subject.snapshot_fragment(self.workspace, request["glb"], [gate])
         self.assertIn({"id": "G3", "status": "fail"}, fragment["observations"]["rigGate"]["checks"])
+        roles = [binding["role"] for binding in fragment["bindings"]]
+        self.assertEqual(len(roles), len(set(roles)), "gate inputs must have individually addressable roles")
         # Changed measurement bytes invalidate even an unchanged source/gate-report binding.
         self.put("runtime.json", {})
         with self.assertRaisesRegex(ValueError, "stale evidence"):
             subject.snapshot_fragment(self.workspace, request["glb"], [gate])
+
+    def test_snapshot_rejects_duplicate_roles_even_for_distinct_paths(self):
+        first = self.put("first-notes.txt", b"owned fixture notes one")
+        second = self.put("second-notes.txt", b"owned fixture notes two")
+        for roles in (("notes", "notes"), ("source", "notes")):
+            with self.subTest(roles=roles), self.assertRaisesRegex(ValueError, "duplicate"):
+                subject.snapshot_fragment(self.workspace, self.ref("character.glb"),
+                                          [{"role": roles[0], **first}, {"role": roles[1], **second}])
+
+    def test_snapshot_reserves_generated_gate_input_roles(self):
+        notes = self.put("owned-notes.txt", b"owned fixture notes")
+        with self.assertRaisesRegex(ValueError, "reserved"):
+            subject.snapshot_fragment(self.workspace, self.ref("character.glb"),
+                                      [{"role": "gate-input:0", **notes}])
 
     def test_snapshot_exposes_fresh_inputs_without_inventing_candidates_or_views(self):
         fragment = subject.snapshot_fragment(self.workspace, self.ref("character.glb"))

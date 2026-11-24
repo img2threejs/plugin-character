@@ -383,11 +383,23 @@ directional lights. Every pose gets separate `N-material.rgba` (WebGL bottom-up)
 `N-material.png` (top-down) evidence; original materials/textures are not replaced or recoloured.
 The fresh sweep records `materialCapture: "original-material-fixed-lighting-v1"` and binds
 `frame.material` (PNG) / `frame.materialRgba` separately from diagnostic `candidate` / `baseline`.
-Core integration must select the first actual material image as role `render` and retain the
-remaining pose images; it must not score normals as materials or disclose local paths in observations.
+The material buffers are straight-alpha RGBA8 in sRGB, with transparent RGB canonicalized to
+zero. The producer unassociates the sRGB framebuffer's blended color in linear light, then
+encodes a top-down PNG directly from those bytes; it does not round-trip through Canvas2D's
+lossy low-alpha backing store. `measurement.materialPixels` declares this representation.
+Binding requires Pillow to decode and CRC-verify the actual 8-bit PNG, checks dimensions,
+and compares every decoded RGBA pixel against the vertically flipped raw buffer, including alpha.
+Core owns the bounded semantic image inventory, canonical posed `render` selection and distinct
+static `rest-render` role. Input order is not a semantic pose-selection contract; core must not
+score normals as materials or disclose local paths in observations.
 These captures do not by themselves prove material fidelity, likeness, arbitrary viewer behavior
 or unseen-pose Blender equivalence. Independent stance/side-label sources, ROIs and metric anchors
 remain required.
+
+Decision snapshot fragments reject duplicate roles even when paths differ, including a second
+`source`. Retained gate inputs have unique `gate-input:0`, `gate-input:1`, … roles in bound-input
+order, deduplicated by path. `gate-input` and the `gate-input:` prefix are reserved for that
+transport inventory; they are not semantic view labels or permission/qualification claims.
 
 No original artifact, incumbent capture, mesh, skeleton or bind matrix is rewritten. Actual new
 captures and their measurement index are retained under `.img2/artifacts/character/terminal-live/`
