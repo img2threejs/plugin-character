@@ -16,7 +16,7 @@ jobs:
         python: ['3.10', '3.12']
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      IMG2_HOME: ${{ runner.temp }}/character-test-home
+      IMG2_HOME: ${{ github.workspace }}/../character-test-home
       IMG2_HARNESS_DIR: ${{ github.workspace }}/cli/node_modules/@img2threejs/img2
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
