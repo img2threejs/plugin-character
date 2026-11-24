@@ -19,7 +19,7 @@ npx --yes @img2threejs/character doctor
 Installation creates the canonical img2 harness if missing, fetches
 `img2threejs/plugin-character`, and links this plugin into detected hosts. It does not
 run a model, a reconstruction, or a rig build. The plugin source commit pinned in
-`cli/package.json` is `5dcf7e53631aabd5e931b8fcc5e0f14da04bea3c` (implementation
+`cli/package.json` is `ddae08e5681119330b759a3d16a1906e2636e4f3` (implementation
 version `0.4.0`, not a release/qualification claim). CLI version `0.3.0` follows a separate track.
 
 ## Develop this installer

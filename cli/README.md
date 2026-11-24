@@ -51,7 +51,7 @@ comes from `@img2threejs/img2`; its executable remains `img2`.
 ## Source pin, update behaviour, and what this installer does not claim
 
 - **Source pin.** This CLI's metadata pins plugin commit
-  `5dcf7e53631aabd5e931b8fcc5e0f14da04bea3c` (plugin implementation version `0.4.0`;
+  `ddae08e5681119330b759a3d16a1906e2636e4f3` (plugin implementation version `0.4.0`;
   no release tag or qualification is implied). An explicit `--ref vX.Y.Z` or `--ref <40-char SHA>`
   on `install` overrides that pin for that run; omit `--ref` to accept the metadata pin.
   CLI version `0.3.0` is independent of plugin implementation version `0.4.0`.
@@ -164,7 +164,7 @@ separate explicit source release.
 ## CLI release notes
 
 - **0.3.0 (prepared, not published)**: pin the committed `0.4.0` plugin source at
-  `5dcf7e53631aabd5e931b8fcc5e0f14da04bea3c`, separately from this installer update.
+  `ddae08e5681119330b759a3d16a1906e2636e4f3`, separately from this installer update.
   Runtime/native acceptance and third-party-derived material rights remain unverified;
   changing installer metadata does not clear those gates.
 
