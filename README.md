@@ -478,7 +478,7 @@ python3 -m unittest discover -s tests -p test_cc5_headshot.py
 
 `tests/test_oracle_replay.py` compares the complete canonical rig report against a project-authored,
 genuinely skinned primitive with three animation clips. Its local GLB/report/hash manifest are generated
-by `tools/generate_synthetic_rig_oracle.py`. Caller asset/report pairs can be supplied explicitly.
+by the repository-maintenance script `scripts/generate_synthetic_rig_oracle.py`, not a workspace runtime CLI. Caller asset/report pairs can be supplied explicitly.
 
 ## Licence
 

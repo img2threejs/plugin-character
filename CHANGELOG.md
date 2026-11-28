@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Keep synthetic fixture regenerators under `scripts/` as repository-maintenance commands,
+  separate from workspace runtime CLIs under `tools/`; fixture geometry and acceptance policy are unchanged.
 - Replace unclear-rights subject calibration, studies, measured tables and copied garment/rig
   receipts in HEAD with independently authored synthetic geometry/configuration and caller-data contracts.
   The garment viewer now requires explicit real-input calibration and uses `window.garmentStudio`;
@@ -18,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace the external-asset rig oracle with a genuinely skinned, project-authored primitive:
   six joints in deliberately non-node order, true inverse binds and translation/rotation/scale clips.
   The complete canonical report and GLB are pinned by `tests/fixtures/oracle-synthetic/manifest.json`;
-  regenerate with `tools/generate_synthetic_rig_oracle.py`. Caller GLB/report pairs remain explicit.
+  regenerate with `scripts/generate_synthetic_rig_oracle.py`. Caller GLB/report pairs remain explicit.
 - Require caller-selected cheek landmark factors, texture padding/repair gates, pigment curves and
   tone-deviation limits instead of historical subject presets. Generic image/mesh algorithms remain.
 - Remove remaining historical rig-intake, bind-rendering and animation-observation prose.
@@ -175,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is independently authored synthetic geometry, not original-character acceptance evidence.
 - `runtime/garment-character/` integrity manifest records all runtime/test hashes and sizes.
   `tools/extract_garment_parameters.mjs` generates generic mechanics constants and synthetic configuration;
-  `tools/generate_synthetic_reference.py` generates primitive catalogue and constructed gate contract inputs.
+  `scripts/generate_synthetic_reference.py` generates primitive catalogue and constructed gate contract inputs.
   No copied browser/native receipts or source-literal measurement inventory is shipped.
 - Explicit `blender-character` skill workflow: reference/camera analysis, native bpy geometry,
   source-asset rights, UV/skin/fabric PBR, skeleton/weight authoring, soft regions and browser evidence.

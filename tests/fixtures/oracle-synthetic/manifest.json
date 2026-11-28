@@ -1,6 +1,6 @@
 {
   "scope": "Independently authored synthetic rig, not third-party or native fidelity evidence.",
-  "generator": "tools/generate_synthetic_rig_oracle.py",
+  "generator": "scripts/generate_synthetic_rig_oracle.py",
   "files": [
     {
       "path": "synthetic-rig.glb",

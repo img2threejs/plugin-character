@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate independent contract fixtures, primitive catalogue and integrity manifest.
 
+Repository maintenance only; not a caller-workspace runtime command.
 Run extract_garment_parameters.mjs first. Gate fixtures are deliberately constructed
 truth-table inputs, NOT browser/native measurements or evidence of trusted events.
 No third-party asset, previous receipt or native transform is read.

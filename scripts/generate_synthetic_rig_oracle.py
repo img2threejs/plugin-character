@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate a project-authored skinned primitive and freeze its complete rig report.
 
+Repository maintenance only; not a caller-workspace runtime command.
 No external asset or prior report is read. This fixture has real joint/weight
 attributes, true inverse translations and three authored animation channels.
 The freeze is canonical JSON comparison evidence for this synthetic input only.
@@ -96,7 +97,7 @@ def main():
     for path in (asset,OUT/'glb-rig.json'):
         data=path.read_bytes();entries.append({'path':path.name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
     (OUT/'manifest.json').write_text(json.dumps({'scope':'Independently authored synthetic rig, not third-party or native fidelity evidence.',
-                                               'generator':'tools/generate_synthetic_rig_oracle.py','files':entries},indent=2)+'\n')
+                                               'generator':'scripts/generate_synthetic_rig_oracle.py','files':entries},indent=2)+'\n')
 
 
 if __name__ == '__main__':

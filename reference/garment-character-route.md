@@ -55,11 +55,11 @@ python3 tools/gate_garment.py --parameters /caller/calibration.json \
 
 Missing limits remain unmeasured. Synthetic parameters are not a default for real evidence. Gate fixtures are constructed contract inputs, not observations of trusted browser events.
 
-Regenerate artifacts after changing source/config/tests:
+Regenerate artifacts from the repository checkout after changing source/config/tests; the Python script is repository maintenance, not a workspace runtime CLI:
 
 ```sh
 node tools/extract_garment_parameters.mjs --out reference/garment-parameters.json
-python3 tools/generate_synthetic_reference.py
+python3 scripts/generate_synthetic_reference.py
 ```
 
 The latter regenerates the primitive catalogue, four synthetic gate fixtures and the sha256/byte manifest of every runtime/test file. `garment-parameters.json` records only exported generic constants and the independently authored example config; there is no hand-read subject-literal inventory.
