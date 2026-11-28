@@ -3,13 +3,15 @@
 //   await tab.evaluate(src => (0,eval)(src), <contents of this file>)
 // then: await window.__inside({faces:true}) -> { samples, insideSkin, deepestMm, byPart, examples }
 // A sample is a garment vertex (and, with faces, each triangle centre) whose signed distance to the
-// nearest SKIN triangle (CPU-skinned Body mesh, outward normal) is below -0.3 mm = inside the body.
+// nearest SKIN triangle (configured CPU-skinned support mesh, outward normal) is below -0.3 mm.
 // Pull helpers (API-driven, bypass the mouse): __comboStart({pulls:[{kind:'strap'|'panel',side:1|-1,dir:[x,y,z]}]}),
 // __comboRun(frames, sampleEvery), __comboRelease(), __comboResult().
 window.__inside=async (opts = {}) => {
     const T = await (typeof __omp_import__ === "function" ? __omp_import__ : (s, o) => (typeof __omp_import__ === "function" ? __omp_import__ : (s, o) => import(s, o))(s, o))("three");
-    const s = window.namiStudio;
-    const body = s.modelMeshes.find((m) => m.name === "Body"), bik = s.modelMeshes.find((m) => m.name === "BikiniTop");
+    const s = window.garmentStudio;
+    if (!s?.ready || !s.config?.garment) throw new Error('garmentStudio: ready calibrated input required');
+    const body = s.modelMeshes.find((m) => m.name === s.config.garment.bodyMesh), bik = s.modelMeshes.find((m) => m.name === s.config.garment.garmentMesh);
+    if (!body || !bik) throw new Error('garmentStudio: configured meshes missing');
     body.updateMatrixWorld(true);
     bik.updateMatrixWorld(true);
     const gp = bik.geometry.attributes.position, gi = bik.geometry.index.array, bp = body.geometry.attributes.position, bi = body.geometry.index.array;
@@ -57,8 +59,8 @@ window.__inside=async (opts = {}) => {
       radius[t] = Math.max(Math.hypot(BW[b]-BW[a], BW[b+1]-BW[a+1], BW[b+2]-BW[a+2]), Math.hypot(BW[c]-BW[a], BW[c+1]-BW[a+1], BW[c+2]-BW[a+2]));
     }
     const P = [], tag = [];
-    const aS = bik.geometry.attributes.aStrap, aP = bik.geometry.attributes.aPanel, restB = s.rig.meshes.get("BikiniTop").rest;
-    const part = (i) => aS.getX(i) !== 0 ? "ribbon" : aP.getX(i) !== 0 ? "cup" : restB[i * 3 + 1] >= 1.425 && restB[i * 3 + 2] < -0.02 ? "loop" : "band";
+    const aS = bik.geometry.attributes.aStrap, aP = bik.geometry.attributes.aPanel, restB = s.rig.meshes.get(s.config.garment.garmentMesh).rest, strap = s.config.garment.strap;
+    const part = (i) => aS.getX(i) !== 0 ? "ribbon" : aP.getX(i) !== 0 ? "cup" : restB[i * 3 + 1] >= strap.yAttach && restB[i * 3 + 2] < strap.minZ ? "loop" : "band";
     for (let i = 0;i < nG; i++) {
       P.push(G[i * 3], G[i * 3 + 1], G[i * 3 + 2]);
       tag.push(part(i));
@@ -168,15 +170,17 @@ window.__inside=async (opts = {}) => {
     return { samples: tot, counts, insideSkin: inside, deepestMm: +(deepest * 1000).toFixed(1), byPart: worst, examples: deep, bodyTris: nT };
   };
 
-window.__comboStart=async(spec)=>{const T=await import('three');const s=window.namiStudio,g=s.garments,bik=s.modelMeshes.find(m=>m.name==='BikiniTop');
+window.__comboStart=async(spec)=>{const T=await import('three');const s=window.garmentStudio;
+  if(!s?.ready || !s.config?.garment || !s.config?.probes)throw new Error('garmentStudio: ready calibrated input required');
+  const g=s.garments,bik=s.modelMeshes.find(m=>m.name===s.config.garment.garmentMesh);
   s.reset();s.setPaused(true);bik.updateMatrixWorld(true);
   const aS=bik.geometry.attributes.aStrap,aP=bik.geometry.attributes.aPanel,idx=bik.geometry.index.array,v=new T.Vector3();
-  const faceFor=(kind,side)=>{let best=null,bd=1e9;for(let t=0;t<idx.length;t+=3){const ids=[idx[t],idx[t+1],idx[t+2]];if(kind==='strap'){if(!ids.every(i=>aS.getX(i)===side))continue;const sm=ids.reduce((a,i)=>a+aS.getY(i),0)/3;const d=Math.abs(sm-0.5);if(d<bd){bd=d;best={t,ids};}}else{if(!ids.every(i=>aP.getX(i)===side))continue;const c=ids.reduce((a,i)=>a+bik.geometry.attributes.position.getY(i),0)/3;const d=Math.abs(c-1.37);if(d<bd){bd=d;best={t,ids};}}}return best;};
+  const faceFor=(kind,side)=>{let best=null,bd=Infinity;for(let t=0;t<idx.length;t+=3){const ids=[idx[t],idx[t+1],idx[t+2]];if(kind==='strap'){if(!ids.every(i=>aS.getX(i)===side))continue;const sm=ids.reduce((a,i)=>a+aS.getY(i),0)/3;const d=Math.abs(sm-0.5);if(d<bd){bd=d;best={t,ids};}}else{if(!ids.every(i=>aP.getX(i)===side))continue;const c=ids.reduce((a,i)=>a+bik.geometry.attributes.position.getY(i),0)/3;const d=Math.abs(c-s.config.probes.panelY);if(d<bd){bd=d;best={t,ids};}}}return best;};
   const worldOf=(ids)=>{const c=new T.Vector3();for(const i of ids){bik.getVertexPosition(i,v);v.applyMatrix4(bik.matrixWorld);c.add(v);}return c.divideScalar(3);};
-  const grabs=[];for(const it of spec.pulls){const f=faceFor(it.kind,it.side);const hit={object:bik,faceIndex:f.t/3,face:{a:f.ids[0],b:f.ids[1],c:f.ids[2]},point:worldOf(f.ids)};const ok=it.kind==='strap'?g.grabStrap(hit,it.side):g.grabPanel(hit,it.side);if(!ok)return{error:'grab refused '+JSON.stringify(it)};grabs.push({it,p0:hit.point.clone()});}
-  for(const gr of grabs){const d=new T.Vector3(...gr.it.dir).normalize().multiplyScalar(0.25);(gr.it.kind==='strap'?g.dragStrap:g.dragPanel)(gr.it.side,gr.p0.clone().add(d));}
+  const grabs=[];for(const it of spec.pulls){const f=faceFor(it.kind,it.side);if(!f)return{error:'no configured face '+JSON.stringify(it)};const hit={object:bik,faceIndex:f.t/3,face:{a:f.ids[0],b:f.ids[1],c:f.ids[2]},point:worldOf(f.ids)};const ok=it.kind==='strap'?g.grabStrap(hit,it.side):g.grabPanel(hit,it.side);if(!ok)return{error:'grab refused '+JSON.stringify(it)};grabs.push({it,p0:hit.point.clone()});}
+  for(const gr of grabs){const d=new T.Vector3(...gr.it.dir).normalize().multiplyScalar(s.config.probes.pullDistance);(gr.it.kind==='strap'?g.dragStrap:g.dragPanel)(gr.it.side,gr.p0.clone().add(d));}
   window.__combo={grabs,worst:{insideSkin:-1},samples:0};return{ok:true};};
-window.__comboRun=async(frames,every)=>{const s=window.namiStudio,c=window.__combo;for(let i=0;i<frames;i++){s.step(1/60);if((i+1)%every===0){const p=await window.__inside({});c.samples++;if(p.insideSkin>c.worst.insideSkin)c.worst={...p,frame:i+1};}}return{worst:c.worst.insideSkin,samples:c.samples};};
-window.__comboRelease=()=>{const g=window.namiStudio.garments;for(const gr of window.__combo.grabs)(gr.it.kind==='strap'?g.releaseStrap:g.releasePanel)(gr.it.side);return true;};
+window.__comboRun=async(frames,every)=>{const s=window.garmentStudio,c=window.__combo;for(let i=0;i<frames;i++){s.step(1/60);if((i+1)%every===0){const p=await window.__inside({});c.samples++;if(p.insideSkin>c.worst.insideSkin)c.worst={...p,frame:i+1};}}return{worst:c.worst.insideSkin,samples:c.samples};};
+window.__comboRelease=()=>{const g=window.garmentStudio.garments;for(const gr of window.__combo.grabs)(gr.it.kind==='strap'?g.releaseStrap:g.releasePanel)(gr.it.side);return true;};
 window.__comboResult=()=>{const c=window.__combo;return{inside:c.worst.insideSkin,deepestMm:c.worst.deepestMm,byPart:c.worst.byPart,samples:c.samples};};
 

@@ -41,7 +41,7 @@ Preserve protected regions and smooth transitions. Keep anatomical and display d
 Changes to geometry invalidate dependent UV, weights, masks and clearance; regenerate them together.
 Removing source clothes or footwear changes what must be continuous and painted. Inspect newly
 exposed skin in clay/albedo before freezing it; declare localized topology exceptions instead of
-claiming global source preservation. See the measured ankle/atlas case in `robin-transfer-study.md`.
+claiming global source preservation. Inspect actual boundary and atlas correspondence on the selected input.
 Choose SIMPLE only to increase sampling density after shape acceptance, never to repair anatomy.
 
 Imported skin can be visually continuous but split at UV/material seams. Before restricting a
@@ -100,4 +100,4 @@ Record repair rounds and which construction lessons held or failed on the second
 Promote only observed successful recipes into the skill; retain failures as bounded counter-examples.
 Do not claim generalization from one transfer case, or claim new likeness from unit-test totals.
 
-Measured transfer, failures, corrected probe regressions and bounded results: [Robin case study](robin-transfer-study.md).
+Use the caller-calibrated contracts in [skin/body workflow](skin-body-distillation.md); no historical subject study is bundled.

@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """The measurement vocabulary, classifier, naming and loop rule for animation clips (1.5.2 §1-§4).
 
-WHY THIS MODULE EXISTS AT ALL. 1.5.1 shipped eleven clips named `NlaTrack`, `NlaTrack.001`, ... and
-a loop rule that contradicted its own data. Both failures have the same shape: a claim about a clip
-that nobody measured. So there is exactly one feature vector here (§1) and everything else -- the
-class, the name, the loop flag -- is a function of it. If a claim cannot be written as a function of
-these numbers it is marked `inferred` rather than dressed up as a measurement.
+Clip labels and loop flags are claims that must follow actual sampled measurements. One feature
+vector supplies classification, naming and loop decisions; a claim not established by those
+measurements remains explicitly inferred.
 
 The same vector runs in both directions. Stage R3 measures an unknown clip to identify it; Stage R4
 states a target band and measures the clip it authored to check the classifier agrees. Same code,
@@ -68,31 +66,28 @@ def artifact_path(workspace: Path) -> Path:
 REQUIRED_LANDMARKS: tuple[str, ...] = ("hip", "head", "hand.l", "hand.r", "foot.l", "foot.r")
 
 # ---------------------------------------------------------------------------------------------
-# §2 thresholds. Every one of these is `single-subject`: derived from eleven clips on one rig
-# (Lee Sin, H = 1.0), with the boundaries dropped into the empty gaps between observed clusters
-# rather than at round numbers. They are starting values, not constants -- confirm the gaps survive
-# on a second rig before hardening any of them. `classify(features, thresholds=...)` takes an
-# override and the returned Classification records the set that was actually used, so a report can
-# always be traced back to the numbers that produced it.
+# §2 retained operational thresholds. These legacy classification policies are
+# unchanged, not independently calibrated by the synthetic fixture and not
+# population norms. classify(features, thresholds=...) records the actual set
+# used; caller overrides do not alter the separate acceptance gate policies.
 # ---------------------------------------------------------------------------------------------
-IDLE_TRAVEL = 0.02              # single-subject: idle-still measured travel 0.013H
-IDLE_RISE = 0.02                # single-subject: idle-still measured rise 0.0001H
-IN_PLACE_TRAVEL = 0.30          # single-subject: jump-in-place measured travel 0.272H
-WALK_SPEED = 0.30               # single-subject: walk-forward measured 0.400 H/s
-RUN_SPEED = 0.60               # single-subject: the walk/run gap is 0.400 -> 0.799 H/s
-DASH_SPEED = 1.50               # single-subject: the run/dash gap is 0.799 -> 2.250 H/s
-JUMP_RISE = 0.15                # single-subject: jump-in-place measured rise 0.248H
-LEAP_TRAVEL = 0.50              # single-subject: separates jump-in-place (0.272H) from leap (2.826H)
-PLANTED_FOOT_RANGE = 0.10       # single-subject: "feet do not participate"
-GESTURE_HAND_RANGE = 0.40       # single-subject: arms-only, and only meaningful while in-place
+IDLE_TRAVEL = 0.02
+IDLE_RISE = 0.02
+IN_PLACE_TRAVEL = 0.30
+WALK_SPEED = 0.30
+RUN_SPEED = 0.60
+DASH_SPEED = 1.50
+JUMP_RISE = 0.15
+LEAP_TRAVEL = 0.50
+PLANTED_FOOT_RANGE = 0.10
+GESTURE_HAND_RANGE = 0.40
 
 # §4 loop rule. These two are named in CONTRACT_1.5.2.md and shared with rig_gate_core.
 POSE_RETURN_DEGREES = 0.5
 LOOP_HIP_TOLERANCE = 0.01
 
-# §1 tripwire. Lee Sin measured 0.000 on all eleven clips. Raising this above zero is a deliberate
-# admission that the source rig scales joints -- which changes what Stage R2 may legally do to skin
-# weights -- not a way to quiet the flag.
+# §1 tripwire. Raising this above zero admits source joint scaling, which changes
+# the skin-conditioning contract; it is not a way to quiet the flag.
 SCALE_DELTA_TRIPWIRE = 0.0
 
 # Order matters and is the spec's own: jump/leap are decided by rise+travel and outrank the speed
@@ -133,7 +128,7 @@ class Thresholds:
     leap_travel: float = LEAP_TRAVEL
     planted_foot_range: float = PLANTED_FOOT_RANGE
     gesture_hand_range: float = GESTURE_HAND_RANGE
-    provenance: str = "single-subject (11 clips, one rig, H = 1.0)"
+    provenance: str = "retained legacy operational policy; not independently calibrated by synthetic fixtures"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -313,8 +308,8 @@ def _validate_clip(
 ) -> dict[str, Any]:
     """Check one clip against the CONTRACT_1.5.2 payload shape, or raise naming clip and field.
 
-    The error message always carries the clip's own name. A payload with eleven clips that reports
-    "sampleTimes length mismatch" and nothing else costs an afternoon of bisecting a JSON file.
+    The error message always carries the clip's own name so a malformed field
+    remains attributable when a payload contains multiple clips.
     """
     if not isinstance(clip, Mapping):
         raise ValueError(f"clip must be an object; got {type(clip).__name__}")
@@ -479,11 +474,10 @@ def measure_clip(clip: Mapping[str, Any], figure_height: float) -> ClipFeatures:
 
     TWO PROPERTIES OF handRange / footRange THAT WILL BITE A CALLER WHO ASSUMES OTHERWISE:
 
-    1. They are measured in WORLD space, so root travel is inside them. A walk that covers 1.13H
-       measures handRange ~1.13H, not the 0.15-0.25H counter-swing band §R4 quotes as a design
-       target. That is why `gesture` is gated on `in-place`: the hand-range threshold only means
-       what it says once the root is known to be still. An R4 authoring check that wants the
-       counter-swing alone must subtract the hip, and should say so.
+    1. They are measured in WORLD space, so root travel is inside them. This is
+       not the root-relative counter-swing used by an authoring target. Gesture
+       classification is therefore gated on in-place motion; an authoring check
+       that wants counter-swing alone must subtract the hip and name that frame.
 
     2. They POOL both sides before taking the range, as the vocabulary states. Pooling puts the
        stance width inside footRange -- two feet standing perfectly still 0.12H apart measure
@@ -598,13 +592,10 @@ def decide_loop(
 
         loop  <=>  poseReturn <= 0.5 deg per rotation joint  AND  ||hip(T) - hip(0)|| <= 0.01H
 
-    WHY NOT THE 1.5.1 RULE. 1.5.1 used "a clip that neither travels nor rises can repeat seamlessly",
-    and that rule contradicted the very data it was derived from: `idle-gesture` measured
-    travel = 0.121H -- six times the idle threshold -- and was correctly marked loopable. What makes
-    a clip loop is not that the root stays put but that THE LAST POSE RETURNS TO THE FIRST. Measured
-    on the joint transforms, the corrected rule accepts a clip that wanders and comes back and
-    rejects one that ends mid-stride a centimetre from where it started. `travel` and `rise` remain
-    descriptors; they stop being the loop criterion.
+    A stationary-root rule is insufficient: a clip may wander and return to
+    its first pose, while another with little travel can end mid-stride. Loop
+    acceptance compares actual endpoint poses and root displacement. Travel
+    and rise remain descriptors, not the loop criterion.
 
     UNDECIDABLE IS A THIRD ANSWER. A host that cannot measure per-joint rotation deltas omits
     `poseReturn`, and this returns `loop=None`. Defaulting to False would look conservative and be
@@ -642,9 +633,9 @@ def decide_loop(
 def _legacy_loop_rule_1_5_1(features: ClipFeatures, thresholds: Thresholds | None = None) -> bool:
     """The rule §4 replaced: "a clip that neither travels nor rises can repeat seamlessly".
 
-    Kept ONLY so a test can execute the contradiction rather than describe it. `idle-gesture` travels
-    0.121H and loops; this function returns False for it and `decide_loop` returns True. Never call
-    this from production code -- it is a regression pin, not an alternative.
+    Kept only as an executable negative control: independently authored
+    out-and-back motion can loop while this rule rejects it. Never call this
+    from production code; it is a regression pin, not an alternative.
     """
     limits = thresholds or DEFAULT_THRESHOLDS
     return features.travel < limits.idle_travel and features.rise < limits.idle_rise
@@ -705,18 +696,15 @@ def name_clip(
     """Rename a clip from its measurements and record WHICH measurement the name rests on.
 
     Source clips arrive as `NlaTrack`, `NlaTrack.001`, ... -- Blender NLA strip names carrying no
-    information. 1.5.1 shipped those verbatim as eleven unusable buttons. Renaming is therefore
-    required, and the two rules that make it honest are:
+    information. Rename from measurements while preserving source identity.
 
     - `source_name` survives verbatim, so the parity chain back to the source animation is intact.
     - `inferred` is True whenever the label's wording implies intent. Detected from INTENT_WORDS by
-      default and overridable, because a label can imply intent with words no list contains. Two of
-      the eleven source clips could only be named by inference; marking them cost nothing and kept
-      the distinction between measured and guessed visible to whoever read it next.
+      default and overridable, because a label can imply intent with words no list contains.
+      The inferred flag preserves the distinction between measured motion and guessed intent.
 
-    `measured` is the short human-readable string of the numbers behind the name -- e.g.
-    "speed 0.799 H/s, rise 0.021H". It is chosen from the classification, not from the label text,
-    so a hand-written label cannot change which numbers get quoted underneath it.
+    `measured` quotes the actual features behind the classification, not the label text,
+    so a hand-written label cannot change the numbers presented underneath it.
     """
     resolved_classification = classification or classify(features)
     resolved_loop = decide_loop(features).loop if isinstance(loop, _Auto) else loop

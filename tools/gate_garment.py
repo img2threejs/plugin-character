@@ -32,10 +32,10 @@ strap == ribbon and panel == cup; side +1 == left, -1 == right.
 Scope of G4: a case counts as a hard pull when it pulls the garment (pull matrix, touch, combo
 pulls); tissue grab/squeeze never grab the cloth and are exempt. The recorded files do not say
 whether each drag went past the limit, so G4 requires every garment pull to reach a FRACTION
-(default 0.7, --min-pull-fraction) of its limit, read from reference/garment-parameters.json
-(constants STRAP.maxPull for ribbons, PANEL.maxPull for cups; --parameters FILE, or the flags
---ribbon-limit-mm / --cup-limit-mm). No limit known -> unmeasured. Direction-limited pulls
-(225/315 degrees) stop short of the nominal limit because the pull stretches with resistance.
+(default 0.7, --min-pull-fraction) of its limit, from an explicitly selected --parameters FILE
+(calibration.strap.maxPull / calibration.panel.maxPull in metres), or explicit
+--ribbon-limit-mm / --cup-limit-mm. No selected calibration -> unmeasured.
+Direction-limited pulls may stop short of the nominal limit because the pull stretches with resistance.
 --min-ribbon-pull-mm / --min-cup-pull-mm stay as optional absolute overrides.
 
 Scope of G3: per-phase counts (>= 3 hold, >= 3 rebound, >= 1 settled) win when a case records them.
@@ -67,7 +67,6 @@ MIN_COMBOS = 10
 MIN_PHASE_SAMPLES = {"hold": 3, "rebound": 3, "settled": 1}
 DECLARED_MIN_SAMPLES = 9
 DEFAULT_MIN_PULL_FRACTION = 0.7
-DEFAULT_PARAMETERS = Path(__file__).resolve().parent.parent / "reference" / "garment-parameters.json"
 USAGE_EPILOG = ("Release evidence (G5) needs evidence/connected-interaction.json as an extra --matrix, "
                 "next to the skin-guard matrices.")
 KINDS = ("ribbon", "cup")
@@ -231,16 +230,22 @@ def load_records(paths):
         src = path.name
         found = False
         for key, section in (("cases", "pull"), ("touch", "touch"), ("tissue", "tissue"), ("combos", "combo")):
-            rows = doc.get(key)
-            if isinstance(rows, list):
-                found = True
-                records.extend(_normalise(r, section, src, i) for i, r in enumerate(rows))
-        matrix = doc.get("matrix")
-        if isinstance(matrix, dict):
+            if key not in doc:
+                continue
+            rows = doc[key]
+            if not isinstance(rows, list):
+                raise InputError("%s: %s must be a list" % (path, key))
+            found = True
+            records.extend(_normalise(r, section, src, i) for i, r in enumerate(rows))
+        if "matrix" in doc:
+            matrix = doc["matrix"]
+            if not isinstance(matrix, dict):
+                raise InputError("%s: matrix must be an object" % path)
+            found = True  # An empty declared matrix is recognized but supplies no evidence.
             for group, rows in matrix.items():
-                if isinstance(rows, list):
-                    found = True
-                    records.extend(_normalise(r, "release", src, i) for i, r in enumerate(rows))
+                if not isinstance(rows, list):
+                    raise InputError("%s: matrix.%s must be a list" % (path, group))
+                records.extend(_normalise(r, "release", src, i) for i, r in enumerate(rows))
         if not found:
             raise InputError("matrix file %s has none of cases / touch / tissue / combos / matrix" % path)
     return records
@@ -416,29 +421,22 @@ def check_g3(records, sampling_declared=None):
 
 
 def load_limits(parameters, fallback_mm):
-    """Pull limits in mm per kind: from the parameters file (constants.STRAP / PANEL .maxPull, metres;
-    also found under constants.garment), else the fallback flags. A kind with no limit maps to None."""
-    explicit = parameters is not None
-    path = Path(parameters).expanduser() if explicit else DEFAULT_PARAMETERS
+    """Explicit per-input limits in metres, or explicit flags in mm. No demo fallback."""
+    path = Path(parameters).expanduser() if parameters is not None else None
     limits = {"ribbon": None, "cup": None}
-    if path.is_file():
+    if path is not None and path.is_file():
         try:
             doc = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, ValueError) as err:
-            if explicit:
-                raise InputError("parameters file %s could not be read: %s" % (path, err))
-            doc = None
-        consts = doc.get("constants") if isinstance(doc, dict) else None
-        if isinstance(consts, dict):
-            garment = consts.get("garment") if isinstance(consts.get("garment"), dict) else {}
-            for kind, key in (("ribbon", "STRAP"), ("cup", "PANEL")):
-                for scope in (consts, garment):
-                    entry = scope.get(key)
-                    value = _num(entry.get("maxPull")) if isinstance(entry, dict) else None
-                    if value is not None and value > 0:
-                        limits[kind] = value * 1000.0
-                        break
-    elif explicit:
+            raise InputError("parameters file %s could not be read: %s" % (path, err))
+        calibration = doc.get("calibration") if isinstance(doc, dict) else None
+        if isinstance(calibration, dict):
+            for kind, key in (("ribbon", "strap"), ("cup", "panel")):
+                entry = calibration.get(key)
+                value = _num(entry.get("maxPull")) if isinstance(entry, dict) else None
+                if value is not None and value > 0:
+                    limits[kind] = value * 1000.0
+    elif path is not None:
         raise InputError("parameters file not found: %s" % path)
     for kind in KINDS:
         if limits[kind] is None and fallback_mm.get(kind) is not None and fallback_mm[kind] > 0:
@@ -513,8 +511,8 @@ def check_g5(records):
     bad, unmeasured = [], []
     for rec in rel:
         mismatch, grabbed = rec["release"]["renderMismatch"], rec["release"]["stillGrabbed"]
-        if mismatch is None:
-            unmeasured.append("%s: afterRelease.renderMismatch not recorded" % _fmt_case(rec))
+        if mismatch is None or not isinstance(grabbed, bool):
+            unmeasured.append("%s: release requires renderMismatch and boolean stillGrabbed" % _fmt_case(rec))
         elif mismatch != 0 or grabbed is True:
             bad.append("%s: renderMismatch=%g stillGrabbed=%s" % (_fmt_case(rec), mismatch, grabbed))
     if bad:
@@ -562,7 +560,7 @@ def main(argv=None):
                              "evidence/connected-interaction.json as an extra --matrix (G5)")
     parser.add_argument("--json", action="store_true", help="print one img2.gate-verdict JSON envelope")
     parser.add_argument("--parameters", metavar="FILE", default=None,
-                        help="garment-parameters.json holding the pull limits (default: %s)" % DEFAULT_PARAMETERS)
+                        help="explicit input calibration JSON: calibration.strap/panel.maxPull in metres; no default")
     parser.add_argument("--min-pull-fraction", type=float, default=DEFAULT_MIN_PULL_FRACTION,
                         help="G4: each pull must reach this fraction of its limit (default %(default)s)")
     parser.add_argument("--ribbon-limit-mm", type=float, default=None,

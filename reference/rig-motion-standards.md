@@ -15,17 +15,15 @@ Run `bpy_measure_rig_motion.py --blend FILE --armature NAME --body NAME --poses 
 
 Gate inputs require `declared.references`, `declared.baselines` and `declared.limits`, keyed by metric (including expanded region/pose suffix); this measurer does not manufacture them. Merge independent declarations into the evidence before gating. A scalp mask must be declared absent explicitly to mark it not applicable.
 
-## Case evidence and failure modes
+## Failure modes and limits
 
-A weight-only fix could not correct asymmetric ankle pivots. The cited calf triangle stretch improved 17.11824 to 1.009584 and area 15.7071 to 0.970299; knee p99 2.03907 to 1.48940. A shoulder field improved p99 while worsening another compression count. See `robin-bikini-transfer-01/evidence/anatomy-skinning-rationale.md:44-97` and `anatomy-skinning-aligned-summary-02.json:96-114`.
+Weight-only correction cannot repair incorrect pivots. Inspect native weights, transforms, modifiers and pose before choosing a causal correction; compare each declared region and pose against its own baseline.
 
-Mirrored foot weight difference was 0.535104 to 1.99676e-6 and posed mirror distance 0.05079333 to 1.10521e-6 m (`anatomy-skinning-aligned-summary-02.json:10-41`). Copying local quaternions during rest rebasing yielded 0.596454 rad error versus 2.27e-7 after world-delta conjugation (`anatomy-skinning-rationale.md:53-61`). Sign-only quaternion repair must preserve represented rotations.
+Rest rebasing must preserve represented world-delta rotations, not copy local quaternion components across different rest frames. Sign-only quaternion repair preserves rotations.
 
-Face-rigid error was 2.541868e-7 m across 525 samples (`rig-11-acceptance.json:26-34`). The existing 0.5 degree and 0.01H loop values are provisional advisory diagnostics, not a cross-subject law.
+Hair exceptions and root tolerances are explicitly approved caller baselines, not a universal penetration allowance. Face-rigid and loop checks likewise use the selected reference; generic advisory loop diagnostics do not certify visual quality.
 
-Earlier hair clearance was 0.00149881665 m with 69 vertices under 2 mm (`head-report.json:460-468`). A later, different hair artifact had 236 approved rest penetrations and 228 rigged (`rig-11-hair-baseline-contact.json:2-15`). These observations cannot define a universal zero or allowance; inspect and approve localized exceptions.
-
-In the Robin release audit, a diagnostic 30-degree Spine quaternion produced 924 triangles with stretch above 2; one edge grew from 2.65 mm at rest to 106.45 mm in the evaluated mesh. This pose is a diagnostic, not an accepted motion or a universal limit. Adjacent vertices moved differently, so inspect vertex weights, bone transforms, modifiers and the pose before attributing the cause; compare against the intended rig and visually review the result. Do not repair weights or change thresholds solely to make this sample pass. Preserve rest triangle indices when measuring deformation: Blender can change a polygon's tessellation as it deforms even when polygon topology is unchanged.
+Preserve rest triangle indices when measuring deformation: native tessellation may change under pose even when polygon topology is unchanged. No historical subject strain, clearance or sample-count receipt is shipped.
 
 ## Explicitly unmeasured
 

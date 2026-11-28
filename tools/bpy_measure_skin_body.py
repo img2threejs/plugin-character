@@ -19,7 +19,7 @@ except ImportError:
 
 
 def weight_stats(rows):
-    """Measure normalization, four-influence and 1e-4 pruning rules; donor_hair_rig.py:132-183."""
+    """Measure normalization, four-influence and 1e-4 pruning contracts."""
     if not rows:
         raise ValueError('No vertices')
     weights = [list(row.values()) for row in rows]
@@ -31,7 +31,7 @@ def weight_stats(rows):
 
 
 def mirror_difference(rows_a, rows_b, pairs, permutation):
-    """Compare declared pairs through a bone mapping; case 681 foot pairs, limit 1e-4."""
+    """Compare declared pairs through a caller-supplied one-to-one bone mapping."""
     unmatched, differences, seen_a, seen_b = 0, [], set(), set()
     if not isinstance(permutation, dict) or len(set(permutation.values())) != len(permutation):
         raise ValueError('Bone permutation must be one-to-one')
@@ -62,7 +62,7 @@ def group_bones(names, catalogue):
 
 
 def pixel_diff(a, b, mask=None):
-    """Count unequal pixels and changes outside an explicit mask; nape case requires zero outside."""
+    """Count unequal pixels and changes outside an explicit mask."""
     if len(a) != len(b) or not a or (mask is not None and len(mask) != len(a)):
         raise ValueError('Pixel or mask sizes differ or are empty')
     changed = [x != y for x, y in zip(a, b)]
@@ -79,7 +79,7 @@ def load_mask(path, size):
 
 
 def island_tone_deviation(pixels, island, reference):
-    """Compare encoded-sRGB channel medians; case head-report.json:315-330, limit 0.08."""
+    """Compare caller-selected encoded-sRGB channel medians; no default tolerance."""
     if len(pixels) != len(island) or len(pixels) != len(reference):
         raise ValueError('Mask and pixel sizes differ')
     channels = [[p[c] for p, selected in zip(pixels, mask) if selected]

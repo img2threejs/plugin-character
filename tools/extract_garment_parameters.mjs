@@ -5,21 +5,18 @@
 //   node tools/extract_garment_parameters.mjs            # JSON on stdout
 //   node tools/extract_garment_parameters.mjs --out f    # also writes the same JSON to f
 //
-// reference/garment-parameters.json stores this output under `constants`, next to a
-// hand-built `subjectLiterals` list. tests/test_garment_character_provenance.py fails when
-// the stored constants drift from the runtime copies, so a parameter cannot be edited in
-// the runtime without the reference being regenerated.
+// Only generic solver constants are exported here. Input-specific dimensions are
+// explicit calibration; the shipped independent example is recorded separately.
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const runtime = join(dirname(fileURLToPath(import.meta.url)), '..', 'runtime', 'garment-character');
 const MODULES = ['garment', 'chest-field', 'softbody'];
-// Constants the route doc and gates rely on; their absence means the runtime was changed incompatibly.
 const REQUIRED = {
-  garment: ['STRAP', 'PANEL', 'PULL_PATCH', 'STRAP_FIELD', 'CUP_LIFT', 'CONTACT_STEADY', 'SKIN_GUARD', 'FLAP', 'TRANSITION', 'REDUCED_TRANSITION', 'OUTFITS'],
-  'chest-field': ['ROUND_CHEST'],
-  softbody: ['PROFILES', 'REGION_IDS'],
+  garment: ['PULL_PATCH', 'SKIN_GUARD', 'TRANSITION', 'REDUCED_TRANSITION'],
+  'chest-field': [],
+  softbody: ['REGION_IDS'],
 };
 
 /** Deep plain-JSON copy (frozen objects/arrays included); rejects values JSON cannot round-trip. */
@@ -47,7 +44,8 @@ for (const name of MODULES) {
   }
 }
 
-const text = JSON.stringify({ generatedFrom: 'runtime/garment-character/*.mjs', constants }, null, 2) + '\n';
+const { SYNTHETIC } = await import(pathToFileURL(join(runtime, 'synthetic-config.mjs')).href);
+const text = JSON.stringify({ generatedFrom: 'runtime/garment-character/*.mjs', scope: 'Generic mechanics and independently authored synthetic example; not real-input calibration or acceptance evidence.', constants, synthetic: plain(SYNTHETIC, 'synthetic') }, null, 2) + '\n';
 const out = process.argv.indexOf('--out');
 if (out !== -1) {
   if (!process.argv[out + 1]) throw new Error('--out needs a file path');

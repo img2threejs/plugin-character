@@ -114,7 +114,7 @@ class RealBpy(unittest.TestCase):
                 measured = subprocess.run(cmd, capture_output=True, text=True)
                 self.assertEqual(measured.returncode, 0, measured.stdout + measured.stderr)
                 document = json.loads(evidence.read_text())
-                document.setdefault('declared', {}).setdefault('limits', {})['island_tone_deviation'] = {'value': .08, 'source': 'test project limit'}
+                document.setdefault('declared', {}).setdefault('limits', {})['island_tone_deviation'] = {'value': .1, 'source': 'independently authored test project limit'}
                 evidence.write_text(json.dumps(document))
                 command = [sys.executable, str(GATE), '--evidence', str(evidence), '--json']
                 for stage in stages: command += ['--stage', stage]

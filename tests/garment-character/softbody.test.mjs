@@ -3,7 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Bone, BoxGeometry, BufferAttribute, BufferGeometry, Group, Mesh, MeshBasicMaterial, Raycaster, Skeleton, SkinnedMesh, SphereGeometry, Vector3 } from 'three';
-import { createSoftRig, PROFILES, REGION_IDS } from '../../runtime/garment-character/softbody.mjs';
+import { createSoftRig as attachSoftRig, REGION_IDS } from '../../runtime/garment-character/softbody.mjs';
+import { SYNTHETIC } from '../../runtime/garment-character/synthetic-config.mjs';
+const PROFILES = SYNTHETIC.soft.profiles;
+const createSoftRig = (root,sidecar) => attachSoftRig(root,sidecar,SYNTHETIC.soft);
 import { createPicker } from '../../runtime/garment-character/picking.mjs';
 
 function fixture({ garment = false, skinned = false, narrow = false, attach = true } = {}) {
@@ -257,11 +260,11 @@ test('thin abdominal triangles allow visible tangential travel without folding',
   const root = new Group(), geometry = new BufferGeometry(), positions = [], masks = REGION_IDS.map(() => []);
   for (let region = 0; region < 9; region++) {
     const vertices = region === 6
-      ? [[.00531705, 1.27823925, .09585121], [.00432754, 1.29493845, .09706767], [.00336244, 1.30652833, .09791733]]
+      ? [[4,0,0], [4.001,0.04,0], [4,0.08,0]]
       : [[region * .3, 0, 0], [region * .3 + .1, 0, 0], [region * .3, .1, 0]];
     vertices.forEach((p, j) => {
       positions.push(...p);
-      masks.forEach((mask, r) => mask.push(r !== region ? 0 : region === 6 ? [.41822165, .14364034, .02475265][j] : 1));
+      masks.forEach((mask, r) => mask.push(r !== region ? 0 : region === 6 ? [0.6,0.2,0.02][j] : 1));
     });
   }
   geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
@@ -269,7 +272,7 @@ test('thin abdominal triangles allow visible tangential travel without folding',
   REGION_IDS.forEach((id, i) => geometry.setAttribute(`_soft_${id.replaceAll('-', '_')}`, new BufferAttribute(new Float32Array(masks[i]), 1)));
   const body = new Mesh(geometry, new MeshBasicMaterial()); body.name = 'Body'; root.add(body);
   const rig = createSoftRig(root, { meshes: [{ name: 'Body', regions: REGION_IDS.map(id => ({ id, attribute: `_soft_${id.replaceAll('-', '_')}` })) }] });
-  const center = new Vector3(.00433568, 1.29323534, .09694540);
+  const center = new Vector3(4 + 0.001/3, 0.04, 0);
   const h = new Raycaster(center.clone().add(new Vector3(0, 0, 1)), new Vector3(0, 0, -1)).intersectObject(body, false)[0];
   const token = rig.grab(h, 1, { mode: 'grab' }); assert.ok(token);
   rig.drag(token, h.point.clone().add(new Vector3(.012, .007, 0))); advance(rig, .7);
@@ -543,7 +546,7 @@ test('rapid released presses have bounded live storage and reset cannot leave a 
   assert.deepEqual(entry.positions,entry.rest);
   const token=f.rig.grab(hit(f),100,{mode:'squeeze'});
   assert.ok(token,'released storage is reusable');
-  // Lively chest damping (zeta 0.11) needs ~10 s to reach the exact sleep threshold.
+  // Explicit synthetic damping is allowed enough time to reach exact sleep.
   advance(f.rig,.3); f.rig.releaseAll(); advance(f.rig,12);
   assert.deepEqual(entry.positions,entry.rest);
   f.rig.dispose();

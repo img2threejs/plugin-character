@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Replace unclear-rights subject calibration, studies, measured tables and copied garment/rig
+  receipts in HEAD with independently authored synthetic geometry/configuration and caller-data contracts.
+  The garment viewer now requires explicit real-input calibration and uses `window.garmentStudio`;
+  missing limits remain unmeasured. Plans forward the selected `catalogueFile` consistently.
+  No original-asset fidelity, native acceptance, rights grant or history erasure is claimed; see `NOTICE`.
+  G10, material, native/parity and required gate thresholds are unchanged. The former subject-specific
+  advisory hair-layout table is removed; real hair count still requires the caller's declared reference.
+- Replace the external-asset rig oracle with a genuinely skinned, project-authored primitive:
+  six joints in deliberately non-node order, true inverse binds and translation/rotation/scale clips.
+  The complete canonical report and GLB are pinned by `tests/fixtures/oracle-synthetic/manifest.json`;
+  regenerate with `tools/generate_synthetic_rig_oracle.py`. Caller GLB/report pairs remain explicit.
+- Require caller-selected cheek landmark factors, texture padding/repair gates, pigment curves and
+  tone-deviation limits instead of historical subject presets. Generic image/mesh algorithms remain.
+- Remove remaining historical rig-intake, bind-rendering and animation-observation prose.
+  Animation regressions now use independently authored analytic tracks rather than copied clip
+  measurements; threshold provenance explicitly describes retained legacy policy, not synthetic calibration.
+- Measure moved garment triangle centres directly: rest-pose sag and clear corners cannot
+  bound clearance after a lateral pull crosses a new ridge. Preserve existing clearance floors
+  and correction passes; remove the unsound centre-pruning shortcut and its unused storage/parameter.
+- Recognize valid empty garment evidence containers and report missing named gates instead of
+  a layout error, while continuing to reject malformed container types.
 
 - Decode and CRC-verify material PNGs and require exact upright RGBA equality with their
   bottom-up raw evidence, rather than accepting dimensions or matching filenames alone.
@@ -97,16 +118,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Explicit `skin-body` route: the skin texture and body parts of reference characters as reusable knowledge and tools.
-  `reference/skin-body-distillation.md` (19 rules, each with its case), `skin-texture.md`, `skin-atlas-authoring.md`,
-  `body-parts.md` + `body-parts.json`, `head-hair-authoring.md`.
+- Explicit `skin-body` route: generic caller-data texture/body-part tools and workflow documentation.
+  The current catalogue inventories project-authored primitives; no historical subject catalogue is shipped.
+  See `reference/skin-body-distillation.md`, `skin-texture.md`, `skin-atlas-authoring.md` and `body-parts.md`.
 - Interpolation round (`reference/reference-relative-standards.md`): standards derived from the reference characters are reference-relative. New
   gate comparators `reference-within` (symmetric, or one-sided with `direction`), `no-worse-than-baseline` (`direction`,
   signed baselines), `declared-min` / `declared-max`, wildcard metrics that also expand over declared keys (omitting a region or
-  pose can never pass), `severity: advisory` (`warn`, exit code unchanged) and merged stage fragments. The base S1–S8 checks
-  that were fixed single-subject thresholds (island tone .08, export tolerances, hair chain count) are now declared limits /
-  references / advisory; no case ranges are shipped.
-- New stages as fragments: S2B `reference/skin-body-standards.s2b-skin-authoring.json` + `tools/skin_authoring.py`
+  pose can never pass), `severity: advisory` (`warn`, exit code unchanged) and merged stage fragments.
+  Subject-specific island-tone, export and hair-count checks require caller declarations; no measured
+  source ranges or fixed subject hair layout are shipped.
+- New stages: S2B `reference/skin-body-standards.s2b-skin-authoring.json` + `tools/skin_authoring.py`
   (reference-patch tone targets, per-pixel L*, feathering only inside adjacent bands, mirror consistency, bounded padding) +
   `tools/bpy_measure_skin_authoring.py`; S9 `…s9-geometry.json` + `tools/bpy_measure_geometry.py` (landmark ratios, mirror
   coverage and error, welded topology, UV overlap/gutter/density, budgets); S10 `…s10-rig.json` and S11 `…s11-hair.json` +
@@ -125,9 +146,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `tools/skin_texture.py` (+ `tools/atlas_surface.py`): skin texture pipeline as pure-numpy cores — UV region
   rasterisation with an overlap report, tone measurement that names its colour space, island fill, neck shadow lift,
   root-paint repair that cannot wrap across image edges, detail/iris recolour, composite and linear-light bridge with
-  resolution-invariant UVs, save-pack-verify (fails on stale packed bytes), skin material spec/validator that reports
-  what the export does not carry. A synthetic-atlas smoke reproduced the case numbers: neck gain
-  `[1.09272,1.24632,1.36447]` vs the job's `[1.09091,1.24713,1.36620]`, 0 changed pixels outside the supports.
+  resolution-invariant UVs, save-pack-verify (fails on stale packed bytes), skin material spec/validator
+  that reports what the export does not carry. Current tests use independent small synthetic arrays;
+  historical asset-specific tone gains and claimed measured comparisons are no longer distributed.
 - `tools/body_parts.py` + `reference/body-parts.json`: body-part catalogue per asset and stage, neutral soft-region mask
   evaluation, mirrored-weight symmetry check that reports unmatched/ambiguous pairs instead of passing, and a validator
   that rejects region ids outside the neutral allowlist.
@@ -139,9 +160,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a seated swimsuit image is not standing silhouette evidence. An authorized generated turnaround
   may serve as an explicitly synthetic target after actual-image inspection and user design review;
   disclose cost/visibility and retain operation provenance, scale checks and occlusion limits.
-- `reference/robin-transfer-study.md`: measured native Robin adaptation, exact protected source
-  correspondence, packed-image/export parity, actual nine-region mouse/touch, bounded garment
-  replay, concave-ear sign confirmation and documented visual/physical/process limitations.
 - Read-only `tools/extract_construction_prior.py` and `tools/character_prior/`: source-hashed GLB
   inventory, conditional anatomy/face/atlas measurements and construction hypotheses, with 118
   regression tests. A source-output alias is rejected; static normals use inverse-transpose transforms.
@@ -150,22 +168,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   No measured prior is bundled: `tools/extract_construction_prior.py` generates one from a GLB you supply and may analyse.
   Preserve source attribution, null landmarks and heuristic limits; topology does not recover
   modifier history. Source SIMPLE subdivision preserves form, not a recovered smoothing operation.
-- Explicit `garment-character` route, composed after native/admitted-asset preparation and
-  `softbody-character`: connected garment (one cloth surface, pulls weighted by distance along it), in-place
-  outfit change, round chest field and an outer-layer guarantee (the skin is never in front of the cloth).
-  `reference/garment-character-route.md` (stages, parameters tagged `single-subject`/`behaviour`, honest
-  scope, replay, limits) and `reference/garment-acceptance.md` (items `A1`–`A13`: delivered numbers,
-  measuring command, counter-example that must fail).
-- `runtime/garment-character/`: the delivered viewer runtime copied byte-identical with
-  `manifest.json` (sha256 and size of every runtime file and node test); `tests/garment-character/` (47 node tests, `npm run test:garment`);
-  `tools/extract_garment_parameters.mjs` + `reference/garment-parameters.json` (constants and 80 hand-read
-  subject literals); `tools/skin_probes.js` (independent browser probe of skin versus cloth);
-  `tools/gate_garment.py` (clean, coverage, phases, relative hard pull, exact release; `--sampling-declared`
-  for matrices that record only a total sample count) with fixtures under `tests/fixtures/garment-gate/`.
-- Scope: the viewer was developed against a licensed third-party asset that is not bundled, not a result
-  of reference images alone. The route reproduces workflow, runtime, parameters and gates; it does not promise
-  the same result from images, a likeness or general cloth physics. Evidence is headless Chromium with touch
-  emulation; the outfit-change fall is outside the outer-layer guarantee.
+- Explicit `garment-character` route: connected surface fields, transitions, contact and independent probes.
+  Current runtime dimensions and selections are explicit per-input calibration; the default scene/configuration
+  is independently authored synthetic geometry, not original-character acceptance evidence.
+- `runtime/garment-character/` integrity manifest records all runtime/test hashes and sizes.
+  `tools/extract_garment_parameters.mjs` generates generic mechanics constants and synthetic configuration;
+  `tools/generate_synthetic_reference.py` generates primitive catalogue and constructed gate contract inputs.
+  No copied browser/native receipts or source-literal measurement inventory is shipped.
 - Explicit `blender-character` skill workflow: reference/camera analysis, native bpy geometry,
   source-asset rights, UV/skin/fabric PBR, skeleton/weight authoring, soft regions and browser evidence.
   Includes coordinator-owned agent handoffs; rejects neural mesh fallback when the user forbids it.
@@ -197,8 +206,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Preserve tangent-space fabric PBR in `tools/prepare_softbody.py`: request glTF tangents when
   used materials contain normal-map nodes, without applying geometry modifiers or changing the
-  native source. The Robin fit/fabric export verifies all four garment tangent attributes and
-  exact semantic colour/normal/roughness/metallic image channels against the packed native maps.
+  native source. Fabric export requests tangent attributes and supports independently comparing semantic
+  colour/normal/roughness/metallic image channels against caller-owned packed native maps.
   Blender's global tangent option can still warn on an unrelated non-normal-mapped n-gon surface;
   do not alter protected anatomy merely to silence that unused-tangent warning.
 - Independent skin probes now classify triangle bounds in posed world space, retain crossing

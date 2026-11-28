@@ -1,39 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// Round, direction-independent chest support for the soft-body rig.
-//
-// The authored `_SOFT_CHEST_*` vertex groups are lopsided: measured on the delivered
-// asset their mean weight is 0.77-0.97 toward the top of the breast and 0.24-0.38
-// toward the bottom, and their steep lateral edge made the topology guard halve any
-// sideways drag. Here the support is the product of three terms measured from the breast
-// apex: a circular footprint in the frontal plane (so the breast reacts equally from
-// every direction, including underneath and at the sides), a depth term that keeps the
-// back of the torso and the armpit/arm junction out of the support, and a medial fade
-// that reaches exactly zero before the sternum seam (its sliver triangles collapse under
-// any sideways shear). The falloff is wide, so neighbouring triangles strain gently. The
-// GLB and its authored masks are not modified; the original masks are returned so other
-// layers (garment membership) can keep using them.
+// Circular surface-support fields. Dimensions and region selection belong to the input.
 import { BufferAttribute, Matrix4, Vector3 } from 'three';
 
-export const ROUND_CHEST = Object.freeze({
-  // Full weight inside `plateau` metres of the apex, smooth fall to zero at `reach`.
-  plateau: 0.05,
-  reach: 0.105,
-  // Full weight down to `wallDepth` metres behind the apex, none beyond wallDepth + wallFade.
-  wallDepth: 0.07,
-  wallFade: 0.05,
-  // Zero weight within `midline` metres of the body's midline (x = 0), full beyond midline + midlineFade.
-  // Measured: a ramp narrower than ~45 mm shears the 2-5 mm sternum triangles past the
-  // topology guard and throttles sideways drags; 50 mm keeps the guard at 0.96.
-  midline: 0.006,
-  midlineFade: 0.05,
-  regions: Object.freeze(['chest-left', 'chest-right']),
-  suffix: '_ROUND',
-});
+import { validateRoundCalibration } from './calibration.mjs';
 
 const smooth = (t) => { const c = Math.max(0, Math.min(1, t)); return c * c * (3 - 2 * c); };
 
 /** Weight for a vertex at straight distance `distance` (m) from the apex. */
-export function roundChestWeight(distance, plateau = ROUND_CHEST.plateau, reach = ROUND_CHEST.reach) {
+export function roundChestWeight(distance, plateau, reach) {
+  if (!(Number.isFinite(distance) && Number.isFinite(plateau) && Number.isFinite(reach) && reach > plateau && plateau >= 0)) throw new Error('roundChestWeight: explicit finite interval required');
   return 1 - smooth((distance - plateau) / (reach - plateau));
 }
 
@@ -48,9 +23,8 @@ function attributeByName(geometry, name) {
  * The asset's forward axis (+Z in the shared first-mesh frame) locates the apex as the
  * front-most vertex among those the author painted at weight >= 0.3.
  */
-export function roundChestMasks(root, sidecar, options = {}) {
-  const { plateau, reach, wallDepth, wallFade, midline, midlineFade, regions, suffix } = { ...ROUND_CHEST, ...options };
-  if (!(reach > plateau && plateau >= 0)) throw new Error('roundChestMasks: reach must exceed plateau');
+export function roundChestMasks(root, sidecar, options) {
+  const { plateau, reach, wallDepth, wallFade, midline, midlineFade, regions, suffix } = validateRoundCalibration(options);
   root.updateWorldMatrix(true, false); root.updateMatrixWorld(true);
   const patched = JSON.parse(JSON.stringify(sidecar));
   const specs = patched.meshes.map((spec) => {

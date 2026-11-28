@@ -1,4 +1,4 @@
-"""Fixed-root spring hair motion; native/bake_hair_motion.py:278-323.
+"""Fixed-root spring hair motion with explicit caller parameters.
 
 Targets are already carried to world space by the caller. No collision solver or
 Blender keyframe writer is provided; callers must check clearance independently.

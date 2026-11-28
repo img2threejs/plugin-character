@@ -4,38 +4,15 @@
 import { BufferAttribute, CanvasTexture, DoubleSide, Matrix3, Matrix4, Quaternion, SRGBColorSpace, Vector2, Vector3 } from 'three';
 import { createClothContact } from './cloth-contact.mjs';
 import { buildGraph, distanceField, falloff, geodesic } from './garment-field.mjs';
+import { validateGarmentCalibration } from './calibration.mjs';
 
-export const OUTFITS = Object.freeze(['green', 'orange']);
-// Release at the neck knot -> ribbon and a small cup flap fall together -> recolor -> lift -> reseat.
 export const TRANSITION = Object.freeze({ duration: 3.8, release: [0, 0.4], fall: [0.4, 1.6], morph: [1.6, 2.7], lift: [2.8, 3.5], reseat: [3.5, 3.8] });
 export const REDUCED_TRANSITION = Object.freeze({ duration: 0.4, morph: [0, 0.4] });
-// Measured on the delivered BikiniTop: the halter ribbon leaves the cup apex at
-// y≈1.425 m and reaches the neck loop at y≈1.49 m, |x| ≤ 0.083 m, z ≥ -0.02 m.
-export const STRAP = Object.freeze({ yAttach: 1.425, yTop: 1.49, maxAbsX: 0.085, minZ: -0.02, maxPull: 0.035,
-  grabMin: 0.08, grabMax: 0.95, frequency: 7, dampingRatio: 0.2, holdFrequency: 12, tension: 0.6 });
-export const PANEL = Object.freeze({ maxPull: 0.024, frequency: 7, dampingRatio: 0.7 });
 // A cup pull carries the nearest `share` of ALL garment vertices; full weight inside
 // `plateau` of that reach, smooth falloff to zero at it.
 export const PULL_PATCH = Object.freeze({ share: 0.5, plateau: 0.25 });
-// The whole garment (cups, both ribbons, the neck loop) is one connected surface. A pull carries
-// every vertex by a weight that depends only on the distance ALONG that surface from the grab, so
-// neighbours always move almost together and nothing tears at a junction.
-//  reachFactor: a ribbon pull reaches `reachFactor` x the distance (along the garment, through the
-//    neck loop) to the mirror point on the other ribbon, so the other ribbon still follows by
-//    about a quarter of the pull; fallbackReach / minReach apply when that distance is unknown.
-//  pinRange: only the under band is held on the torso; the field fades to zero over this distance
-//    from it (metres), which is also how the cup bottom meets the band without a seam.
-export const STRAP_FIELD = Object.freeze({ reachFactor: 1.55, minReach: 0.08, fallbackReach: 0.2, pinRange: 0.035, liftFade: [0.55, 1] });
-// Pulling a ribbon also lifts the garment off the skin by up to `gap` metres, more on the side the
-// pull points toward (`lead` ramp over `extent` metres from the cup centre), weighted by the same
-// distance field and fading out toward the neck so the loop stays on the neck.
-export const CUP_LIFT = Object.freeze({ gap: 0.036, lead: [-0.35, 0.9], extent: 0.08 });
-// Skin contact corrects each vertex by its own nearest-skin lookup, which can disagree between two
-// neighbours across a crease. A vertex's correction may differ from its neighbours' average by at
-// most `maxDisagreement` metres, so the cloth cannot fold apart there.
-export const CONTACT_STEADY = Object.freeze({ maxDisagreement: 0.001 });
 // The garment is the OUTER layer: after everything else no vertex may sit closer to the skin than
-// `floor` metres (the contact step's own minimum rest gap, so the guard only acts on real breaches) and
+// `floor` metres (the operational outer-layer clearance) and
 // the centre of no triangle closer than max(centreMin, floor - sagFactor x the triangle's rest sag over
 // a skin ridge): the skin must never show in front of the cloth. A violation is lifted along the skin
 // normal only (never pushed toward the skin); the lift is spread to neighbours (half of the neighbour
@@ -43,17 +20,11 @@ export const CONTACT_STEADY = Object.freeze({ maxDisagreement: 0.001 });
 // repeated up to `passes` times for creases. Cheap: a vertex that the
 // contact step left at height h and the smoothing moved by s cannot be below h - s, so only vertices
 // with h - s < floor + pruneSlack are measured (the slack covers the small difference between height
-// along the interpolated normal and true distance on curved skin); a triangle centre is measured only
-// when its lowest corner is within `centreSlack` of its requirement plus its rest sag; later passes only
-// re-measure what the previous pass moved.
-export const SKIN_GUARD = Object.freeze({ floor: 0.0008, passes: 6, relax: 1.6, sagFactor: 4, centreMin: 0.0004, centreSlack: 0.0003, pruneSlack: 0.0004 });
-// The small piece of cloth that falls with each ribbon: the cup tip within `reach` of the
-// ribbon's attachment, hinged `hinge` below it and bending over `bend`. The fold angle is
-// derived per ribbon (up-and-back to hanging down); `lift` / `ribbonLift` keep the fallen
-// cloth above the cup it lies on; the neck-end release hides the last `cutSpan` of each ribbon.
-export const FLAP = Object.freeze({ hinge: 0.034, bend: 0.03, reach: 0.075, lift: 0.0022, ribbonLift: 0.0042, cutSpan: 0.12 });
+// along the interpolated normal and true distance on curved skin). Moved triangle centres
+// are measured directly: rest sag cannot bound sag after lateral motion across a new ridge.
+// Later passes only re-measure what the previous pass moved.
+export const SKIN_GUARD = Object.freeze({ floor: 0.0008, passes: 6, relax: 1.6, sagFactor: 4, centreMin: 0.0004, pruneSlack: 0.0004 });
 const SUBSTEP = 1 / 240;
-const CHEST = Object.freeze({ 1: 'chest-left', [-1]: 'chest-right' });
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const smooth = (e0, e1, x) => { const t = clamp01((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); };
@@ -82,13 +53,15 @@ export function transitionPhase(t, reduced = false) {
 }
 
 /** Halter-strap coordinate: side ±1 (0 = not strap) and s ∈ [0,1] from cup apex to neck. */
-export function strapCoordinate(x, y, z) {
-  if (y < STRAP.yAttach || Math.abs(x) > STRAP.maxAbsX || z < STRAP.minZ) return { side: 0, s: 0 };
-  return { side: x >= 0 ? 1 : -1, s: clamp01((y - STRAP.yAttach) / (STRAP.yTop - STRAP.yAttach)) };
+export function strapCoordinate(x, y, z, strap) {
+  if (!strap) throw new Error('strapCoordinate: explicit calibration required');
+  if (y < strap.yAttach || Math.abs(x) > strap.maxAbsX || z < strap.minZ) return { side: 0, s: 0 };
+  return { side: x >= 0 ? 1 : -1, s: clamp01((y - strap.yAttach) / (strap.yTop - strap.yAttach)) };
 }
 
 /** Pulled strap cannot enter the body and stretches with increasing resistance. */
-export function limitPull(delta, normal, maxPull = STRAP.maxPull, out = new Vector3()) {
+export function limitPull(delta, normal, maxPull, out = new Vector3()) {
+  if (!Number.isFinite(maxPull) || maxPull <= 0) throw new Error('limitPull: positive explicit limit required');
   out.copy(delta);
   const inward = out.dot(normal);
   if (inward < 0) out.addScaledVector(normal, -inward);
@@ -109,18 +82,16 @@ function hsvToRgb(h, s, v) {
   return [r + m, g + m, b + m];
 }
 
-/**
- * Orange–white colorway.
- * Re-hues the painted green fabric in place; white stripes, shading and line work
- * keep their authored values. RGBA bytes are edited in place.
- */
-export function recolorPixels(data) {
+/** Re-hue only the explicitly selected hue/saturation interval, in place. */
+export function recolorPixels(data, colorway) {
+  if (!colorway) throw new Error('recolorPixels: explicit colorway required');
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
     const [h, s, v] = rgbToHsv(r, g, b);
-    const weight = smooth(0.08, 0.3, s) * smooth(85, 105, h) * (1 - smooth(195, 215, h));
+    const [h0,h1,h2,h3] = colorway.hueIn;
+    const weight = smooth(...colorway.saturation, s) * smooth(h0,h1,h) * (1-smooth(h2,h3,h));
     if (weight === 0) continue;
-    const [nr, ng, nb] = hsvToRgb(22, Math.min(1, s * 1.05), Math.min(1, v * 1.18));
+    const [nr, ng, nb] = hsvToRgb(colorway.hueOut, Math.min(1, s * colorway.saturationScale), Math.min(1, v * colorway.valueScale));
     data[i] = Math.round((r + (nr - r) * weight) * 255);
     data[i + 1] = Math.round((g + (ng - g) * weight) * 255);
     data[i + 2] = Math.round((b + (nb - b) * weight) * 255);
@@ -148,42 +119,45 @@ float gNoise( vec3 x ) {
               mix( mix( gHash( i + vec3( 0, 0, 1 ) ), gHash( i + vec3( 1, 0, 1 ) ), f.x ), mix( gHash( i + vec3( 0, 1, 1 ) ), gHash( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z );
 }
 `;
-const FRAGMENT_MAP = /* glsl */`
+const fragmentMap = (STRAP, FLAP, visual) => /* glsl */`
 // The release is only at the neck end of each ribbon: its last stretch is hidden, so there
 // is no mid-ribbon slit and no stretched triangles toward the fixed neck loop.
-float gRibbon = step( abs( vGarmentPos.x ), 0.1 ) * step( ${STRAP.yAttach}, vGarmentPos.y );
-float gCutY = ${STRAP.yAttach} + ( 1.0 - ${FLAP.cutSpan} * uCut ) * ${STRAP.yTop - STRAP.yAttach};
+float gRibbon = step( abs( vGarmentPos.x ), ${STRAP.maxAbsX.toFixed(8)} ) * step( ${STRAP.yAttach.toFixed(8)}, vGarmentPos.y ) * step( ${STRAP.minZ.toFixed(8)}, vGarmentPos.z );
+float gCutY = ${STRAP.yAttach.toFixed(8)} + ( 1.0 - ${FLAP.cutSpan.toFixed(8)} * uCut ) * ${(STRAP.yTop - STRAP.yAttach).toFixed(8)};
 if ( gRibbon > 0.5 && uCut > 0.0 && vGarmentPos.y > gCutY ) discard;
-float gSpark = gRibbon * exp( -pow( ( vGarmentPos.y - gCutY ) / 0.006, 2.0 ) );
+float gSpark = gRibbon * exp( -pow( ( vGarmentPos.y - gCutY ) / ${visual.sparkWidth.toFixed(8)}, 2.0 ) );
 #ifdef USE_MAP
   vec4 gA = texture2D( map, vMapUv );
   vec2 gUv = ( vMapUv - uCropMin ) / uCropSize;
   float gInside = step( 0.0, gUv.x ) * step( gUv.x, 1.0 ) * step( 0.0, gUv.y ) * step( gUv.y, 1.0 );
   vec4 gB = mix( gA, texture2D( uVariant, clamp( gUv, 0.0, 1.0 ) ), gInside );
-  float gFront = uMorph * ( uSpan + 0.06 ) - 0.03;
-  float gD = distance( vGarmentPos, uOrigin ) + ( gNoise( vGarmentPos * 140.0 ) - 0.5 ) * 0.02;
-  float gReveal = 1.0 - smoothstep( gFront - 0.012, gFront + 0.012, gD );
+  float gFront = uMorph * ( uSpan + ${(2*visual.revealWidth).toFixed(8)} ) - ${visual.revealWidth.toFixed(8)};
+  float gD = distance( vGarmentPos, uOrigin ) + ( gNoise( vGarmentPos * ${visual.noiseScale.toFixed(8)} ) - 0.5 ) * ${visual.noiseAmplitude.toFixed(8)};
+  float gReveal = 1.0 - smoothstep( gFront - ${visual.revealWidth.toFixed(8)}, gFront + ${visual.revealWidth.toFixed(8)}, gD );
   diffuseColor *= mix( gA, gB, mix( uFrom, uTo, gReveal ) );
   // The wave exists only while the recolor runs, not during the release/reseat flashes.
-  float gWave = exp( -pow( ( gD - gFront ) / 0.025, 2.0 ) ) * step( 0.001, uMorph ) * ( 1.0 - step( 0.999, uMorph ) );
-  diffuseColor.rgb = mix( diffuseColor.rgb, vec3( 1.0, 0.78, 0.25 ), clamp( uGlow * ( gWave * 0.65 + gSpark ), 0.0, 0.85 ) );
+  float gWave = exp( -pow( ( gD - gFront ) / ${visual.waveWidth.toFixed(8)}, 2.0 ) ) * step( 0.001, uMorph ) * ( 1.0 - step( 0.999, uMorph ) );
+  diffuseColor.rgb = mix( diffuseColor.rgb, vec3( ${visual.glowColor.map(v=>v.toFixed(8)).join(', ')} ), clamp( uGlow * ( gWave * 0.65 + gSpark ), 0.0, 0.85 ) );
 #endif
 `;
 
 /**
- * Controller for the BikiniTop garment. Call update(dt) before rig.update(dt)
+ * Controller for a calibrated garment. Call update(dt) before rig.update(dt)
  * for tension, then apply() before rendering for contact and the pickable surface.
  */
-export function createGarments({ bikini, rig, reducedMotion = false, membership = null }) {
-  const entry = rig.meshes.get(bikini?.name);
-  const bodyEntry = rig.meshes.get('Body');
-  if (!entry || !bodyEntry) throw new Error('Garments: BikiniTop and Body must be configured soft meshes');
+export function createGarments({ garment, rig, calibration, reducedMotion = false, membership = null }) {
+  const config = validateGarmentCalibration(calibration);
+  const { strap: STRAP, panel: PANEL, strapField: STRAP_FIELD, cupLift: CUP_LIFT, contactSteady: CONTACT_STEADY, flap: FLAP, outfits: OUTFITS, regions: CHEST } = config;
+  const entry = rig.meshes.get(config.garmentMesh);
+  const bodyEntry = rig.meshes.get(config.bodyMesh);
+  if (!entry || !bodyEntry || garment?.name !== config.garmentMesh) throw new Error('Garments: configured garment and body must be soft meshes');
+  if (!garment.isSkinnedMesh || !garment.skeleton || ['skinIndex','skinWeight','normal','uv'].some(name=>!entry.geometry.getAttribute(name))) throw new Error('Garments: calibrated garment requires complete skin, normal and UV attributes');
   const geometry = entry.geometry.clone(), rest = entry.rest, count = rest.length / 3;
-  bikini.geometry = geometry;
+  garment.geometry = geometry;
   const positions = geometry.attributes.position.array;
   const strapAttr = new Float32Array(count * 2);
   for (let i = 0; i < count; i++) {
-    const c = strapCoordinate(rest[i * 3], rest[i * 3 + 1], rest[i * 3 + 2]);
+    const c = strapCoordinate(rest[i * 3], rest[i * 3 + 1], rest[i * 3 + 2], STRAP);
     strapAttr[i * 2] = c.side; strapAttr[i * 2 + 1] = c.s;
   }
   geometry.setAttribute('aStrap', new BufferAttribute(strapAttr, 2));
@@ -238,25 +212,26 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
     for (let i = 0; i < count; i++) liftFade[i] = strapAttr[i * 2] ? 1 - smooth(STRAP_FIELD.liftFade[0], STRAP_FIELD.liftFade[1], strapAttr[i * 2 + 1]) : cupAttr[i] ? 1 : 0;
   }
 
-  const originalMaterial = bikini.material;
+  const originalMaterial = garment.material;
   const material = originalMaterial.clone();
   material.name = `${originalMaterial.name || 'Material'} · garment`;
   // The flap folds over the cup, so its inside face shows; render both sides.
   material.side = DoubleSide;
   const uniforms = {
-    uCut: { value: 0 }, uGlow: { value: 0 }, uMorph: { value: 0 }, uSpan: { value: 0.3 },
+    uCut: { value: 0 }, uGlow: { value: 0 }, uMorph: { value: 0 }, uSpan: { value: 0 },
     uOrigin: { value: new Vector3() }, uFrom: { value: 0 }, uTo: { value: 0 },
     uVariant: { value: null }, uCropMin: { value: new Vector2() }, uCropSize: { value: new Vector2(1, 1) },
   };
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = VERTEX_DECL + shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n${VERTEX_BODY}`);
-    shader.fragmentShader = FRAGMENT_DECL + shader.fragmentShader.replace('#include <map_fragment>', FRAGMENT_MAP);
+    shader.fragmentShader = FRAGMENT_DECL + shader.fragmentShader.replace('#include <map_fragment>', fragmentMap(STRAP, FLAP, config.visual));
   };
-  material.customProgramCacheKey = () => 'garment-flap-v4';
-  bikini.material = material;
+  const programKey = JSON.stringify(config);
+  material.customProgramCacheKey = () => programKey;
+  garment.material = material;
 
-  let prepared = false, variantTexture = null, outfit = 'green', transition = null, accumulator = 0;
+  let prepared = false, variantTexture = null, outfit = OUTFITS[0], transition = null, accumulator = 0;
   let dirty = true, appliedVersion = -1, contact = null, triSag = null;
   let fold = 0;
   const restNormals = Float32Array.from(geometry.attributes.normal.array);
@@ -275,7 +250,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
 
   function buildVariant() {
     const map = material.map, image = map?.image;
-    if (!image) throw new Error('Garments: BikiniTop has no painted color map');
+    if (!image) throw new Error('Garments: configured garment has no color map');
     const uv = geometry.getAttribute('uv');
     let u0 = 1, u1 = 0, v0 = 1, v1 = 0;
     for (let i = 0; i < uv.count; i++) { u0 = Math.min(u0, uv.getX(i)); u1 = Math.max(u1, uv.getX(i)); v0 = Math.min(v0, uv.getY(i)); v1 = Math.max(v1, uv.getY(i)); }
@@ -288,7 +263,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
     const context = canvas.getContext('2d', { willReadFrequently: true });
     context.drawImage(image, x0, y0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-    recolorPixels(pixels.data); context.putImageData(pixels, 0, 0);
+    recolorPixels(pixels.data, config.colorway); context.putImageData(pixels, 0, 0);
     variantTexture = new CanvasTexture(canvas);
     variantTexture.flipY = false; variantTexture.colorSpace = SRGBColorSpace; variantTexture.anisotropy = map.anisotropy;
     uniforms.uVariant.value = variantTexture;
@@ -298,10 +273,10 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
 
   function buildContact() {
     if (contact) return;
-    contact = createClothContact(entry, bodyEntry, strapAttr);
+    contact = createClothContact(entry, bodyEntry, strapAttr, config.contact);
     triSag = contact.restSag(entry.indices, rest);
     buildFlaps();
-    uniforms.uOrigin.value.set(0, 1.47, 0.04);
+    uniforms.uOrigin.value.fromArray(config.origin);
     let reach = 0;
     for (let i = 0; i < count; i++) reach = Math.max(reach, p.fromArray(rest, i * 3).distanceTo(uniforms.uOrigin.value));
     uniforms.uSpan.value = reach;
@@ -325,7 +300,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
       A.divideScalar(root);
       for (const i of cup) C.add(p.fromArray(rest, i * 3));
       C.divideScalar(cup.length);
-      for (let i = 0; i < count; i++) if (p.fromArray(rest, i * 3).distanceTo(A) < 0.04) N.add(q.fromArray(restNormals, i * 3));
+      for (let i = 0; i < count; i++) if (p.fromArray(rest, i * 3).distanceTo(A) < FLAP.normalRadius) N.add(q.fromArray(restNormals, i * 3));
       if (N.lengthSq() === 0) N.set(0, 0, 1);
       N.normalize();
       if (N.z < 0) N.negate();
@@ -341,7 +316,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
       for (const i of crown) top.add(p.fromArray(rest, i * 3));
       top.divideScalar(crown.length).sub(A);
       if (top.lengthSq() < 1e-10) continue;
-      const hang = new Vector3(0, -1, 0.2).normalize(), leave = top.normalize();
+      const hang = new Vector3(...FLAP.hang).normalize(), leave = top.normalize();
       const axis = new Vector3().crossVectors(leave, hang);
       if (axis.lengthSq() < 1e-10) continue;
       axis.normalize();
@@ -474,14 +449,14 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
     }
   }
   const raise = new Float32Array(count), raiseNormal = new Float32Array(count * 3), raiseSpread = new Float32Array(count);
-  const settled = new Float32Array(count), shiftNow = new Float32Array(count), heightNow = new Float32Array(count), recheck = new Uint8Array(count);
+  const settled = new Float32Array(count), shiftNow = new Float32Array(count), recheck = new Uint8Array(count);
   const faceIndex = entry.indices;
   /**
-   * The garment is the outer layer: lift any vertex (and any triangle centre) nearer the skin than
-   * SKIN_GUARD.floor, along the skin normal only, smoothly. Cheap: a vertex is measured only when the
-   * contact step's height minus the smoothing shift could be below the floor; a triangle centre only
-   * when its lowest corner is within the triangle's rest sag of the floor; later passes only re-measure
-   * what the previous pass moved.
+   * The garment is the outer layer: lift vertices and moved triangle centres
+   * along the skin normal only. The settled-height minus smoothing-shift bound
+   * prunes vertices. Triangle centres must be measured: lateral motion can move
+   * a triangle across a new ridge, so rest sag cannot bound its current sag.
+   * Later passes only re-measure triangles whose corners were moved.
    */
   const guardStats = { measuredVertices: 0, measuredTriangles: 0, liftedVertices: 0, passes: 0, violations: [] };
   function guardSkin() {
@@ -495,12 +470,11 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
         if (!touched[i]) continue;
         if (pass === 0) {
           const lower = settled[i] - shiftNow[i];
-          if (lower >= floor + SKIN_GUARD.pruneSlack) { heightNow[i] = lower; continue; }
+          if (lower >= floor + SKIN_GUARD.pruneSlack) continue;
         } else if (!recheck[i]) continue;
         p.fromArray(positions, i * 3);
         const height = contact.measure(i, p, n);
         guardStats.measuredVertices++;
-        heightNow[i] = height;
         raiseNormal[i * 3] = n.x; raiseNormal[i * 3 + 1] = n.y; raiseNormal[i * 3 + 2] = n.z;
         if (height < floor - 1e-6) { raise[i] = (floor - height) * SKIN_GUARD.relax; violations++; }
       }
@@ -508,9 +482,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
         const ia = faceIndex[t], ib = faceIndex[t + 1], ic = faceIndex[t + 2], ra = weldRep[ia], rb = weldRep[ib], rc = weldRep[ic];
         if (!touched[ra] && !touched[rb] && !touched[rc]) continue;
         if (pass > 0 && !recheck[ra] && !recheck[rb] && !recheck[rc]) continue;
-        const lowest = Math.min(touched[ra] ? heightNow[ra] : 0, touched[rb] ? heightNow[rb] : 0, touched[rc] ? heightNow[rc] : 0);
         const required = Math.max(SKIN_GUARD.centreMin, floor - SKIN_GUARD.sagFactor * triSag[t / 3]);
-        if (lowest - required >= triSag[t / 3] * SKIN_GUARD.sagFactor + SKIN_GUARD.centreSlack) continue;
         p.set((positions[ia * 3] + positions[ib * 3] + positions[ic * 3]) / 3, (positions[ia * 3 + 1] + positions[ib * 3 + 1] + positions[ic * 3 + 1]) / 3, (positions[ia * 3 + 2] + positions[ib * 3 + 2] + positions[ic * 3 + 2]) / 3);
         const height = contact.measure(ra, p, n);
         guardStats.measuredTriangles++;
@@ -549,7 +521,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
   }
 
   function skinLinear(index, out) {
-    const skin = geometry.getAttribute('skinIndex'), weight = geometry.getAttribute('skinWeight'), skeleton = bikini.skeleton;
+    const skin = geometry.getAttribute('skinIndex'), weight = geometry.getAttribute('skinWeight'), skeleton = garment.skeleton;
     blend.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     for (let k = 0; k < 4; k++) {
       const w = weight.getComponent(index, k);
@@ -558,13 +530,13 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
       bone.multiplyMatrices(skeleton.bones[j].matrixWorld, skeleton.boneInverses[j]);
       for (let e = 0; e < 16; e++) blend.elements[e] += w * bone.elements[e];
     }
-    world.copy(bikini.matrixWorld).multiply(bikini.bindMatrixInverse).multiply(blend).multiply(bikini.bindMatrix);
+    world.copy(garment.matrixWorld).multiply(garment.bindMatrixInverse).multiply(blend).multiply(garment.bindMatrix);
     return out.setFromMatrix4(world);
   }
 
   /** Returns ±1 when an actual ray hit lands on a grabbable part of a halter strap. */
   function strapSide(hit) {
-    if (!hit || hit.object !== bikini || !hit.face || transition) return 0;
+    if (!hit || hit.object !== garment || !hit.face || transition) return 0;
     const ids = [hit.face.a, hit.face.b, hit.face.c], side = strapAttr[ids[0] * 2];
     if (!side || ids.some((i) => strapAttr[i * 2] !== side)) return 0;
     const s = ids.reduce((sum, i) => sum + strapAttr[i * 2 + 1], 0) / 3;
@@ -597,7 +569,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
     fieldFor(strap, ids);
     strap.reach = strapReach(strap);
     // Outward = away from the neck/torso axis behind the strap.
-    if (n.dot(q.set(p.x, 0, p.z + 0.03)) < 0) n.negate();
+    if (n.dot(q.copy(p).sub(a.fromArray(config.normalOrigin))) < 0) n.negate();
     strap.normal.copy(n); strap.anchor.copy(anchor);
     skinLinear(ids[0], strap.toBind).invert();
     strap.grabbed = true; strap.target.set(0, 0, 0);
@@ -619,7 +591,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
     return true;
   }
   function panelSide(hit) {
-    if (!hit || hit.object !== bikini || transition || !Number.isInteger(hit.faceIndex)) return 0;
+    if (!hit || hit.object !== garment || transition || !Number.isInteger(hit.faceIndex)) return 0;
     return panelFaces[hit.faceIndex] || 0;
   }
   function grabPanel(hit, side, anchor = hit?.point) {
@@ -656,7 +628,7 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
     p.subVectors(worldPoint, panel.anchor).applyMatrix3(panel.toBind);
     const along = p.dot(panel.normal);
     // Limit normal lift: this is a worn, connected garment, not a removable cup.
-    p.addScaledVector(panel.normal, Math.min(0.002, Math.max(0, along)) - along);
+    p.addScaledVector(panel.normal, Math.min(PANEL.normalLift, Math.max(0, along)) - along);
     limitPull(p, panel.normal, PANEL.maxPull, panel.target);
     return true;
   }
@@ -756,8 +728,8 @@ export function createGarments({ bikini, rig, reducedMotion = false, membership 
   }
   function dispose() {
     reset();
-    bikini.material = originalMaterial; material.dispose(); variantTexture?.dispose();
-    bikini.geometry = entry.geometry; geometry.dispose();
+    garment.material = originalMaterial; material.dispose(); variantTexture?.dispose();
+    garment.geometry = entry.geometry; geometry.dispose();
   }
   /** Weight (0..1) each vertex receives from the last grab of this part, for inspection. */
   function influence(kind, side) {

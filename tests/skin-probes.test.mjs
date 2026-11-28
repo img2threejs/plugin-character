@@ -10,10 +10,10 @@ async function measure(bodyPoints,translation=[0,0,0]){
  const bodyGeometry=new THREE.BufferGeometry();bodyGeometry.setAttribute('position',new THREE.Float32BufferAttribute(bodyPoints,3));bodyGeometry.setIndex(Array.from({length:bodyPoints.length/3},(_,i)=>i));
  const clothGeometry=new THREE.BufferGeometry();clothGeometry.setAttribute('position',new THREE.Float32BufferAttribute(triangle(.001,-.001),3));clothGeometry.setIndex([0,1,2]);
  clothGeometry.setAttribute('aStrap',new THREE.Float32BufferAttribute([0,0,0,0,0,0],2));clothGeometry.setAttribute('aPanel',new THREE.Float32BufferAttribute([1,0,1,0,1,0],2));
- const body=new THREE.Mesh(bodyGeometry),cloth=new THREE.Mesh(clothGeometry);body.name='Body';cloth.name='BikiniTop';
+ const body=new THREE.Mesh(bodyGeometry),cloth=new THREE.Mesh(clothGeometry);body.name='TestSupport';cloth.name='TestCloth';
  const root=new THREE.Group();root.position.fromArray(translation);root.add(body,cloth);root.updateMatrixWorld(true);
- const studio={modelMeshes:[body,cloth],rig:{meshes:new Map([['BikiniTop',{rest:clothGeometry.attributes.position.array}]])}};
- const window={namiStudio:studio,robinStudio:studio};
+ const studio={ready:true,config:{garment:{bodyMesh:body.name,garmentMesh:cloth.name,strap:{yAttach:0.5,minZ:0}}},modelMeshes:[body,cloth],rig:{meshes:new Map([[cloth.name,{rest:clothGeometry.attributes.position.array}]])}};
+ const window={garmentStudio:studio};
  new Function('window','__omp_import__',source)(window,async()=>THREE);
  try{return await window.__inside({faces:true});}
  finally{bodyGeometry.dispose();clothGeometry.dispose();body.material.dispose();cloth.material.dispose();}
@@ -29,4 +29,12 @@ for(const fixture of [
  assert.equal(result.samples,4,'all three cloth vertices and the triangle centre must be examined');
  assert.equal(result.insideSkin,4,'a coarse search must not silently turn inward cloth into a clean result');
  assert.ok(Math.abs(result.deepestMm-fixture.depth)<.01,`expected${fixture.depth}mm, observed${result.deepestMm}mm`);
+});
+
+test('probes refuse an unready or uncalibrated input instead of returning clean',async()=>{
+ const window={garmentStudio:{ready:false}};
+ new Function('window','__omp_import__',source)(window,async()=>THREE);
+ await assert.rejects(window.__inside({faces:true}),/ready calibrated input/);
+ window.garmentStudio.ready=true;
+ await assert.rejects(window.__inside({faces:true}),/ready calibrated input/);
 });

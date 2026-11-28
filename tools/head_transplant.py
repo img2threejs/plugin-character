@@ -1,4 +1,4 @@
-"""Pure head transplant geometry. Case: native/transplant_head.py:273-345,727-781.
+"""Pure caller-calibrated head transplant geometry.
 
 Boundary welding is only for topology analysis; source geometry is never globally welded.
 Bridge manifold counts assume each input ring edge belongs to one adjoining surface.
@@ -159,8 +159,8 @@ def bridge_rings(lower, upper, angle_merge):
     return vertices, np.asarray(tris, dtype=int), report
 
 
-def cheek_masks(eye_x, eye_z, iris_min_z, span, verts, skin_vertices=None):
-    """Bilateral cheek masks; verts are Nx3, skin_vertices is a required eligibility mask."""
+def cheek_masks(eye_x, eye_z, iris_min_z, span, verts, skin_vertices=None, *, calibration):
+    """Bilateral masks with explicit landmark factors and required skin eligibility."""
     p = np.asarray(verts, float)
     if p.ndim != 2 or p.shape[1] != 3 or not np.isfinite(p).all() or not np.isfinite([eye_x, eye_z, iris_min_z, span]).all() or eye_x <= 0 or span <= 0:
         raise ValueError('invalid cheek landmarks or vertices')
@@ -168,15 +168,22 @@ def cheek_masks(eye_x, eye_z, iris_min_z, span, verts, skin_vertices=None):
         raise ValueError('skin eligibility is required')
     skin = np.asarray(skin_vertices, bool)
     if skin.shape != (len(p),): raise ValueError('invalid skin eligibility')
-    cx, cz = 1.30*eye_x, eye_z-.55*span
-    r = np.array([.55*eye_x, .70*eye_x, .22*span])
+    required = ('center_x_over_eye', 'center_z_offset_over_span', 'radii_over_landmarks', 'medial_x_over_eye', 'iris_clearance')
+    if not isinstance(calibration, dict) or any(k not in calibration for k in required):
+        raise ValueError('complete cheek calibration required')
+    factors = np.asarray(calibration['radii_over_landmarks'], float)
+    scalars = [calibration[k] for k in required if k != 'radii_over_landmarks']
+    if factors.shape != (3,) or not np.isfinite(factors).all() or np.any(factors <= 0) or not np.isfinite(scalars).all():
+        raise ValueError('invalid cheek calibration')
+    cx, cz = calibration['center_x_over_eye']*eye_x, eye_z-calibration['center_z_offset_over_span']*span
+    r = factors * [eye_x, eye_x, span]
     window = skin & (np.abs(np.abs(p[:,0])-cx) < .5*r[0]) & (np.abs(p[:,2]-cz) < .5*r[2])
     if window.sum() < 3: raise ValueError('insufficient cheek landmark vertices')
     cy = np.median(p[window,1]); result = {}
     for name, sign in (('left', 1), ('right', -1)):
         u = np.maximum(0, 1-np.sum(((p-[sign*cx, cy, cz])/r)**2, axis=1))
         w = u**3*(10-15*u+6*u*u)
-        w[(np.abs(p[:,0]) < .68*eye_x) | (p[:,2] > iris_min_z-.009) | ~skin | (np.sign(p[:,0]) != sign)] = 0
+        w[(np.abs(p[:,0]) < calibration['medial_x_over_eye']*eye_x) | (p[:,2] > iris_min_z-calibration['iris_clearance']) | ~skin | (np.sign(p[:,0]) != sign)] = 0
         if np.count_nonzero(w > 1e-9) < 8: raise ValueError(f'{name} cheek has fewer than eight active vertices')
         result[name] = w
     return result

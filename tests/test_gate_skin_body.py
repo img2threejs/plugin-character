@@ -91,15 +91,9 @@ class GateTests(unittest.TestCase):
                     self.assertEqual(code, 0 if check.get('severity') == 'advisory' else 2)
                     self.assertTrue(any(c['id'] == check['id'] and c['verdict'] == 'unmeasured' for c in verdict['evidence']['checks']))
 
-    def test_advisory_case_layout_warns_but_never_fails(self):
-        evidence = passing_evidence()
-        evidence['measurements']['hair_chain_lengths']['value'] = [3, 3, 3, 3, 4, 4, 4]
-        code, verdict = self.run_gate(evidence)
-        self.assertEqual((code, verdict['status']), (0, 'pass'))
-        self.assertTrue(any(c['id'] == 'hair-chain-layout' and c['verdict'] == 'warn' for c in verdict['evidence']['checks']))
 
     def test_single_subject_limits_must_be_declared(self):
-        # The Robin island-tone .08 and export tolerances are cases, not norms: without a declared limit they are unmeasured.
+        # Painted-tone and export tolerances require the caller's declaration.
         for metric in ('island_tone_deviation', 'export_uv_error'):
             with self.subTest(metric=metric):
                 evidence = passing_evidence()

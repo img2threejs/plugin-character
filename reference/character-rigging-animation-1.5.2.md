@@ -3,22 +3,19 @@
 **Status:** implemented in img2threejs 1.5.2 (`forge/stage5_rig/`; module map in
 `forge/stage5_rig/CONTRACT_1.5.2.md`, routing in `grimoire/readiness/animation_contract.md`).
 **Scope:** computing and designing animation for character rigs.
-**Provenance:** distilled from the Lee Sin showcase build (1.5.1). That demo is read-only evidence
-here; nothing in this document is specific to it.
+**Current scope:** generic rig-reading, skinning and animation algorithms with caller-owned inputs.
+Historical subject clip measurements and pixel-comparison tables are not shipped.
 
-Every threshold below is expressed as a fraction of **figure height H**, never in absolute units.
-Lee Sin was normalised to H = 1.0, so its measured numbers read directly as fractions; a rig at a
-different scale must convert. Where a number came from one subject only, it is marked
-`single-subject` and should be treated as a starting value, not a constant.
+Thresholds are expressed relative to **figure height H**. Existing operational classification
+and acceptance policies are retained unchanged; they are not synthetic measurements, human
+population norms, original-asset fidelity evidence or rights clearance.
 
 ---
 
 ## 0. Why this pipeline exists
 
-Rigging failures in 1.5.1 were not "the animation looks slightly wrong". They were **total and
-silent**: eleven clips held actions, the mixer held state, buttons dispatched, and nothing moved.
-Two separate bugs each produced a plausible-looking scene with zero motion. Neither was visible in
-code review; both were found only by measuring.
+Rigging failures can be total and silent: a mixer, clips and active controls may exist while the
+evaluated geometry remains stationary. Diagnose the actual sampled track/rig path, not UI readiness.
 
 The pipeline is therefore built around one rule:
 
@@ -47,16 +44,15 @@ landmark joints: `hip`, `head`, `hand.l`, `hand.r`, `foot.l`, `foot.r`.
 | `scaleDelta` | `max_t max_j |scale_j(t) − 1|` |
 | `poseReturn` | max per-joint transform delta between `t = 0` and `t = duration` |
 
-`scaleDelta` is a tripwire, not a descriptor. Lee Sin measured `0.000` on all eleven clips; a
-non-zero value means the source rig scales joints, which changes what Stage R2 may legally do to
-skin weights and must be surfaced before anything else proceeds.
+`scaleDelta` is a tripwire, not a descriptor. Joint scaling changes what Stage R2 may safely do
+to weights and must be surfaced before proceeding.
 
 ---
 
 ## 2. Classification thresholds
 
-Derived from eleven measured clips on one subject. Boundaries sit in the empty gaps between
-observed clusters, not at round numbers.
+The following are retained operational classifier thresholds, not bundled source-clip
+measurements or evidence that an input belongs to a population.
 
 ```
 idle          travel < 0.02H  and  rise < 0.02H
@@ -70,20 +66,6 @@ planted       footRange < 0.10H            (feet do not participate)
 gesture       handRange ≥ 0.40H  while in-place
 ```
 
-Validation against the source clips these came from:
-
-| clip | travel | rise | speed | lands as |
-|---|---|---|---|---|
-| walk-forward | 1.133 | 0.019 | **0.400** | walk ✓ |
-| run-forward | 1.465 | 0.021 | **0.799** | run ✓ |
-| dash-forward | 2.906 | — | **2.250** | dash ✓ |
-| jump-in-place | 0.272 | **0.248** | — | jump ✓ |
-| leap-forward | 2.826 | **0.517** | — | leap ✓ |
-| idle-still | 0.013 | 0.0001 | — | idle ✓ |
-| arms-only | — | 0.008 | — | planted + gesture ✓ |
-
-The walk/run gap (0.400 → 0.799) and run/dash gap (0.799 → 2.250) are both wide. `single-subject`:
-confirm the gaps survive on a second rig before hardening these.
 
 ---
 
@@ -107,8 +89,7 @@ interface ClipName {
 }
 ```
 
-Two of eleven source clips could only be named by inference. Marking them cost nothing and keeps the
-distinction between "measured" and "guessed" visible to whoever reads it next.
+Any label implying intent must remain explicitly inferred; no bundled case establishes it.
 
 ---
 
@@ -116,10 +97,9 @@ distinction between "measured" and "guessed" visible to whoever reads it next.
 
 glTF carries no loop flag, so it must be decided.
 
-1.5.1 used *"a clip that neither travels nor rises can repeat seamlessly."* **That rule does not
-match its own data**: `idle-gesture` has `travel = 0.121` — six times the idle threshold — and is
-correctly marked loopable, because what makes a clip loop is not that the root stays put but that
-**the last pose returns to the first**.
+A stationary-root rule is insufficient: motion can leave and return to its starting pose,
+while a nearly stationary clip can end mid-stride. Loop acceptance therefore requires
+**the last pose to return to the first**, with the stated root tolerance.
 
 **Use instead:**
 
@@ -140,18 +120,10 @@ comes back (loopable) and rejects one that ends mid-stride a centimetre from whe
 **Output:** a typed node graph, plus a classification of every node.
 
 1. **Deform vs technical.** A node is a `Bone` **iff it appears in `skin.joints`**; everything else
-   is a `Group`. Do not infer from names. Lee Sin's rig has 42 deform joints inside a 113-node
-   graph, so the graph is far larger than the skeleton and a traversal-order skeleton would be a
-   different skeleton — building non-joint nodes as bones corrupts the index space.
-
-   **Correction, measured 2026-08-25.** 1.5.2 originally said "clips target technical nodes that are
-   not joints" and cited this rig for it. Re-measured with `stage5_rig/glb_rig_reference.py` on the
-   asset the pipeline was distilled from: **all 1,353 animation channels across all 11 clips target
-   deform joints; zero target technical nodes.** The rule stands — it is what keeps the skin's index
-   space intact, and a rig that *does* animate technical nodes is entirely legal glTF — but the
-   evidence offered for it did not reproduce, so the claim is now stated as the risk it guards
-   against rather than as an observation. `deformVsTechnical` reports the real count per asset;
-   read it instead of assuming either way.
+   is a `Group`. Do not infer from names. The node graph can be larger than its
+   skin's joint list; traversal order is not skin order. A legal glTF clip can
+   animate technical nodes as well as joints. Read `deformVsTechnical` on the
+   actual input instead of assuming either arrangement.
 2. **Link, then root.** Build all nodes first, then attach children, then attach scene roots to one
    container. Any other order produces a graph whose world matrices are stale at skeleton time.
 3. **Skeleton.** `new THREE.Skeleton(bones, boneInverses)` where `bones[i]` is the node for
@@ -178,13 +150,9 @@ therefore:
 v' = skinMatrix · bindMatrix · v          // matrixWorld cancels out entirely
 ```
 
-Three consequences, each of which was hit and measured:
-
-| What was tried | What rendered |
-|---|---|
-| `mesh.bind(skeleton, armature.matrixWorld)` | **blank frame** — bind applied twice |
-| identity bind + a `skinSpace` wrapper | figure 0.5 m high, floating |
-| identity bind + armature translation added to the display offset | figure offset by exactly the armature translation |
+Nonidentity binds can apply an armature transform twice. A presentation wrapper or display
+offset can likewise double-count a transform already represented by the skin matrix.
+Inspect the actual bind/frame path rather than relying on a historical rendered result.
 
 **The rule:**
 
@@ -222,10 +190,9 @@ say. It appears as the skin tearing open mid-clip.
 
 ### What did not work
 
-Welding only exactly-coincident vertices (within 1e-4 H). It closed the neck-to-collarbone crack
-but a sweep of 11 clips × 4 times × 3 azimuths = 132 frames still found cracks in **28 frames,
-1,410 px** of background showing through. Adjacent parts mostly **overlap**; they rarely share a
-rim, so coincidence-welding finds almost nothing.
+Coincidence-only welding cannot connect nearby overlapping parts with no shared
+rim. Inspect the actual topology and source constraints before selecting a method;
+no historical frame or pixel counts establish the result on a new input.
 
 ### What worked — proximity weight blending
 
@@ -246,19 +213,13 @@ Implementation requirements, each non-optional:
   is O(n²) and unusable past ~50k vertices.
 - **Interior vertices are never touched** — they keep the source binding exactly.
 
-**Radius:** `R = 0.006H` `single-subject`. Chosen against a control run with the blend disabled,
-sweeping 11 clips × 4 times × 2 shoulders × 2 azimuths = **176 frames**:
+The caller must select and record the blend radius, independent source-bound blend-off control,
+sampled clips/times/views and actual comparison evidence. Do not copy a historical radius or
+pixel table as input acceptance. Existing G10 rules remain intact.
 
-| | background through splits | thin dark creases |
-|---|---|---|
-| blend off | 974 px in 30 blobs | 31,316 px |
-| blend R = 0.006H | **287 px in 15 blobs** | 36,470 px |
-
-**The trade is real and must be stated when this stage runs:** averaging two parts' bindings makes
-them travel together, which closes the hole, but pulls each slightly off the path its own joints
-would take — so creases get *worse* by ~16%. This was accepted deliberately: **a hole shows the
-background, a crease shows skin.** Do not let a later stage "fix" the crease count by disabling the
-blend.
+The trade must be measured: averaging bindings can close inter-part gaps while worsening
+creases. Report both outcomes on the supplied input; neither an assumed improvement nor a
+synthetic fixture waives the independent control and renderer evidence.
 
 Residual, documented rather than hidden: creases are not eliminated by this method. Removing them
 entirely requires welding the parts into one continuous mesh with a single unified weight field,
@@ -446,8 +407,8 @@ Nothing ships until all of these pass. Each exists because its absence let a rea
 
 ### G10 is a visual gate and needs a harness
 
-Sweeping poses is not optional — **five poses is not coverage**. The sweep that found the real
-defects was 11 clips × 4 times × 2 sides × 2 azimuths = **176 frames**.
+Sweeping poses is not optional. The unchanged minimum sweep is every declared clip
+at four times, both sides and two azimuths; declared frames must equal the axis product.
 
 Method: render on a saturated background the model cannot contain, count background pixels *inside*
 the silhouette, then apply a distance transform and keep only blobs thin enough to be a split rather
@@ -458,23 +419,17 @@ creases — because Stage R2 trades one against the other, and a single combined
 
 ## Appendix — the failures behind the rules
 
-Kept because each cost real time and none was visible in review.
+These generic failure modes require actual input evidence, not historical case receipts:
 
-1. **Attached bind mode cancels `matrixWorld`.** Two "fixes" shipped before the right one: a blank
-   frame, then a half-height figure. Rule: identity bind, offset from bounds only. → R1
-2. **Ticker snapshot before lazy geometry.** Every clip silent, UI fully functional. → R5.1
-3. **Display offset double-counting the armature translation.** Exactly 0.5 m of float. → R1
-4. **Coincidence-welding instead of proximity blending.** Closed one crack, left 28 frames
-   cracked. → R2
-5. **Index-paired comparison between meshes of different vertex counts.** Produced a confident,
-   completely invalid number (29.08% vs an actual 2.51%). Any cross-mesh comparison needs a spatial
-   join. → measurement discipline
-6. **Comparing local-space geometry against world-space reference.** Off by 0.47 m and self-
-   consistent. Always state the frame. → measurement discipline
-7. **Flipped V when sampling textures.** glTF UV origin is top-left. → R2/material
-8. **`NlaTrack.00N` shipped as user-facing labels.** Eleven unusable buttons. → R3
-9. **A loop rule that contradicted its own data.** `idle-gesture`, travel 0.121, correctly looped.
-   → R4
+1. Attached bind mode can cancel `matrixWorld`; inspect bind mode, matrices and bounds. → R1
+2. A ticker snapshot taken before lazy geometry can miss live controllers. → R5.1
+3. Display offset can double-count armature translation; state and inspect the frame. → R1
+4. Coincidence-welding does not resolve arbitrary overlapping surfaces. → R2
+5. Index-paired comparison between different topologies is invalid without independent correspondence.
+6. Comparing local geometry against a world reference can be self-consistently wrong; name the frame.
+7. Texture-origin conversion must be explicit at each buffer boundary. → R2/material
+8. Source track labels may carry no semantic meaning; preserve originals and name from measurements. → R3
+9. A loop decision must use the stated pose/root policy, not an unrelated classifier label. → R4
 
 ---
 

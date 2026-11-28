@@ -75,7 +75,7 @@ def validate_input(plan):
     """Require explicit source hashes/rights and neutral masks; do not certify rights."""
     if not isinstance(plan, dict) or plan.get('schema') != 'skin-body-plan-input/1':
         raise ValueError('character plan schema must be skin-body-plan-input/1')
-    for key in ('subjectId', 'blendPath', 'catalogueCharacterId', 'mirrorPairsFile',
+    for key in ('subjectId', 'blendPath', 'catalogueFile', 'catalogueCharacterId', 'mirrorPairsFile',
                 'repairMaskFile', 'outputDir'):
         text(plan.get(key), key)
     sources = plan.get('sources')
@@ -200,7 +200,7 @@ def create_plan(standards, character, stages=None, standards_path='reference/ski
         dependencies = DEPENDENCIES[stage].copy()
         upstream = {dep: str(out / f'{dep.lower()}_artifact.blend') for dep in dependencies}
         inputs = {'sources': character['sources'], 'blendPath': character['blendPath'],
-                  'atlasNames': character['atlasNames'], 'catalogueCharacterId': character['catalogueCharacterId'],
+                  'atlasNames': character['atlasNames'], 'catalogueFile': character['catalogueFile'], 'catalogueCharacterId': character['catalogueCharacterId'],
                   'mirrorPairsFile': character['mirrorPairsFile'], 'repairMaskFile': character['repairMaskFile'],
                   'regions': character['regions'], 'standardsFiles': paths, 'upstreamArtifacts': upstream,
                   'upstreamHashes': 'Require accepted SHA-256 for each prerequisite before execution.'}
@@ -234,7 +234,7 @@ def create_plan(standards, character, stages=None, standards_path='reference/ski
                                for name, source in character['sources'].items())
             measure = (f'{interpreter} tools/bpy_measure_skin_body.py '
                        f'--{"glb" if stage == "S8" else "blend"} {quote(artifact)} '
-                       + baseline + f'--catalogue reference/body-parts.json --character {q("catalogueCharacterId")} '
+                       + baseline + f'--catalogue {q("catalogueFile")} --character {q("catalogueCharacterId")} '
                        + f'--atlas {quote(character["atlasNames"][0])} {sources} '
                        + (f'--mirror-pairs {q("mirrorPairsFile")} ' if stage == 'S5' else '')
                        + (f'--repair-mask {q("repairMaskFile")} ' if stage == 'S2' else '')

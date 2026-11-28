@@ -4,22 +4,10 @@
 // Artistic surface modes, not biological constants, FEM or collision simulation.
 import { BufferAttribute, DynamicDrawUsage, Matrix3, Matrix4, Quaternion, Triangle, Vector3 } from 'three';
 
-export const PROFILES = Object.freeze({
-  // Low damping: about 0.70 amplitude retained per half-cycle for lively rebound.
-  // Caps sit near the real mesh's topology-guard range; larger modal travel only
-  // saturated into flat-topped, jerky swings without increasing visible travel.
-  chest: Object.freeze({ frequency: 2.4, dampingRatio: 0.11, cap: 0.008, compression: 0.16 }),
-  hips: Object.freeze({ frequency: 2.9, dampingRatio: 0.13, cap: 0.015, compression: 0.18 }),
-  abdomen: Object.freeze({ frequency: 2.8, dampingRatio: 0.30, cap: 0.014, compression: 0.06, pressDepth: .008 }),
-  waist: Object.freeze({ frequency: 5, dampingRatio: 0.6, cap: 0.006, compression: 0.10 }),
-  // Signed press depth: cheeks gently lift/stretch instead of denting inward.
-  cheek: Object.freeze({ frequency: 4.5, dampingRatio: 0.80, cap: 0.0025, compression: 0, pressDepth: -.0012 }),
-});
 export const REGION_IDS = Object.freeze(['chest-left', 'chest-right', 'hips-left', 'hips-right', 'waist-left', 'waist-right', 'abdomen', 'cheek-left', 'cheek-right']);
+import { validateSoftCalibration } from './calibration.mjs';
 const registry = new WeakSet();
 const STEP = 1 / 120, MAX_STEPS = 12, MAX_CONTACTS = 8;
-// Artistic contact-pad radii/depths in the normalized metre-scale asset.
-const PADS = Object.freeze({ chest: [.022,.0035], hips: [.025,.004], abdomen: [.025,.0005], waist: [.015,.0012], cheek: [.014,0] });
 const MAX_PATCHES = 16;
 const MIN_AREA = 0.2, MIN_EDGE = 0.65, MAX_EDGE = 1.45;
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -123,7 +111,8 @@ function makeWeld(entry) {
  * meshes values expose live {mesh, rest, positions, masks, geometry, originalGeometry}.
  * update must follow the caller's animation/morph updates. No animation is synthesized.
  */
-export function createSoftRig(root, sidecar) {
+export function createSoftRig(root, sidecar, calibration) {
+  const { profiles: PROFILES, pads: PADS } = validateSoftCalibration(calibration);
   if (!root?.isObject3D || !Array.isArray(sidecar?.meshes) || sidecar.meshes.length === 0) throw error('root and nonempty exporter sidecar.meshes required');
   const meshes = new Map(), regions = new Map(), byObject = new Map(), contacts = new Map(), patches = new Map();
   const scratch = new Vector3(), a = new Vector3(), b = new Vector3(), c = new Vector3(), bary = new Vector3();

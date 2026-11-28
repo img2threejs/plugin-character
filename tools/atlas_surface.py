@@ -1,32 +1,15 @@
 #!/usr/bin/env python3
 """Head-atlas layout, neck-strip blending and bounded colour-line repair.
 
-This module is the numpy-only core of the head-atlas recipe distilled from the
-``robin-bikini-transfer-01`` case study. It contains no bpy calls, no file IO
-and no subject-specific defaults: every measurement enters as an explicit
-argument.
+This numpy-only core has no bpy calls or file IO. Input colours, repair gates
+and dimensions are caller-owned. The fixed composite layout is an algorithmic
+format: body lower 4/9, two half-width tiles middle 4/9, bridge upper 1/9.
+Resolution-scaled bridge padding and smoothstep interpolation operate in linear
+light; the original body bytes remain unchanged. Bounded colour-line repair
+changes no pixel outside its declared box.
 
-The rules encoded here, and the case that produced each one:
-
-* **Atlas phase boundary** -- the original body occupies the bottom ``4/9`` of
-  the composite, the donor face and donor neck occupy the middle ``4/9`` as two
-  half-width tiles, and the neck bridge owns the top ``1/9``. Body UV is
-  ``(u, 4v/9)``, face UV is ``(u/2, 4/9 + 4v/9)``, and neck UV adds ``0.5`` to
-  U (``native/transplant_head.py:447-472,759-773``). The measured composites in
-  that job are ``2048x2304`` and ``4096x4608`` -- the same normalised layout at
-  two resolutions.
-* **Resolution-scaled bridge padding** -- the strip is padded by
-  ``4 * width / 2048`` pixels and blended with ``smoothstep`` in linear light,
-  which keeps the bridge V endpoints identical at 2048 and 4096
-  (``native/transplant_head.py:37,475-488``).
-* **Bounded nape repair** -- the repair projects only onto the measured
-  shadow-to-skin colour line, feathers inside the declared box and changes no
-  pixel outside it (``native/nape_atlas.py:10-37``).
-
-Limits: this module paints and samples pixels. It does not cut geometry, does
-not weld topology and cannot tell a legitimate skin colour from a measured
-one; the repair thresholds remain single-subject measurements and must be
-passed explicitly by a caller that owns a different source atlas.
+These are generic operations, not measurements, asset fidelity or rights
+claims. This module does not cut geometry, weld topology or assess visual fit.
 """
 
 from __future__ import annotations
@@ -89,8 +72,8 @@ def _as_rgb01(value: Sequence[float]) -> np.ndarray:
 class AtlasLayout:
     """Normalised layout of one ``W x 9W/8`` head atlas.
 
-    Rows are addressed from the bottom (V=0) like the case study's Blender
-    pixel buffers. The dataclass is immutable; the remap methods are pure.
+    Rows are addressed from the bottom (V=0), matching Blender pixel buffers.
+    The dataclass is immutable; the remap methods are pure.
     """
 
     width: int
@@ -140,7 +123,7 @@ def composite_atlas_layout(W: int, body_shape: Sequence[int] | None = None) -> A
 
     ``W`` must be a positive multiple of eight so that the body tile is
     ``W x W/2``, the donor tiles are ``W/2`` square and the bridge strip is
-    ``W/8`` rows tall (``native/transplant_head.py:447-472``).
+    ``W/8`` rows tall by the algorithmic tile format.
 
     When ``body_shape`` is supplied it must be exactly ``(W/2, W)``; this is
     the phase-boundary check that keeps a mis-sized original atlas from being
@@ -176,9 +159,8 @@ def _bilinear_2x_stored(values: np.ndarray) -> np.ndarray:
     """Texel-centre 2x upsample of stored (already encoded) samples.
 
     ``out[2i] = .75 * a[i] + .25 * a[i-1]`` and ``out[2i+1] = .75 * a[i] +
-    .25 * a[i+1]``, edge clamped, applied separably. This is the case study's
-    declared donor upsample (``native/build_halloween.py:1045-1080``); it is
-    deliberately *not* a linear-light resample.
+    .25 * a[i+1]``, edge clamped, applied separably. This is deliberately a
+    stored-sample resample, not a linear-light resample.
     """
 
     def axis(array: np.ndarray, ax: int) -> np.ndarray:
@@ -209,7 +191,7 @@ def composite_atlas(
 
     The original body pixels are copied byte-for-byte into the bottom band; the
     donor tiles are copied 1:1 or, when supplied at half the tile size,
-    upsampled with the case study's declared texel-centre bilinear 2x rule. The
+    upsampled with the texel-centre bilinear 2x rule. The
     bridge strip is left empty for :func:`neck_strip`.
     """
     body_array = np.asarray(body)
@@ -276,8 +258,7 @@ def _ring_angle_samples(ring: Any, width: int) -> np.ndarray:
     * ``{"rel": (n+1,), "uva": (n,2), "uvb": (n,2), "atlas": image}``
       interpolates owner UVs then samples the image with repeat-bilinear filtering;
     * ``{"rel": (n+1,), "edge_start": (n, 3), "edge_end": (n, 3)}`` -- the
-      case study's owner-edge UV interpolation, with colours already sampled
-      from the source atlas (``native/transplant_head.py:382-403``);
+      owner-edge interpolation, with colours already sampled from the source atlas;
     * ``{"rel": (n+1,), "samples": (n+1, 3)}`` -- vertex colours at the ring
       angles;
     * an ``(n, 3)`` array -- colours sampled uniformly at the mid-angle of each
@@ -363,7 +344,7 @@ def neck_strip(
     The blend happens in linear light. The parameter along the strip is
     ``t = clip((row + 0.5 - pad) / (count - 2 * pad), 0, 1)`` followed by
     ``t^2 * (3 - 2t)`` and the padding is resolution scaled:
-    ``pad = 4 * width / 2048 * pad_scale`` (``native/transplant_head.py:475-488``).
+    ``pad = 4 * width / 2048 * pad_scale`` (format policy, not a body measurement).
 
     The result is encoded sRGB quantised to ``uint8``; the first and last
     rows are exactly the low and up ring colours.
@@ -397,9 +378,8 @@ def bridge_v_endpoints(
 ) -> dict[str, Any]:
     """Return the bridge's normalised V endpoints for an atlas width.
 
-    The endpoints include the resolution-scaled padding, so the returned
-    ``v_bottom`` and ``v_top`` are identical at ``width=2048`` and
-    ``width=4096`` (``native/transplant_head.py:482-488``).
+    The endpoints include resolution-scaled padding and remain identical
+    across widths compatible with the same layout and pad scale.
     """
     if layout is None:
         layout = composite_atlas_layout(width)
@@ -461,10 +441,9 @@ def color_line_repair(
     two ends of the line; integers are interpreted as ``0..255`` levels.
     ``box`` is ``(u0, v0, u1, v1)`` in normalised, top-down image coordinates.
 
-    The pixel weight is the case study's: projection amount along the colour
-    line, a residual gate ``clip((r - residual) / fade, 0, 1)`` and a spatial
-    feather inside the box (``native/nape_atlas.py:10-37``). The gate values
-    are single-subject measurements and must be supplied through ``gate``.
+    The pixel weight combines projection amount along the colour line, a
+    residual gate and a spatial feather inside the box. Input-specific gate
+    values must be supplied through ``gate``.
 
     The returned image is a new array; the input is never modified. A pixel
     outside the box is never written, and the caller can independently verify

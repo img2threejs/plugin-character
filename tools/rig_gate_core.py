@@ -45,21 +45,17 @@ SPEC AMBIGUITIES AND THE READING CHOSEN
    mesh's frames, the only reading under which a single number can support a per-frame claim) or as
    a list of per-frame counts, which is checked entry by entry.
 
-3. "materially thinner than its declared clip set allows" (G10). The spec fixes one sweep shape —
-   11 clips x 4 times x 2 sides x 2 azimuths = 176 frames — without saying what a *different* clip
-   set requires. READING: the per-axis minima (4 times, 2 sides, 2 azimuths) are the constants and
-   the clip axis scales with the payload, so the required frame count is
-   `clips x 4 x 2 x 2`. The declared `frames` must also equal the product of the declared axes: a
-   sweep claiming 176 frames from axes that multiply to 20 is a bookkeeping error, and the spec's
-   whole point is that the declared number is not taken on trust.
+3. G10 coverage scales with the declared clip set. The per-axis minima (4 times,
+   2 sides, 2 azimuths) remain unchanged, and required frames are clips x 4 x 2 x 2.
+   Declared frames must equal the product of declared axes; a bookkeeping claim
+   is not measured coverage.
 
-4. "background-through-split <= measured baseline" (G10). "Baseline" is the control run with the
-   blend disabled (§R2's `blend off` row), so it must be a measured number carried in the payload.
-   READING: an absent baseline leaves G10 `unevaluated` rather than defaulting to the Lee Sin
-   numbers — a threshold borrowed from another subject is not a measurement of this one. Holes and
-   creases are always reported as TWO numbers; §R2 trades one against the other and a single
-   combined score hides that trade. Creases are reported and NEVER gated: R2 accepts a ~16% crease
-   increase deliberately, so failing on crease count would ask a later stage to undo R2.
+4. "background-through-split <= measured baseline" (G10). Baseline is the independent
+   source-bound control run with the blend disabled, carried in the payload.
+   READING: an absent baseline leaves G10 `unevaluated`; a threshold from another
+   input is not a measurement of this one. Holes and creases are always reported
+   separately. Creases are reported and NEVER gated: averaging bindings can trade
+   creases against gaps, which must be disclosed on the actual input.
 
 5. "unless the source has it" (G9). READING: the exemption must be DECLARED, by
    `sourceScalesJoints: true` on the payload, and it produces a pass carrying a warning that names

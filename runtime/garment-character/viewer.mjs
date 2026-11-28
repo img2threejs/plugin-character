@@ -5,43 +5,55 @@ import { createSoftRig } from './softbody.mjs';
 import { createPicker } from './picking.mjs';
 import { createGarments } from './garment.mjs';
 import { roundChestMasks } from './chest-field.mjs';
+import { SYNTHETIC } from './synthetic-config.mjs';
+import { createSyntheticScene } from './synthetic-scene.mjs';
+import { validateViewerConfig } from './calibration.mjs';
 
 const $ = (id) => document.getElementById(id);
-const names = Object.fromEntries([...$('region').options].map((o) => [o.value, o.textContent]));
-window.namiStudio = { ready: false, error: null, build: 'guard-1' };
+let names;
+window.garmentStudio = { ready: false, error: null, build: 'synthetic-1' };
 
 async function start() {
+  const configURL = new URLSearchParams(location.search).get('config');
+  const config = validateViewerConfig(configURL ? await fetch(configURL).then(r => {
+    if (!r.ok) throw new Error(`Configuration HTTP ${r.status}`); return r.json();
+  }) : structuredClone(SYNTHETIC));
+  if (configURL && config.synthetic) throw new Error('Caller configurations must select real inputs; the synthetic demo is the default page only.');
+  document.querySelector('.subtitle').textContent = config.label;
+  document.title = config.synthetic ? 'Garment — Synthetic Mechanics Studio' : 'Garment — Caller Input';
+  document.querySelector('.edition').textContent = config.synthetic ? 'SYNTHETIC DEMO / 01' : 'CALLER INPUT';
+  for (const [i, option] of [...$('region').options].entries()) if (config.synthetic) option.textContent = `Vùng hình học ${i+1}`;
+  names = Object.fromEntries([...$('region').options].map(o => [o.value,o.textContent]));
+  for (const [i,id] of config.garment.outfits.entries()) $(`outfit-${i}`).textContent = config.outfitLabels[id];
   const canvas = $('character');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
-  renderer.setClearColor(0xeeeae1, 0);
-  // All admitted character materials are opaque. The floor is the sole
-  // transparent item; sorting otherwise recomputes posed skin spheres per frame.
+  renderer.setClearColor(config.background, 0);
+  // Sorting is disabled only for the opaque input contract checked below.
   renderer.sortObjects = false;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(30, 1, .01, 30);
+  const camera = new THREE.PerspectiveCamera(config.camera.fov, 1, config.camera.near, config.camera.far);
   const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, .88, 0);
+  controls.target.fromArray(config.views[config.initialView].target);
   controls.enableDamping = true;
   controls.dampingFactor = .1;
-  controls.minDistance = .34; controls.maxDistance = 7;
+  controls.minDistance = config.camera.minDistance; controls.maxDistance = config.camera.maxDistance;
   controls.maxPolarAngle = Math.PI * .92;
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xc5b9ad, Math.PI));
-  const key = new THREE.DirectionalLight(0xffffff, .45*Math.PI); key.position.set(-3, 5, 4); scene.add(key);
-  const fill = new THREE.DirectionalLight(0xffeadb, .10*Math.PI); fill.position.set(3, 2, -2); scene.add(fill);
-  const shadow = new THREE.Mesh(new THREE.CircleGeometry(.28, 64), new THREE.MeshBasicMaterial({ color: 0x80786a, transparent: true, opacity: .13, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2; shadow.position.y = -.001; shadow.scale.set(1.25, .60, 1); scene.add(shadow);
-  const [gltf, sidecar] = await Promise.all([
-    new GLTFLoader().loadAsync('native/export/character.glb'),
-    fetch('native/export/softbody.json').then((r) => { if (!r.ok) throw new Error(`Sidecar HTTP ${r.status}`); return r.json(); }),
+  scene.add(new THREE.HemisphereLight(config.lights.sky, config.lights.ground, Math.PI));
+  const key = new THREE.DirectionalLight(config.lights.key, .45*Math.PI); key.position.set(-3, 5, 4); scene.add(key);
+  const fill = new THREE.DirectionalLight(config.lights.fill, .10*Math.PI); fill.position.set(3, 2, -2); scene.add(fill);
+  const generated = config.synthetic ? createSyntheticScene() : null;
+  const [gltf, sidecar] = generated ? [generated, generated.sidecar] : await Promise.all([
+    new GLTFLoader().loadAsync(config.glb),
+    fetch(config.sidecar).then((r) => { if (!r.ok) throw new Error(`Sidecar HTTP ${r.status}`); return r.json(); }),
   ]);
   const root = gltf.scene; scene.add(root); root.updateMatrixWorld(true);
   const modelMeshes = []; root.traverse((o) => { if (o.isMesh) modelMeshes.push(o); });
   if (modelMeshes.some(m => (Array.isArray(m.material)?m.material:[m.material]).some(v=>v.transparent || v.transmission>0))) throw new Error('Asset opacity changed; inspect render ordering before disabling sorting.');
-  const body = modelMeshes.find(m=>m.name==='Body');
-  if (!body) throw new Error('Không tìm thấy Body đã chuẩn bị.');
+  const body = modelMeshes.find(m=>m.name===config.garment.bodyMesh);
+  if (!body) throw new Error('Không tìm thấy mesh hỗ trợ đã cấu hình.');
   const nativeSkinMaterial = body.material;
   const sourceSkinMaterial = new THREE.MeshBasicMaterial({ map:nativeSkinMaterial.map, color:nativeSkinMaterial.color, side:nativeSkinMaterial.side });
   sourceSkinMaterial.name = 'Artist unlit color comparison';
@@ -52,22 +64,22 @@ async function start() {
     $('surface').value=value; render();
   }
   $('surface').addEventListener('change',()=>setSurface($('surface').value));
-  // Round, direction-independent chest support; the authored masks still define which
-  // bikini vertices belong to each cup.
-  const round = roundChestMasks(root, sidecar);
-  const rig = createSoftRig(root, round.sidecar);
+  const round = roundChestMasks(root, sidecar, config.round);
+  const rig = createSoftRig(root, round.sidecar, config.soft);
   const picker = createPicker(modelMeshes, rig.meshes);
-  const cupMasks = round.original.BikiniTop;
-  const garments = createGarments({ bikini: modelMeshes.find((m) => m.name === 'BikiniTop'), rig,
-    membership: { 1: cupMasks['chest-left'], [-1]: cupMasks['chest-right'] },
+  const cupMasks = round.original[config.garment.garmentMesh];
+  if (!cupMasks) throw new Error('Configured garment has no calibrated round-region masks');
+  const garments = createGarments({ garment: modelMeshes.find((m) => m.name === config.garment.garmentMesh), rig,
+    calibration: config.garment,
+    membership: { 1: cupMasks[config.garment.regions[1]], [-1]: cupMasks[config.garment.regions[-1]] },
     reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches });
-  const outfitNames = { green: 'Xanh', orange: 'Cam–trắng' };
+  const outfitNames = config.outfitLabels;
   const mixer = new THREE.AnimationMixer(root);
-  const clip = gltf.animations.find((a) => a.name.includes('MotionProbe'));
-  if (!clip) throw new Error('Export thiếu clip MotionProbe thực; không tạo chuyển động giả thay thế.');
+  const clip = gltf.animations.find((a) => a.name === config.clip);
+  if (!clip) throw new Error(`Thiếu clip đã cấu hình: ${config.clip}`);
   const action = mixer.clipAction(clip);
   let mode = 'squeeze', motion = false, paused = false, destroyed = false, lastTime, lastUI = 0, frameNumber = 0;
-  let currentView = 'quarter', frameHandle = 0;
+  let currentView = config.initialView, frameHandle = 0;
   const frameTimes = new Float32Array(240), pointerEvents = [], contacts = new Map();
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), planePoint = new THREE.Vector3(), planeNormal = new THREE.Vector3();
   const sharedImpulse = new THREE.Vector3();
@@ -81,15 +93,8 @@ async function start() {
     camera.aspect = rect.width / rect.height; camera.updateProjectionMatrix(); render();
   }
   const observer = new ResizeObserver(resize); observer.observe(canvas);
-  const views = {
-    front: { position: [0, .90, 3.8], target: [0, .88, 0] },
-    quarter: { position: [2.25, 1.03, 3.2], target: [0, .88, 0] },
-    profile: { position: [3.8, .90, 0], target: [0, .88, 0] },
-    rear: { position: [0, .90, -3.8], target: [0, .88, 0] },
-    torso: { position: [0, 1.25, 1.24], target: [0, 1.25, 0] },
-    hips: { position: [0, .94, -1.24], target: [0, .94, 0] },
-    face: { position: [0, 1.61, .73], target: [0, 1.605, 0] },
-  };
+  const views = config.views;
+  for (const button of document.querySelectorAll('[data-view]')) button.hidden = !views[button.dataset.view];
   function setView(name) {
     const view = views[name]; if (!view) throw new Error('Unknown view ' + name);
     releaseAll(); currentView = name;
@@ -101,7 +106,7 @@ async function start() {
   function refreshProfile() {
     const id = $('region').value, p = rig.regions.get(id).profile;
     $('frequency').textContent = p.frequency.toFixed(1) + ' Hz'; $('damping').textContent = p.dampingRatio.toFixed(2);
-    $('tissue-label').textContent = id.startsWith('cheek') ? 'Căng mượt · giãn nhẹ' : id.startsWith('waist') ? 'Chắc · tắt nhanh' : id === 'abdomen' ? 'Mềm vừa · giảm chấn' : 'Mềm · quán tính';
+    $('tissue-label').textContent = config.synthetic ? 'Chế độ cơ học · không phải mô sinh học' : 'Thông số từ cấu hình đầu vào';
   }
   function releaseAll() {
     rig.releaseAll(); garments.releaseAll();
@@ -115,13 +120,12 @@ async function start() {
     $('motion').setAttribute('aria-pressed', String(enabled));
     $('motion').innerHTML = `<span class="play-icon" aria-hidden="true">${enabled ? 'Ⅱ' : '▷'}</span> ${enabled ? 'Dừng chuyển động' : 'Chuyển động thử'}`;
   }
-  function reset() { setMotion(false); rig.reset(); garments.reset(); refreshOutfit(); $('status').textContent = 'Trạng thái nghỉ · 9 vùng'; render(); }
+  function reset() { setMotion(false); rig.reset(); garments.reset(); refreshOutfit(); $('status').textContent = config.label; render(); }
   function cast(clientX, clientY) {
     const r = canvas.getBoundingClientRect(); pointer.set((clientX-r.left)/r.width*2-1, -(clientY-r.top)/r.height*2+1);
     raycaster.setFromCamera(pointer, camera); return picker.cast(raycaster);
   }
-  // The strap ribbon is ~5 mm wide; search a small ring when the finger lands beside it,
-  // but never steal a press that already hits a soft region.
+  // Search a small screen-space ring for narrow cloth, without stealing tissue hits.
   function strapNear(event, hit) {
     const side = garments.strapSide(hit);
     if (side) return { hit, side };
@@ -203,23 +207,23 @@ async function start() {
   for(const button of document.querySelectorAll('[data-view]'))button.addEventListener('click',()=>setView(button.dataset.view));
   function revealStage() { if (innerWidth<=850) document.querySelector('.stage').scrollIntoView({block:'start',behavior:'auto'}); }
   for(const value of ['squeeze','grab','fabric'])$(value).addEventListener('click',()=>{releaseAll();mode=value;for(const v of ['squeeze','grab','fabric'])$(v).setAttribute('aria-pressed',String(v===mode));revealStage();});
-  function focusRegion(id) { setView(id.startsWith('hips') ? 'hips' : id.startsWith('cheek') ? 'face' : 'torso'); revealStage(); }
+  function focusRegion(id) { setView(config.regionViews[id]); revealStage(); }
   $('region').addEventListener('change',()=>{refreshProfile();focusRegion($('region').value);});
   $('impulse').addEventListener('click',()=>{const id=$('region').value,p=rig.regions.get(id).profile;focusRegion(id);rig.impulse(id,sharedImpulse.set(0,0,p.cap*2*Math.PI*p.frequency*.65));$('status').textContent='Thử nẩy · '+names[id];});
   $('motion').addEventListener('click',()=>setMotion(!motion)); $('reset').addEventListener('click',reset);
   let outfitPending = false;
   function refreshOutfit() {
-    for (const value of ['green','orange']) { const button=$(`outfit-${value}`); button.setAttribute('aria-pressed',String(garments.outfit===value)); button.disabled=garments.transitioning; }
+    for (const [i,value] of config.garment.outfits.entries()) { const button=$(`outfit-${i}`); button.setAttribute('aria-pressed',String(garments.outfit===value)); button.disabled=garments.transitioning; }
   }
   function setOutfit(value) {
     if (!garments.transformTo(value)) return false;
     releaseAll();
     outfitPending = true; refreshOutfit();
-    if (['face','rear','hips'].includes(currentView)) setView('torso');
+    setView(config.initialView);
     revealStage(); $('status').textContent = `Đang biến hình · ${outfitNames[value]}`;
     return true;
   }
-  for (const value of ['green','orange']) $(`outfit-${value}`).addEventListener('click',()=>setOutfit(value));
+  for (const [i,value] of config.garment.outfits.entries()) $(`outfit-${i}`).addEventListener('click',()=>setOutfit(value));
   function step(dt) {
     if(motion)mixer.update(dt); root.updateMatrixWorld(true); garments.update(dt); rig.update(dt);
     if (outfitPending && !garments.transitioning) { outfitPending=false; refreshOutfit(); $('status').textContent=`Trang phục · ${outfitNames[garments.outfit]}`; }
@@ -263,13 +267,14 @@ async function start() {
     for(const value of textures)value.dispose(); for(const material of materials)material.dispose();
     for(const geometry of new Set(modelMeshes.map(m=>m.geometry)))geometry.dispose();
     for(const skeleton of new Set(modelMeshes.filter(m=>m.isSkinnedMesh).map(m=>m.skeleton)))skeleton.dispose();
-    shadow.geometry.dispose();shadow.material.dispose();renderer.dispose();
+    renderer.dispose();
   }
-  setView('quarter');resize();refreshProfile();refreshOutfit();$('loading').hidden=true;$('status').textContent='Sẵn sàng · 9 vùng mô mềm';
-  // Variant texture + slip targets are prepared off the interaction path.
-  (window.requestIdleCallback ?? ((callback)=>setTimeout(callback,200)))(()=>{ if(!destroyed) garments.prepare(); });
-  Object.assign(window.namiStudio,{ready:true,root,rig,garments,camera,renderer,scene,controls,mixer,clip,modelMeshes,pointerEvents,frameTimes,
+  setView(config.initialView);resize();refreshProfile();refreshOutfit();
+  // Preparation failures must be reported before ready, never hidden in an idle callback.
+  garments.prepare();
+  $('loading').hidden=true;$('status').textContent=config.label;
+  Object.assign(window.garmentStudio,{ready:true,config,root,rig,garments,camera,renderer,scene,controls,mixer,clip,modelMeshes,pointerEvents,frameTimes,
     setView,locate,setMotion,reset,releaseAll,setSurface,setOutfit,step,render,dispose,getSurface:()=>surface,getMode:()=>mode,getView:()=>currentView,setPaused:(value)=>{paused=Boolean(value);lastTime=undefined;},diagnostics:()=>rig.getDiagnostics()});
   frameHandle=requestAnimationFrame(frame);
 }
-start().catch((error)=>{window.namiStudio.error=String(error.stack??error);$('loading').hidden=false;$('loading').textContent='Không tải được model: '+error.message;$('status').textContent='Lỗi tải · xem chi tiết';console.error(error);});
+start().catch((error)=>{window.garmentStudio.ready=false;window.garmentStudio.error=String(error.stack??error);$('loading').hidden=false;$('loading').textContent='Không thể khởi tạo: '+error.message+' · Kiểm tra cấu hình đầu vào.';$('status').textContent='Cấu hình hoặc dữ liệu không hợp lệ';console.error(error);});

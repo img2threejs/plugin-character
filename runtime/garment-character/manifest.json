@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "route": "garment-character",
-  "buildStamp": "guard-1",
-  "hashCheck": "sha256 and bytes are of the file at `path` (relative to the plugin root). tests/test_garment_character_manifest.py enforces them, so a runtime or test copy cannot drift without this manifest being regenerated.",
-  "runtimeLicense": "Apache-2.0: the .mjs files carry `SPDX-License-Identifier: Apache-2.0` headers (viewer.mjs, index.html, styles.css and serve.py carry none); the full text is runtime/garment-character/LICENSE-runtime. Three.js 0.186.1 is MIT.",
+  "buildStamp": "synthetic-1",
+  "hashCheck": "sha256 and bytes of the file at path, relative to plugin root; enforced by test_garment_character_manifest.py.",
+  "runtimeLicense": "Project code Apache-2.0; Three.js 0.186.1 MIT. No third-party assets bundled.",
   "files": [
     {
       "path": "runtime/garment-character/LICENSE-runtime",
@@ -12,16 +12,22 @@
       "bytes": 11337
     },
     {
+      "path": "runtime/garment-character/calibration.mjs",
+      "kind": "runtime",
+      "sha256": "b4c387ed85c7d06f00c9c6a824408983f5dbdfcef5a20619ff915322cf2575df",
+      "bytes": 6077
+    },
+    {
       "path": "runtime/garment-character/chest-field.mjs",
       "kind": "runtime",
-      "sha256": "f772e5f5c220859a112c273a862e65067c7fbc5304f71d727f4cb534716e0de4",
-      "bytes": 6539
+      "sha256": "0b30be199c57a3f7df9e7477f46fe919f04adf5328741cb83344d99046e7b7a9",
+      "bytes": 5050
     },
     {
       "path": "runtime/garment-character/cloth-contact.mjs",
       "kind": "runtime",
-      "sha256": "bb4c13fe0927a3887036b1027492b809c433025df73bcded7e731ac0872b1616",
-      "bytes": 8440
+      "sha256": "adf3efc78175ca7b4175b0f9a7e8bc529e3b047f02138a402ac30ff5b9ce876e",
+      "bytes": 8667
     },
     {
       "path": "runtime/garment-character/garment-field.mjs",
@@ -32,14 +38,14 @@
     {
       "path": "runtime/garment-character/garment.mjs",
       "kind": "runtime",
-      "sha256": "404f46c2fbf8df7834e575d7f974dd067419bbb46f2fd08935aa6f68bafbf8da",
-      "bytes": 45837
+      "sha256": "29cbdcc625a6dc46a30ea11528425484db0e328fdc27d56713bc621d1c34ae6f",
+      "bytes": 44010
     },
     {
       "path": "runtime/garment-character/index.html",
       "kind": "runtime",
-      "sha256": "6c2d3f815fbcd7eef54e32192ced743e6d3497df8bb8a8f730a2806e77988bfa",
-      "bytes": 6221
+      "sha256": "95a393d30afc067dd7217423cd9c9a5e3eb33d54781d36c286c0cef2dce4f454",
+      "bytes": 5188
     },
     {
       "path": "runtime/garment-character/picking.mjs",
@@ -56,8 +62,8 @@
     {
       "path": "runtime/garment-character/softbody.mjs",
       "kind": "runtime",
-      "sha256": "55ea91d763d6da6dd518527ac7380c1dc9e2226d1716fba2acdf081d0176fc8c",
-      "bytes": 39132
+      "sha256": "23448b64dca2d5765df5384d488e7ab05372c13972b79e06c394ad33a6c9fead",
+      "bytes": 38204
     },
     {
       "path": "runtime/garment-character/styles.css",
@@ -66,16 +72,28 @@
       "bytes": 7184
     },
     {
+      "path": "runtime/garment-character/synthetic-config.mjs",
+      "kind": "runtime",
+      "sha256": "8cb23feca711a0c85866af4a2d61f39c998bd74d5deaf4f75acb5f79a2f00649",
+      "bytes": 3024
+    },
+    {
+      "path": "runtime/garment-character/synthetic-scene.mjs",
+      "kind": "runtime",
+      "sha256": "d734780df957249e82e4a9f5fbd5a6eb9188d07ecdfc97ef1470843bc13027ac",
+      "bytes": 3751
+    },
+    {
       "path": "runtime/garment-character/viewer.mjs",
       "kind": "runtime",
-      "sha256": "170b054cc7ef9b8864834abe02ce2fcd250cf00cde12ecc66e9261490ef1a52c",
-      "bytes": 19252
+      "sha256": "c9e7e6ae7b866ed24749b845dc261d5e4517b32cbec11396439458759048ebbe",
+      "bytes": 19760
     },
     {
       "path": "tests/garment-character/chest-field.test.mjs",
       "kind": "test",
-      "sha256": "7b5c852f25c144e602c9329c0ae7523246cd118cb1451685bfa0c9b13123526c",
-      "bytes": 5181
+      "sha256": "901a2836c865c2bd89eaa08d4288e23adced539c1fb95dae92143e8854d5de52",
+      "bytes": 2865
     },
     {
       "path": "tests/garment-character/garment-field.test.mjs",
@@ -86,14 +104,14 @@
     {
       "path": "tests/garment-character/garment.test.mjs",
       "kind": "test",
-      "sha256": "11c3a56fb6aa8dae5cd605abe7aabb4b533ba0dbfe26dd9f5a97058d7fab5c44",
-      "bytes": 37493
+      "sha256": "4b51190ea31a9e805adf5f6f88eb0f4a1ca2d419cdeab174e86a763b702c304b",
+      "bytes": 8437
     },
     {
       "path": "tests/garment-character/softbody.test.mjs",
       "kind": "test",
-      "sha256": "e0bb810a6c5f46bc94b10c1488680dafd255d538abf720d187ce2da9b3d0702c",
-      "bytes": 34772
+      "sha256": "4d8d0e8e3dcaf11113dc99701138eb9c7d66854cbaaa975aa34ea867b8aba071",
+      "bytes": 34876
     }
   ]
 }

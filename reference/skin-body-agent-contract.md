@@ -75,15 +75,12 @@ tolerance and source; baselines give value, factor/epsilon and source; limits gi
 source. Follow the exact comparator rules in [standards](skin-body-standards.md), including
 one-sided direction, declared min/max and wildcard expansion: every matching region/pose needs
 its own measurement and declaration. For reference-relative checks the gate compares the built
-character to **that target's** predeclared values, not the historical subjects' figures as absolute norms.
-The two historical subjects are related and cannot define a cross-subject population norm.
-The new fragment ranges are advisory; record their warnings and unmeasured observations.
-**Legacy base limitation:** the bundled S1–S8 base also contains required checks tagged
-`single-subject` with fixed historical thresholds. The gate applies those as written; declaring
-new target values does not override them. Before using such a check, the coordinator must
-approve a subject-specific base standards file with rederived limits, or leave that acceptance
-open. Select it with `--standards`; keep its associated fragments in the same directory so
-the planner merges them. Do not present the bundled historical thresholds as target evidence.
+character to **that target's** predeclared values. No historical subject measurements or fixed
+hair-chain layout are bundled. Generic required tolerances remain unchanged; caller-dependent
+tone, material, rig and export checks need actual declarations/evidence and remain open if missing.
+The plan requires `catalogueFile` and `catalogueCharacterId`, forwards both into task inputs and
+every skin/body measurement command, and never substitutes the synthetic primitive catalogue
+for a missing real-input selection. Record advisory warnings without promoting them to evidence.
 
 ## Stage-specific work
 

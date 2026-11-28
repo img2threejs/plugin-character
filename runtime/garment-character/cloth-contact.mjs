@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Local, bind-space contact for the worn garment, not a general cloth simulator.
 import { Matrix3, Matrix4, Triangle, Vector3 } from 'three';
+import { validateContactCalibration } from './calibration.mjs';
 
 // Weld only for adjacency; original mesh topology and UVs remain unchanged.
 function vertexFans(positions, index, faces) {
@@ -19,7 +20,8 @@ function vertexFans(positions, index, faces) {
   return fans;
 }
 
-export function createClothContact(garment, body, strapCoordinates) {
+export function createClothContact(garment, body, strapCoordinates, calibration) {
+  const config = validateContactCalibration(calibration);
   const transform = new Matrix4().multiplyMatrices(garment.fromShared, body.toShared);
   const rest = new Float32Array(body.rest.length), live = new Float32Array(body.rest.length);
   const a = new Vector3(), b = new Vector3(), c = new Vector3(), q = new Vector3(), normal = new Vector3();
@@ -29,10 +31,10 @@ export function createClothContact(garment, body, strapCoordinates) {
   const index = body.indices;
   for (let i = 0; i < rest.length; i += 3) a.fromArray(body.rest, i).applyMatrix4(transform).toArray(rest, i);
   const faces = [];
-  // The delivered garment occupies the upper torso; retain both sides of it.
+  // ROI is selected by the input owner in garment bind space, not guessed from a character.
   for (let t = 0; t < index.length; t += 3) {
     a.fromArray(rest, index[t] * 3); b.fromArray(rest, index[t + 1] * 3); c.fromArray(rest, index[t + 2] * 3);
-    if (Math.max(a.y, b.y, c.y) < 1.19 || Math.min(a.y, b.y, c.y) > 1.65) continue;
+    if (Math.max(a.y, b.y, c.y) < config.heightRange[0] || Math.min(a.y, b.y, c.y) > config.heightRange[1]) continue;
     faces.push({ t, minX: Math.min(a.x, b.x, c.x), maxX: Math.max(a.x, b.x, c.x),
       minY: Math.min(a.y, b.y, c.y), maxY: Math.max(a.y, b.y, c.y), minZ: Math.min(a.z, b.z, c.z), maxZ: Math.max(a.z, b.z, c.z) });
   }
@@ -65,7 +67,7 @@ export function createClothContact(garment, body, strapCoordinates) {
   let orientation = 0, settled = 0;
   for (let i = 0; i < clearance.length; i++) {
     point.fromArray(garment.rest, i * 3);
-    const radius = strapCoordinates[i * 2] ? 0.14 : 0.055, ids = [];
+    const radius = strapCoordinates[i * 2] ? config.strapRadius : config.panelRadius, ids = [];
     for (const f of faces) {
       const dx = Math.max(f.minX - point.x, 0, point.x - f.maxX);
       const dy = Math.max(f.minY - point.y, 0, point.y - f.maxY);
@@ -80,7 +82,7 @@ export function createClothContact(garment, body, strapCoordinates) {
     // The vertex's REAL rest gap to the skin (not a thin clamp): contact then corrects only what
     // the pull changed, so a vertex that barely moves stays where it was instead of being snapped
     // toward the skin while its unmoved neighbour stays behind (which tore the cloth open).
-    clearance[i] = Math.max(0.0008, Math.min(0.02, Math.abs(gap)));
+    clearance[i] = Math.max(config.minGap, Math.min(config.maxGap, Math.abs(gap)));
   }
   const winding = orientation < 0 ? -1 : 1;
   const restFace = attachedFace.slice();

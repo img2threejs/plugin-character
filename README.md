@@ -96,24 +96,22 @@ separate acceptance with the actual asset.
 
 ### Composable garment route: `garment-character`
 
-After `softbody-character`, an admitted character can wear a **connected garment**: one cloth surface whose
-pulls follow distance along the cloth, an in-place outfit change, a round chest field and an **outer-layer
-guarantee** (the skin is never in front of the cloth), verified by an independent probe and a gate that
-refuses a partial matrix. The viewer behind it was built on a licensed third-party asset that is not bundled,
-not something reference images alone produce; the route reproduces the workflow, the
-byte-identical runtime, the measured parameters and the acceptance gates.
+Connected cloth pulls, color transitions and surface-support fields now require explicit per-input
+calibration. The default viewer uses an independently authored Cartesian board/cloth rig, not a
+third-party character. It demonstrates geometric mechanics only: no human/garment fidelity, native
+acceptance or original-asset performance is claimed. Missing real calibration is refused; G4 stays
+unmeasured without selected input limits. The generic probes and all gate thresholds remain intact.
 See [`reference/garment-character-route.md`](reference/garment-character-route.md) and
 [`reference/garment-acceptance.md`](reference/garment-acceptance.md).
 
 ### Composable skin route: `skin-body`
 
-The **skin texture** and the **body parts** of reference characters, as tools and measured rules: classify atlas regions, measure
-and match tone (encoded-sRGB vs linear light is named in every call), fill and repair without touching anything outside the
-mask, add iris/brow detail, composite a transplanted head with a linear-light bridge, pack the saved bytes and verify them,
-and state the skin material honestly (no pores, browser SSS or de-lighting were ever established). Body parts are catalogued
-per asset and stage (e.g. Robin 80-bone rig vs 28-bone head component), with neutral soft-region masks,
-mirrored-weight symmetry checks and hair chains. Regions are neutral only; the catalogue validator rejects anything else.
-It grants no rights to donor heads, scans or franchise characters. See
+Generic skin texture, weights/masks, topology and head/hair tools use caller-owned references,
+catalogues and calibration: classify atlas regions, measure tone in a named color space, repair only
+within declared support, preserve source bytes and compare actual native/export data. The bundled
+catalogue describes only the independent board/cloth primitive, not human measurements or a
+reference skeleton. `skin_body_plan.py` requires and forwards the caller's `catalogueFile`.
+Neutral-region policy and native/CC5 workflows remain supported. No asset rights are granted. See
 [`reference/skin-body-distillation.md`](reference/skin-body-distillation.md), [`reference/skin-texture.md`](reference/skin-texture.md)
 and [`reference/body-parts.md`](reference/body-parts.md).
 
@@ -152,7 +150,7 @@ both were found only by measuring. Every gate here traces to a failure that was 
 | `tools/cc5_headshot.py` | isolated bpy/Auto Setup preflight and external-character bake/export |
 | `tools/prepare_softbody.py` | source-safe authored mask export, sidecar and integrity receipt |
 | `runtime/softbody.mjs` | skeleton-preserving size, spring, contact and hair-follow controller |
-| `runtime/garment-character/` | byte-identical delivered garment viewer runtime, with `manifest.json` (hashes) |
+| `runtime/garment-character/` | explicitly calibrated mechanics and independent synthetic viewer; integrity manifest |
 | `tools/gate_garment.py`, `tools/skin_probes.js` | outer-layer gate over recorded matrices; independent browser probe |
 | `examples/softbody/` | local diagnostic viewer and prepared-GLB loading |
 | `tools/skin_texture.py`, `tools/atlas_surface.py` | skin texture pipeline: tone measurement, fills, details, composite, pack-and-verify, skin material spec |
@@ -478,15 +476,15 @@ python3 -m unittest discover -s tests -p test_cc5_headshot.py
 ```
 
 
-`tests/test_oracle_replay.py` is the correctness oracle for the extraction: a byte comparison against
-a frozen run on a real 113-node GLB. It is deliberately a byte comparison — a semantic assertion has
-to enumerate what matters, and the point of an oracle is to catch the change nobody predicted.
+`tests/test_oracle_replay.py` compares the complete canonical rig report against a project-authored,
+genuinely skinned primitive with three animation clips. Its local GLB/report/hash manifest are generated
+by `tools/generate_synthetic_rig_oracle.py`. Caller asset/report pairs can be supplied explicitly.
 
 ## Licence
 
 Apache-2.0.
 
-Third-party asset-derived garment measurements, transfer-study claims and unshipped
-`ATTRIBUTION.txt` references remain a release blocker pending a scoped provenance/rights decision.
-Existing identifiers and evidence are preserved, not renamed or removed to obscure their source.
-The source license and hash-bound evidence do not establish rights to donor heads or character assets.
+Historical asset-specific studies, calibration, measured tables and copied evidence have been replaced
+in HEAD with independently authored synthetic geometry/configuration and caller-data contracts.
+This does not erase history, grant rights to historical or caller assets, or constitute legal approval.
+See [NOTICE](NOTICE). Synthetic fixtures do not waive source admission, G10, material or native/parity gates.

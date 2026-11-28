@@ -8,6 +8,7 @@
   },
   "blendPath": "OUTPUT/master.blend",
   "atlasNames": ["SkinAtlas"],
+  "catalogueFile": "INPUT/body-parts.json",
   "catalogueCharacterId": "synthetic-example",
   "mirrorPairsFile": "INPUT/mirror-pairs.json",
   "repairMaskFile": "INPUT/repair-mask.json",

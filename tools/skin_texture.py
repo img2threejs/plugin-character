@@ -1,7 +1,7 @@
 """Array-based painted skin atlas operations; inputs are not measured reflectance.
 
-Case references are relative to the read-only Robin job. Images are top-down
-stored-sRGB RGB arrays, either uint8 or floating point in [0, 1].
+Images are caller-supplied top-down stored-sRGB RGB arrays, either uint8 or
+floating point in [0, 1]. No historical subject palette is supplied.
 """
 import hashlib
 from pathlib import Path
@@ -147,8 +147,7 @@ def rasterize_regions(positions, triangles, loop_uv, image_shape, predicates, or
 def measure_tone(rgb, mask, statistic='median', color_space='encoded-srgb', luminance_gate=None):
     """Measure selected channel statistics; encoded gate and linear gate are distinct.
 
-    [single-subject] build_head.py:378-391 used encoded medians and a .80
-    encoded-luminance threshold; linear mode instead gates linear luminance.
+    The caller chooses the luminance gate in the named colour space.
     Neither statistic estimates unpainted reflectance.
     """
     _, a = _image(rgb); selected = _mask(mask, a.shape[:2]).copy()
@@ -168,11 +167,10 @@ def measure_tone(rgb, mask, statistic='median', color_space='encoded-srgb', lumi
             'minimum': values.min(axis=0).tolist(), 'maximum': values.max(axis=0).tolist()}}
 
 
-def fill_skin_island(rgb, island_mask, sample_mask, dilation=3, protected_mask=None):
-    """Fill an island with encoded-channel median and bounded four-neighbour padding.
+def fill_skin_island(rgb, island_mask, sample_mask, dilation, protected_mask=None):
+    """Fill a selected island with encoded-channel median and explicit padding.
 
-    [single-subject] build_head.py:375-384 used 3 dilation passes. Supply all
-    other islands as protected; absent protection cannot establish UV ownership.
+    Supply all other islands as protected; absent protection cannot establish ownership.
     """
     source, work = _image(rgb); shape = work.shape[:2]
     island = _mask(island_mask, shape); sample = _mask(sample_mask, shape)
@@ -186,36 +184,33 @@ def fill_skin_island(rgb, island_mask, sample_mask, dilation=3, protected_mask=N
 
 
 def lift_shadow(rgb, neck_mask, reference_mask, params):
-    """Lift dark neck paint by a feathered per-channel median gain.
-
-    [single-subject] build_head.py:385-399 used dark threshold .80, 2 dilation,
-    6 blur passes and .7 strength; feather extends beyond the input neck mask.
-    """
+    """Lift selected paint with caller-selected gates, padding, blur and strength."""
+    required = ('dark_luminance', 'dilation', 'blur_iterations', 'strength', 'darkness_gate')
+    if not isinstance(params, dict) or any(k not in params for k in required):
+        raise ValueError('complete explicit shadow parameters required')
     source, a = _image(rgb); shape = a.shape[:2]
     neck = _mask(neck_mask, shape); ref = _mask(reference_mask, shape)
-    dark_limit = params.get('dark_luminance', .8)
-    dark = measure_tone(source, neck, luminance_gate=dark_limit)
+    dark = measure_tone(source, neck, luminance_gate=params['dark_luminance'])
     target = measure_tone(source, ref)
     gain = np.asarray(target['value']) / np.maximum(dark['value'], .001)
-    feather = _dilate(neck, params.get('dilation', 2)).astype(float)
-    for _ in range(params.get('blur_iterations', 6)):
+    feather = _dilate(neck, params['dilation']).astype(float)
+    for _ in range(params['blur_iterations']):
         feather = (feather + _neighbours(feather)) / 5
-    strength = params.get('strength', .7)
+    strength = params['strength']
     if not np.isfinite(strength) or not 0 <= strength <= 1:
         raise ValueError('invalid strength')
-    lo, hi = params.get('darkness_gate', (.75, .88))
+    lo, hi = params['darkness_gate']
     weight = feather * (1 - _smooth(_luminance(a), lo, hi)) * strength
     support = weight > 0
     result = _output(source, a * (1 + weight[..., None] * (gain - 1)), support)
     return result, {'gain': gain.tolist(), 'dark_count': dark['count'], 'reference_count': target['count'], 'support': support, 'changed_pixels': int(np.any(result != source, axis=2).sum())}
 
 
-def repair_root_paint(rgb, original_rgb, spatial_mask, recipe, iterations=400):
-    """Repair original orange paint in an eligible spatial field using bounded harmonic fill.
+def repair_root_paint(rgb, original_rgb, spatial_mask, recipe, *, iterations):
+    """Repair explicitly eligible warm paint using bounded harmonic fill.
 
-    [single-subject] hairline_atlas.py:33-112 used 400 iterations and a local
-    median. Legacy np.roll wraps edges; this implementation replicates edges.
     Recipe requires boxes, saturation_ranges and an explicit nearby_mask.
+    Iteration count is caller-selected; array edges never wrap.
     """
     source, a = _image(rgb); _, original = _image(original_rgb)
     if original.shape != a.shape:
@@ -251,10 +246,9 @@ def repair_root_paint(rgb, original_rgb, spatial_mask, recipe, iterations=400):
 
 
 def repair_color_line(rgb, shadow_rgb, skin_rgb, box, gate):
-    """Delegate measured bounded colour-line repair; nape_atlas.py:10-37 used .018 residual.
+    """Delegate caller-calibrated bounded colour-line repair.
 
-    [single-subject] The supplied box and line are subject-specific; matching
-    chromaticity cannot prove the source pigment is a shadow.
+    Chromaticity alone cannot prove the source pigment is a shadow.
     """
     return atlas_surface.color_line_repair(rgb, shadow_rgb, skin_rgb, box, gate)
 
@@ -262,12 +256,18 @@ def repair_color_line(rgb, shadow_rgb, skin_rgb, box, gate):
 def recolor_details(rgb, boxes, predicates, palette):
     """Recolour selected iris, brow and crease boxes while protecting highlights.
 
-    [single-subject] build_head.py:289-315 used .12 background distance and
-    encoded luminance; box-based selection cannot prove anatomical ownership.
-    Predicates map names to optional HxW boolean eligibility masks.
+    Selection gates and pigment curves are explicitly supplied in the palette.
+    Box-based selection cannot prove anatomical ownership.
     """
     source, a = _image(rgb); result = a.copy(); counts = {}
     background = np.asarray(palette['background'], float)
+    required = ('background_distance', 'highlight_luminance', 'highlight_saturation', 'iris_curve', 'brow_gain')
+    if any(k not in palette for k in required):
+        raise ValueError('complete explicit detail selection and pigment curves required')
+    curve = np.asarray(palette['iris_curve'], float)
+    brow_gain = np.asarray(palette['brow_gain'], float)
+    if curve.shape != (3,) or brow_gain.shape != (3,) or not np.isfinite(curve).all() or not np.isfinite(brow_gain).all() or curve[1] <= 0 or curve[2] <= 0:
+        raise ValueError('invalid detail pigment curve')
     if background.shape != (3,) or not np.isfinite(background).all():
         raise ValueError('invalid background')
     for name, box in boxes.items():
@@ -277,17 +277,17 @@ def recolor_details(rgb, boxes, predicates, palette):
         if not (0 <= x0 < x1 <= a.shape[1] and 0 <= y0 < y1 <= a.shape[0]):
             raise ValueError('invalid box')
         sl = np.s_[y0:y1, x0:x1]; reg = a[sl]; lum = _luminance(reg)
-        eligible = np.linalg.norm(reg-background, axis=2) > .12
+        eligible = np.linalg.norm(reg-background, axis=2) > palette['background_distance']
         if name in predicates:
             eligible &= _mask(predicates[name], a.shape[:2])[sl]
-        highlights = (lum > .85) & (_saturation(reg) < .2)
+        highlights = (lum > palette['highlight_luminance']) & (_saturation(reg) < palette['highlight_saturation'])
         selected = eligible & ~highlights
         if name == 'iris':
-            t = np.clip((lum-.03)/.45, 0, 1)**.9
+            t = np.clip((lum-curve[0])/curve[1], 0, 1)**curve[2]
             dark = np.asarray(palette['iris_dark']); bright = np.asarray(palette['iris_bright'])
             paint = dark + (bright-dark)*t[..., None]
         elif name == 'brow':
-            paint = np.asarray(palette['brow_dark']) + lum[..., None] * .1 * [1, .9, .9]
+            paint = np.asarray(palette['brow_dark']) + lum[..., None] * brow_gain
         else:
             paint = reg * palette['crease_multiply']
         result[sl][selected] = paint[selected]
@@ -299,8 +299,8 @@ def recolor_details(rgb, boxes, predicates, palette):
 def recolor_iris(rgb, hue_deg, *, thresholds, coverage=None):
     """Map cyan pigment to a hue in [0,60], preserving every other texel.
 
-    [single-subject] transplant_head.py:491-508 used hue 42 and thresholds
-    .2/.08/1.1/1.02. Counts over a whole map differ from UV coverage counts.
+    Caller thresholds and UV coverage determine pigment eligibility.
+    Counts over a whole map differ from UV coverage counts.
     """
     source, a = _image(rgb)
     if not np.isfinite(hue_deg) or not 0 <= hue_deg <= 60:
@@ -319,7 +319,7 @@ def recolor_iris(rgb, hue_deg, *, thresholds, coverage=None):
 def build_composite(body, face, neck, ring_uvs, layout=None):
     """Build bottom-up composite and linear-light bridge using atlas_surface.
 
-    [behaviour] transplant_head.py:447-488 uses W x 9W/8; ring_uvs is a pair
+    The fixed W x 9W/8 layout is an algorithmic format. ring_uvs is a pair
     of sampled rings or owner-UV dictionaries. Geometry alignment is separate.
     """
     for donor in (face, neck):
@@ -338,8 +338,7 @@ def build_composite(body, face, neck, ring_uvs, layout=None):
 def save_pack_verify(image, path, *, packed_bytes=None):
     """Write and reload an opaque PNG, comparing exact saved and packed bytes.
 
-    [behaviour] transplant_head.py:411-430 explicitly packs saved bytes because
-    packing an image alone can retain stale pixels. No Blender state is altered.
+    Explicit packed bytes avoid retaining stale pixels. No Blender state is altered.
     """
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
@@ -363,7 +362,7 @@ def save_pack_verify(image, path, *, packed_bytes=None):
 
 
 def pack_blender_image(image, saved_bytes):
-    """Pack verified saved bytes into a Blender image; transplant_head.py:411-430.
+    """Pack verified saved bytes into a Blender image.
 
     [behaviour] Explicit bytes avoid stale packing; caller owns node association
     and must verify the resulting exported asset independently.
@@ -378,8 +377,6 @@ def pack_blender_image(image, saved_bytes):
 def skin_material_spec(params):
     """Return an explicit native material specification, not invented texture maps.
 
-    [single-subject] build_head.py:430-461 used metallic 0, roughness .5,
-    IOR 1.4, subsurface .08, radius (1,.45,.2), scale .002 and detail .35.
     Parameters must be supplied; native scattering is not browser scattering.
     """
     required = ('metallic', 'roughness', 'ior', 'subsurface_weight', 'subsurface_radius', 'subsurface_scale', 'detail_roughness', 'base_color_map', 'normal_map', 'roughness_map')
@@ -397,11 +394,7 @@ def skin_material_spec(params):
 
 
 def validate_skin_material(spec, exported):
-    """Compare claimed exported maps and scalars, reporting native SSS separately.
-
-    [single-subject] A reference character used native SSS .08;
-    exported assets need independent evidence and do not imply browser SSS.
-    """
+    """Compare actual exported maps/scalars, reporting native SSS separately."""
     failures = []
     for key in ('base_color_map', 'normal_map', 'roughness_map'):
         if spec.get(key) and not exported.get(key):
@@ -417,12 +410,10 @@ def validate_skin_material(spec, exported):
     return {'ok': not failures, 'failures': failures, 'native_scattering': 'not exported', 'micro_detail': 'unmeasured'}
 
 
-def tone_match_report(before, after, masks):
-    """Report encoded median and Euclidean deviations above .08 for each island.
-
-    [single-subject] head-report.json:315-330 recorded 1704 deviations; this
-    threshold describes painted colour variation, not measured reflectance.
-    """
+def tone_match_report(before, after, masks, *, deviation_limit):
+    """Report encoded medians and deviations above the caller's explicit limit."""
+    if not np.isfinite(deviation_limit) or deviation_limit < 0:
+        raise ValueError('finite nonnegative deviation_limit required')
     _, a = _image(before); _, b = _image(after)
     if a.shape != b.shape or not masks:
         raise ValueError('matching images and masks required')
@@ -432,5 +423,5 @@ def tone_match_report(before, after, masks):
         if not mask.any():
             raise ValueError('empty island: ' + name)
         x, y = a[mask], b[mask]; xmed = np.median(x, axis=0); ymed = np.median(y, axis=0)
-        report[name] = {'count': len(x), 'before_median': xmed.tolist(), 'after_median': ymed.tolist(), 'before_deviation_count': int((np.linalg.norm(x-xmed, axis=1) > .08).sum()), 'after_deviation_count': int((np.linalg.norm(y-ymed, axis=1) > .08).sum())}
+        report[name] = {'count': len(x), 'before_median': xmed.tolist(), 'after_median': ymed.tolist(), 'before_deviation_count': int((np.linalg.norm(x-xmed, axis=1) > deviation_limit).sum()), 'after_deviation_count': int((np.linalg.norm(y-ymed, axis=1) > deviation_limit).sum())}
     return report

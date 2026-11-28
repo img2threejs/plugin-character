@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 1,
+  "kind": "rigging.glb-rig-v1",
+  "provenance": {
+    "provider": "character",
+    "version": "0.4.0"
+  },
+  "path": "synthetic-rig.glb",
+  "nodeCount": 8,
+  "skinCount": 1,
+  "clipCount": 3,
+  "primarySkinIndex": 0,
+  "skins": [
+    {
+      "skinIndex": 0,
+      "name": "PrimitiveSkin",
+      "skeletonNodeIndex": 1,
+      "jointCount": 6,
+      "jointOrder": "skin.joints (\u00a7R0.3: the ordering is the skin's, never the traversal's)",
+      "joints": [
+        {
+          "skinJointIndex": 0,
+          "nodeIndex": 5,
+          "nodeName": "JointE",
+          "parentNodeIndex": 2
+        },
+        {
+          "skinJointIndex": 1,
+          "nodeIndex": 2,
+          "nodeName": "JointB",
+          "parentNodeIndex": 1
+        },
+        {
+          "skinJointIndex": 2,
+          "nodeIndex": 6,
+          "nodeName": "JointF",
+          "parentNodeIndex": 5
+        },
+        {
+          "skinJointIndex": 3,
+          "nodeIndex": 1,
+          "nodeName": "JointA",
+          "parentNodeIndex": 0
+        },
+        {
+          "skinJointIndex": 4,
+          "nodeIndex": 4,
+          "nodeName": "JointD",
+          "parentNodeIndex": 1
+        },
+        {
+          "skinJointIndex": 5,
+          "nodeIndex": 3,
+          "nodeName": "JointC",
+          "parentNodeIndex": 1
+        }
+      ],
+      "inverseBindSource": "accessor:4",
+      "inverseBindMatrices": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          -2.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          -3.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          -1.0,
+          -1.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          1.0,
+          -1.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "joints": [
+    {
+      "skinJointIndex": 0,
+      "nodeIndex": 5,
+      "nodeName": "JointE",
+      "parentNodeIndex": 2
+    },
+    {
+      "skinJointIndex": 1,
+      "nodeIndex": 2,
+      "nodeName": "JointB",
+      "parentNodeIndex": 1
+    },
+    {
+      "skinJointIndex": 2,
+      "nodeIndex": 6,
+      "nodeName": "JointF",
+      "parentNodeIndex": 5
+    },
+    {
+      "skinJointIndex": 3,
+      "nodeIndex": 1,
+      "nodeName": "JointA",
+      "parentNodeIndex": 0
+    },
+    {
+      "skinJointIndex": 4,
+      "nodeIndex": 4,
+      "nodeName": "JointD",
+      "parentNodeIndex": 1
+    },
+    {
+      "skinJointIndex": 5,
+      "nodeIndex": 3,
+      "nodeName": "JointC",
+      "parentNodeIndex": 1
+    }
+  ],
+  "inverseBindSource": "accessor:4",
+  "inverseBindMatrices": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      -2.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      -3.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      -1.0,
+      -1.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      -1.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "skinnedMeshNodes": [
+    {
+      "nodeIndex": 7,
+      "nodeName": "PrimitiveTriangles",
+      "meshIndex": 0,
+      "skinIndex": 0
+    }
+  ],
+  "clips": [
+    {
+      "animationIndex": 0,
+      "name": "slide",
+      "duration": 1.0,
+      "channelCount": 1,
+      "interpolations": [
+        "LINEAR"
+      ],
+      "channels": [
+        {
+          "channelIndex": 0,
+          "samplerIndex": 0,
+          "targetNodeIndex": 1,
+          "path": "translation",
+          "interpolation": "LINEAR",
+          "keyCount": 3,
+          "timeMin": 0.0,
+          "timeMax": 1.0
+        }
+      ]
+    },
+    {
+      "animationIndex": 1,
+      "name": "turn",
+      "duration": 1.0,
+      "channelCount": 1,
+      "interpolations": [
+        "LINEAR"
+      ],
+      "channels": [
+        {
+          "channelIndex": 0,
+          "samplerIndex": 0,
+          "targetNodeIndex": 3,
+          "path": "rotation",
+          "interpolation": "LINEAR",
+          "keyCount": 3,
+          "timeMin": 0.0,
+          "timeMax": 1.0
+        }
+      ]
+    },
+    {
+      "animationIndex": 2,
+      "name": "stretch",
+      "duration": 1.0,
+      "channelCount": 1,
+      "interpolations": [
+        "LINEAR"
+      ],
+      "channels": [
+        {
+          "channelIndex": 0,
+          "samplerIndex": 0,
+          "targetNodeIndex": 4,
+          "path": "scale",
+          "interpolation": "LINEAR",
+          "keyCount": 3,
+          "timeMin": 0.0,
+          "timeMax": 1.0
+        }
+      ]
+    }
+  ],
+  "deformVsTechnical": {
+    "status": "evaluated",
+    "reason": null,
+    "basis": "primarySkin:0",
+    "rule": "\u00a7R0.1: a node is a Bone IFF it appears in skin.joints; never inferred from names",
+    "targetedNodeCount": 3,
+    "channelsWithoutTargetNode": 0,
+    "deformNodes": [
+      {
+        "nodeIndex": 1,
+        "nodeName": "JointA",
+        "channelCount": 1
+      },
+      {
+        "nodeIndex": 3,
+        "nodeName": "JointC",
+        "channelCount": 1
+      },
+      {
+        "nodeIndex": 4,
+        "nodeName": "JointD",
+        "channelCount": 1
+      }
+    ],
+    "technicalNodes": [],
+    "channelsTargetingJoints": 3,
+    "channelsTargetingTechnicalNodes": 0
+  },
+  "unsupportedInterpolationClips": [],
+  "structuralFailure": null,
+  "warnings": [],
+  "note": "Joint order is skin.joints order (\u00a7R0.3). Animation channels address GLB node indices and JOINTS_0 addresses this joint array; neither index space is valid against a procedurally authored skeleton without an explicit correspondence.",
+  "ok": true,
+  "errors": []
+}

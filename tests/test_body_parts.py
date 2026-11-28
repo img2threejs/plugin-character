@@ -105,29 +105,28 @@ class CatalogueTests(unittest.TestCase):
             elif kind == 'unit': asset['measurements'][0]['unit'] = 'lightyear'
             elif kind == 'tag': asset['measurements'][0]['tag'] = 'verified'
             elif kind == 'citation': asset['measurements'][0]['source'] = 'unknown'
-            elif kind == 'stage': doc['characters'][0]['assets'][1]['stage'] = asset['stage']
+            elif kind == 'stage': doc['characters'][0]['assets'].append(copy.deepcopy(asset))
             else: asset['parts'][0]['id'] = 'chest-left'
             with self.subTest(kind=kind), self.assertRaises(ValueError): b.validate_catalogue(doc)
 
     def test_mask_and_absent_profile_counterexamples(self):
-        # The shipped catalogue carries no mask data, so the mask counter-example injects a synthetic one.
+        # A caller-owned mask is independent of the default primitive catalogue.
         def meas(value):
             return {'value': value, 'unit': 'm', 'frame': 'glTF XYZ', 'method': 'synthetic', 'evidenceClass': 'authored',
                     'source': 'synthetic-fixture:1', 'limitations': 'test fixture', 'tag': 'behaviour'}
         doc = copy.deepcopy(self.doc)
-        self.asset(doc)['masks'] = [{'id': 'abdomen', 'bone': 'Spine', 'centre': meas([0, 1, 0]), 'radii': meas([0.1, 0.1, 0.1])}]
+        self.asset(doc)['masks'] = [{'id': 'abdomen', 'bone': 'BoardAnchor', 'centre': meas([0, 1, 0]), 'radii': meas([0.1, 0.1, 0.1])}]
         self.assertTrue(b.validate_catalogue(doc))
         self.asset(doc)['masks'][0]['radii']['value'][0] = 0
         with self.assertRaises(ValueError): b.validate_catalogue(doc)
         doc = copy.deepcopy(self.doc)
-        field = self.asset(doc)['profiles'][1]['fields']['pressDepth']
-        field['value'] = 0
+        fields = {name: {'status': 'present', 'measurement': meas(1)} for name in ('frequency','dampingRatio','cap','compression')}
+        fields['pressDepth'] = {'status': 'absent'}
+        self.asset(doc)['profiles'] = [{'id': 'waist', 'fields': fields}]
+        self.assertTrue(b.validate_catalogue(doc))
+        fields['pressDepth']['value'] = 0
         with self.assertRaises(ValueError): b.validate_catalogue(doc)
-        doc = copy.deepcopy(self.doc)
-        field = self.asset(doc)['profiles'][1]['fields']['pressDepth']
-        field['status'] = 'present'
-        field['measurement'] = copy.deepcopy(self.asset(doc)['profiles'][0]['fields']['pressDepth']['measurement'])
-        field['measurement']['value'] = 0
+        fields['pressDepth'] = {'status': 'present', 'measurement': meas(0)}
         with self.assertRaises(ValueError): b.validate_catalogue(doc)
 
 

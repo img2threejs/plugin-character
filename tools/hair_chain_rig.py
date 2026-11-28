@@ -1,6 +1,6 @@
 """Connected hair-chain binding, separate from geodesic skinning.
 
-Derived from native/donor_hair_rig.py:97-310; classification assumes the dominant
+Classification assumes the dominant
 below-pin component is the rear curtain. Ambiguous disconnected geometry is rejected.
 """
 import numpy as np

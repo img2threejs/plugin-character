@@ -1,11 +1,10 @@
 # Skin/body standards and independent measurement
 
 `skin-body-standards.json` orders S1–S8. Each check identifies a metric, comparison,
-unit, provenance case and rationale. `behaviour` is a mechanism; `single-subject`
-is a starting observation, not a universal prescription. The latter include island
-tone, join counts, bone count and the explicitly declared hair-chain layout, material
-scalars, and export tolerances. Re-derive those for the subject and record a reviewed
-job-specific standards file; do not transplant the historical figures blindly.
+unit, caller-data policy and rationale. `behaviour` is a generic mechanism; `single-subject`
+requires actual input measurements or declarations, never a bundled historical value.
+The default catalogue inventories a geometric primitive, not a human rig. Supply a reviewed
+caller-owned catalogue and standards/reference files for real authoring.
 
 An authoring agent writes and runs its own subject-specific bpy scripts. It retains the
 admitted original, records permissions and attribution, and hands the reviewer the
@@ -15,7 +14,7 @@ the artifact. Run it in a separate process using the bpy Python interpreter:
 
 ```sh
 "$B" tools/bpy_measure_skin_body.py --blend "$W/character.blend" \
-  --baseline-blend "$W/baseline.blend" --catalogue reference/body-parts.json \
+  --baseline-blend "$W/baseline.blend" --catalogue "$W/body-parts.json" \
   --character "$ASSET_ID" --atlas "$IMAGE_NAME" --mirror-pairs "$W/pairs.json" \
   --source "body=$W/source.png:$SOURCE_SHA256" --composite-atlas \
   --resolution-baseline-blend "$W/other-resolution.blend" \
@@ -78,11 +77,10 @@ remain independent decisions.
 
 ## Reference-relative checks, advisory ranges and stage fragments
 
-Two related subjects cannot establish a population norm, and the historical Robin eye
-detector selected sunglasses. Only reference-relative declared values are valid: the
-advisory per-case ranges for heads-tall, shoulder, pose, density and UV sharing were
-removed, and the target character's declared reference, baselines and limits are the
-only thresholds. A `"severity": "advisory"` check still appears as `warn` on failure,
+Only caller-owned reference values are valid. No historical subject measurements, palettes,
+native matrices or fixed hair layout are shipped. The target's declared reference, baselines
+and limits determine subject-specific thresholds. Existing required numerical policies remain
+unchanged. A `"severity": "advisory"` check still appears as `warn` on failure,
 and missing evidence remains `unmeasured`. Both appear in `reasons` without changing
 the gate status. Severity defaults to `required`.
 

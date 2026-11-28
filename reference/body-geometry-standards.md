@@ -1,6 +1,6 @@
 # Body geometry, topology and UV (S9)
 
-These measurements describe only the caller-selected neutral body meshes. They do not authorize or require chest, hip, buttock or sexualized detail. Related reference characters are not a population, so no case range is a norm; the advisory S9 case ranges were removed because only reference-relative declared values are valid. Required geometry tolerances, limits and baselines belong to the project. Missing measurements are not passes. The historical Robin eye detector selected sunglasses; its eye metrics are invalid and must not be used.
+These measurements describe only caller-selected neutral meshes. They do not authorize chest, hip, buttock or sexualized detail. Geometry references, tolerances, limits and baselines belong to the caller. No historical subject range is shipped; missing measurements never pass.
 
 ## Running and declarations
 
@@ -22,8 +22,8 @@ If any UV triangle contains no sampled texel centre, overlap and gutter are omit
 
 ## Evidence and limitations
 
-The advisory case ranges for heads-tall, shoulder/H, A-pose angle, face/body density and UV shared-pair fraction were removed: they described related bodies, not independent samples, and only reference-relative declared values are valid. Heuristic bands shift when H changes, and hair/accessories influence H. A historical Robin prior does not describe the final donor head.
+Only caller-declared reference values are valid. Hair/accessories can change measured height and heuristic silhouette bands; use the same selected scope and pose on each side of a comparison.
 
-The original foot connection opened after footwear removal; an overlay failed, so borders were trimmed and zipped (`reference/robin-transfer-study.md:32-34`). A posteriorly displaced donor neck and hidden flare produced a collar step; alignment and cleanup were needed (`robin-bikini-transfer-01/README.md:110-112`). A local closed join did not prove a globally closed body.
+A locally closed join does not prove a globally closed body. Inspect actual adjacency, silhouette and correspondence; color repair cannot conceal an uncorrected geometric offset.
 
 Unmeasured by design: camera-calibrated landmarks and occlusion, independently established hand/foot lengths, positional correspondence between different topologies, posed self-intersection, continuous motion, true filter bleed, exact continuous UV overlap, cross-material separation, and final export counts. A numeric gate cannot replace visual inspection.

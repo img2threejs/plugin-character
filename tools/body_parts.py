@@ -64,8 +64,6 @@ def normalize_masks(weights):
 def mirrored_weight_symmetry(weights_a, weights_b, pairs, bone_permutation):
     """Compare named bone-weight rows through an explicit bilateral permutation.
 
-    The Robin case compared 681 foot pairs (evidence/anatomy-skinning-aligned-
-    comparison-02.json:15343-15350); this does not imply whole-body symmetry.
     Rows are sequences of bone-to-weight mappings. Pairs are index pairs; None,
     duplicate indices, invalid indices and missing bone mappings are reported.
     No tolerance is imposed: the caller owns the acceptance threshold.
@@ -128,12 +126,7 @@ def height_fraction(value, height):
 
 
 def validate_catalogue(doc):
-    """Validate neutral catalogue structure and fail closed on missing evidence.
-
-    The case distinguishes full-rig (80) and head-component (28) stages
-    (robin-bikini-transfer-01/README.md:101-115). Validation is structural, not proof
-    that a cited measurement or licence is factually correct.
-    """
+    """Validate catalogue structure, not the truth of measurements or permissions."""
     def require(condition, message):
         if not condition:
             raise ValueError(message)

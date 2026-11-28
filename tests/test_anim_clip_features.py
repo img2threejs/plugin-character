@@ -1,24 +1,15 @@
 #!/usr/bin/env python3
 """Tests for the §1-§4 clip vocabulary, built around the defects it exists to remove.
 
-The centrepiece is `TheSpecValidationTable`. It does not hand `classify` a struct full of numbers --
-anyone can make a classifier agree with a struct they typed. It SYNTHESISES landmark tracks that
-should measure to the numbers the spec's own validation table reports, measures them with
-`measure_clip`, and only then classifies. Synthesise -> measure -> classify is the whole round trip;
-break the measurement and the table stops reproducing, which is exactly what a silent unit change or
-a dropped normalisation would do.
-
-The second target is the loop rule. 1.5.1 shipped a rule that contradicted its own data, so
-`test_the_1_5_1_rule_would_have_rejected_the_clip_it_was_derived_from` executes both rules on the
-same clip and asserts they disagree. Describing the contradiction in a comment would let it come
-back; running it cannot.
+Independently authored analytic tracks exercise measure -> classify, including
+H-scale invariance and all motion classes. Expected values follow their linear
+travel and sinusoidal rise formulas, not a historical subject's measured table.
+The loop counterexample is independently authored out-and-back motion: both
+the legacy stationary-root rule and the endpoint rule run on those same tracks.
 
 Pure Python 3.10+ stdlib.
 
-Ported from the base skill's forge/tests/test_clip_features.py. Its subject moved to this plugin as
-`tools/anim_clip_features.py` (PLUGIN_CONTRACT.md §4, §8), so the assertions that pin that module's
-behaviour belong here, next to the code they describe. Only the import bootstrap and the
-module's new name changed; every test keeps its name and its assertions.
+The generic production vocabulary lives in tools/anim_clip_features.py.
 """
 
 from __future__ import annotations
@@ -87,8 +78,7 @@ def synth_clip(
     which is what makes the H-scale invariance test meaningful: the same call at height 2.0 produces
     genuinely doubled world coordinates, not a rescaled feature struct.
 
-    `hip_returns` walks the hip out and back so it ends where it started -- the `idle-gesture` shape
-    that broke the 1.5.1 loop rule.
+    `hip_returns` walks the hip out and back so it ends where it started.
     """
     times, hip, head, hand_l, hand_r, foot_l, foot_r = [], [], [], [], [], [], []
     for index in range(samples):
@@ -133,38 +123,37 @@ def measure(clip: dict, height: float = 1.0) -> ClipFeatures:
     return measure_clip(clip, height)
 
 
-# The spec's own validation table (§2). `duration` is chosen so that travel / duration reproduces the
-# quoted speed exactly; the dashes in the spec's table are filled with values that keep the clip in
-# the class the table assigns it and are never asserted as if they came from the source.
+# Independently authored analytic fixtures. Travel = duration * chosen speed;
+# rise is the specified sinusoidal range. These are not source-clip observations.
 VALIDATION_TABLE: list[dict] = [
     {
-        "name": "walk-forward", "travel": 1.133, "rise": 0.019, "speed": 0.400,
-        "duration": 1.133 / 0.400, "primary": "walk", "kwargs": {"hand_swing": 0.10},
+        "name": "walk-forward", "travel": 1.5, "rise": 0.01, "speed": 0.5,
+        "duration": 3.0, "primary": "walk", "kwargs": {"hand_swing": 0.20},
     },
     {
-        "name": "run-forward", "travel": 1.465, "rise": 0.021, "speed": 0.799,
-        "duration": 1.465 / 0.799, "primary": "run", "kwargs": {"hand_swing": 0.18},
+        "name": "run-forward", "travel": 2.0, "rise": 0.04, "speed": 1.0,
+        "duration": 2.0, "primary": "run", "kwargs": {"hand_swing": 0.25},
     },
     {
-        "name": "dash-forward", "travel": 2.906, "rise": 0.030, "speed": 2.250,
-        "duration": 2.906 / 2.250, "primary": "dash", "kwargs": {"hand_swing": 0.22},
+        "name": "dash-forward", "travel": 4.0, "rise": 0.05, "speed": 2.0,
+        "duration": 2.0, "primary": "dash", "kwargs": {"hand_swing": 0.30},
     },
     {
-        "name": "jump-in-place", "travel": 0.272, "rise": 0.248, "speed": 0.272,
+        "name": "jump-in-place", "travel": 0.1, "rise": 0.3, "speed": 0.1,
         "duration": 1.0, "primary": "jump", "kwargs": {"hand_swing": 0.05},
     },
     {
-        "name": "leap-forward", "travel": 2.826, "rise": 0.517, "speed": 2.826 / 1.4,
-        "duration": 1.4, "primary": "leap", "kwargs": {"hand_swing": 0.20},
+        "name": "leap-forward", "travel": 3.0, "rise": 0.4, "speed": 3.0,
+        "duration": 1.0, "primary": "leap", "kwargs": {"hand_swing": 0.20},
     },
     {
-        "name": "idle-still", "travel": 0.013, "rise": 0.0001, "speed": 0.0065,
+        "name": "idle-still", "travel": 0.005, "rise": 0.005, "speed": 0.0025,
         "duration": 2.0, "primary": "idle",
         "kwargs": {"hand_swing": 0.01, "feet_follow_hip": False, "stance_half_width": 0.02, "foot_jitter": 0.005},
     },
     {
-        "name": "arms-only", "travel": 0.050, "rise": 0.008, "speed": 0.050 / 1.5,
-        "duration": 1.5, "primary": "in-place",
+        "name": "arms-only", "travel": 0.1, "rise": 0.01, "speed": 0.05,
+        "duration": 2.0, "primary": "in-place",
         "kwargs": {"hand_swing": 0.30, "feet_follow_hip": False, "stance_half_width": 0.02, "foot_jitter": 0.005},
     },
 ]
@@ -181,10 +170,10 @@ def table_clip(row: dict, height: float = 1.0) -> dict:
     )
 
 
-class TheSpecValidationTable(unittest.TestCase):
-    """Synthesise -> measure -> classify, against the seven clips §2 validates itself on."""
+class SyntheticClipContracts(unittest.TestCase):
+    """Synthesise -> measure -> classify independently authored analytic tracks."""
 
-    def test_synthesised_clips_measure_the_numbers_the_spec_table_reports(self) -> None:
+    def test_synthesised_clips_measure_their_analytic_parameters(self) -> None:
         for row in VALIDATION_TABLE:
             with self.subTest(clip=row["name"]):
                 features = measure(table_clip(row))
@@ -203,8 +192,8 @@ class TheSpecValidationTable(unittest.TestCase):
                 self.assertIn(row["primary"], classification.reasons)
 
     def test_a_leap_outranks_the_speed_class_it_also_matches(self) -> None:
-        # leap-forward covers 2.826H in 1.4s, which is genuinely dash speed. Both labels are true and
-        # both are returned; `dash` as the primary would lose the fact that it left the ground.
+        # The synthetic leap travels three height units in one second, also matching dash.
+        # Both labels must survive; speed cannot hide that the root left the ground.
         classification = classify(measure(table_clip(VALIDATION_TABLE[4])))
         self.assertIn("dash", classification.labels)
         self.assertIn("leap", classification.labels)
@@ -213,8 +202,7 @@ class TheSpecValidationTable(unittest.TestCase):
     def test_arms_only_carries_all_three_labels_at_once(self) -> None:
         row = VALIDATION_TABLE[6]
         classification = classify(measure(table_clip(row)))
-        # Exactly these three: the table says "planted + gesture", and a clip whose hips travel
-        # 0.050H is also `in-place`. Nothing else may creep in.
+        # Small root travel with moving hands carries exactly in-place, planted and gesture.
         self.assertEqual(set(classification.labels), {"in-place", "planted", "gesture"})
         self.assertEqual(classification.primary, "in-place")
 
@@ -236,14 +224,13 @@ class TheSpecValidationTable(unittest.TestCase):
 
 
 class TheLoopRule(unittest.TestCase):
-    """§4. The rule 1.5.1 got wrong, and the data that proves it wrong."""
+    """Endpoint loop decisions and independently authored counterexamples."""
 
     def wandering_clip(self) -> ClipFeatures:
-        # `idle-gesture`: travel 0.121H -- six times the idle threshold -- and correctly loopable,
-        # because the hip walks out and comes back and the pose returns.
+        # A quarter-height out-and-back track returns both hip and pose to rest.
         return measure(
             synth_clip(
-                "NlaTrack.007", duration=2.0, travel=0.121, rise=0.010,
+                "out-and-back", duration=2.0, travel=0.25, rise=0.010,
                 hand_swing=0.30, hip_returns=True, pose_return=0.2,
                 feet_follow_hip=False, stance_half_width=0.02,
             )
@@ -251,19 +238,14 @@ class TheLoopRule(unittest.TestCase):
 
     def test_a_clip_that_wanders_and_returns_loops(self) -> None:
         features = self.wandering_clip()
-        self.assertAlmostEqual(features.travel, 0.121, places=9)
+        self.assertAlmostEqual(features.travel, 0.25, places=9)
         self.assertLess(features.hip_return, 1e-9)
         decision = decide_loop(features)
         self.assertIs(decision.loop, True)
         self.assertIn("poseReturn", decision.reason)
 
-    def test_the_1_5_1_rule_would_have_rejected_the_clip_it_was_derived_from(self) -> None:
-        """The contradiction, executed rather than described.
-
-        1.5.1: "a clip that neither travels nor rises can repeat seamlessly". idle-gesture travels
-        0.121H and loops. Both rules run on the same features here, and they must disagree -- if this
-        test ever goes green by agreement, the corrected rule has been reverted.
-        """
+    def test_stationary_root_rule_rejects_a_valid_out_and_back_loop(self) -> None:
+        """Both rules run on the same analytic motion and must disagree."""
         features = self.wandering_clip()
         self.assertFalse(_legacy_loop_rule_1_5_1(features))
         self.assertIs(decide_loop(features).loop, True)
@@ -437,14 +419,11 @@ class TheVocabulary(unittest.TestCase):
     def test_hand_range_is_world_space_so_root_travel_is_inside_it(self) -> None:
         """The pitfall §R4's design targets will walk a caller straight into.
 
-        §R4 quotes handRange 0.15-0.25H as the walk target, meaning the counter-swing. §1 measures
-        world positions, so a walk that covers 1.13H measures handRange a little OVER 1.13H: the
-        root dominates and the swing barely shows. The two numbers are not the same quantity, and
-        reading the §R4 band against this one would fail every walk ever authored. This is why
-        `gesture` is gated on `in-place` -- the hand threshold only means what it says once the root
-        is known to be still. An R4 check that wants the counter-swing alone must subtract the hip.
+        World positions include root travel while authoring counter-swing targets do not.
+        This synthetic translating track makes the distinction visible. A root-relative
+        check must subtract the hip; gesture classification must stay gated on in-place.
         """
-        row = VALIDATION_TABLE[0]  # walk-forward, hand_swing 0.10 -> 0.20H of counter-swing
+        row = VALIDATION_TABLE[0]  # hand_swing 0.20 -> 0.40H root-relative counter-swing
         features = measure(table_clip(row))
         self.assertGreater(features.hand_range, row["travel"])
         self.assertGreater(features.hand_range, 4 * 0.25)  # far outside §R4's 0.15-0.25H band
@@ -496,7 +475,7 @@ class Naming(unittest.TestCase):
         named = name_clip(features, "run-forward")
         self.assertFalse(named.inferred)
         self.assertEqual(named.id, "run-forward")
-        self.assertEqual(named.measured, "speed 0.799 H/s, rise 0.021H")
+        self.assertEqual(named.measured, "speed 1.000 H/s, rise 0.040H")
 
     def test_an_intent_word_sets_inferred(self) -> None:
         # No kinematic feature distinguishes a strike from a stumble.
@@ -536,7 +515,7 @@ class Naming(unittest.TestCase):
 
 
 class Thresholding(unittest.TestCase):
-    """§2 thresholds are `single-subject` starting values, so they must be replaceable and recorded."""
+    """Classification records its actual threshold policy, including explicit overrides."""
 
     def test_classification_records_the_thresholds_it_used(self) -> None:
         features = measure(table_clip(VALIDATION_TABLE[0]))
@@ -545,9 +524,11 @@ class Thresholding(unittest.TestCase):
         self.assertIs(classify(features, custom).thresholds, custom)
 
     def test_raising_the_walk_floor_declassifies_the_walk_clip(self) -> None:
-        features = measure(table_clip(VALIDATION_TABLE[0]))  # 0.400 H/s
+        features = measure(table_clip(VALIDATION_TABLE[0]))
         self.assertEqual(classify(features).primary, "walk")
-        self.assertIsNone(classify(features, Thresholds(walk_speed=0.5, run_speed=0.9)).primary)
+        raised_floor = (features.speed + DEFAULT_THRESHOLDS.run_speed) / 2
+        self.assertGreater(raised_floor, features.speed)
+        self.assertIsNone(classify(features, Thresholds(walk_speed=raised_floor)).primary)
 
     def test_a_clip_in_a_gap_gets_no_primary_class(self) -> None:
         """travel 0.40H is too far to be `in-place`, speed 0.20 H/s too slow to be `walk`.

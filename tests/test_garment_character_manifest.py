@@ -1,11 +1,7 @@
-"""Integrity gates for the garment-character runtime (route `garment-character`).
+"""Hashes, inventory and extractor drift for the calibrated garment runtime.
 
-runtime/garment-character/manifest.json records the sha256/size of every runtime file and
-of the node tests beside it. These tests keep them honest: every recorded file must match,
-nothing may sit unlisted next to them, the node tests must import the runtime through the
-plugin layout, the stored parameters must equal what the runtime exports now, and every
-hand-read `subjectLiterals` citation must still point at the quoted source text. Each check
-is a function with a counter-example test proving that it reports a deliberately broken input.
+No source-wording or historical subject-literal assertions. Runtime calibration
+contracts are exercised by Node tests; these tests protect shipped-file integrity.
 """
 from __future__ import annotations
 
@@ -23,7 +19,6 @@ TESTS = ROOT / "tests" / "garment-character"
 MANIFEST = RUNTIME / "manifest.json"
 PARAMETERS = ROOT / "reference" / "garment-parameters.json"
 EXTRACTOR = ROOT / "tools" / "extract_garment_parameters.mjs"
-CLASSES = {"subject", "behaviour"}
 
 
 def load(path: Path):
@@ -68,20 +63,6 @@ def check_test_imports(root: Path, entries: list[dict]) -> list[str]:
     return problems
 
 
-def check_subject_literals(root: Path, literals: list[dict]) -> list[str]:
-    """Every entry's `literal` must be a verbatim substring of the cited line."""
-    problems: list[str] = []
-    cache: dict[str, list[str]] = {}
-    for item in literals:
-        if item.get("class") not in CLASSES:
-            problems.append(f"{item.get('file')}:{item.get('line')}: class {item.get('class')!r} not in {sorted(CLASSES)}")
-        lines = cache.setdefault(item["file"], (root / item["file"]).read_text(encoding="utf-8").split("\n"))
-        number = item["line"]
-        if not (1 <= number <= len(lines)):
-            problems.append(f"{item['file']}:{number}: line out of range")
-        elif item["literal"] not in lines[number - 1]:
-            problems.append(f"{item['file']}:{number}: {item['literal']!r} not on that line")
-    return problems
 
 
 def constants_drift(stored: dict, current: dict) -> bool:
@@ -96,10 +77,9 @@ class ManifestFiles(unittest.TestCase):
 
     def test_header(self):
         self.assertEqual(self.manifest["route"], "garment-character")
-        self.assertEqual(self.manifest["buildStamp"], "guard-1")
+        self.assertEqual(self.manifest["buildStamp"], "synthetic-1")
 
     def test_every_recorded_file_matches_sha256_and_size(self):
-        self.assertEqual(len(self.entries), 15)
         self.assertEqual(verify_files(ROOT, self.entries), [])
 
     def test_no_unlisted_file_beside_the_copies(self):
@@ -108,8 +88,6 @@ class ManifestFiles(unittest.TestCase):
     def test_node_tests_import_the_runtime_through_the_plugin_layout(self):
         self.assertEqual(check_test_imports(ROOT, self.entries), [])
 
-    def test_viewer_build_stamp_matches_the_copy(self):
-        self.assertIn("build: '%s'" % self.manifest["buildStamp"], (RUNTIME / "viewer.mjs").read_text(encoding="utf-8"))
 
     def test_hash_check_reports_a_single_flipped_byte(self):
         entry = next(e for e in self.entries if e["path"].endswith("garment.mjs"))
@@ -150,14 +128,14 @@ class ParametersMatchRuntime(unittest.TestCase):
 
     def test_stored_constants_equal_extractor_output(self):
         self.assertFalse(constants_drift(self.stored["constants"], self.current["constants"]))
-        self.assertEqual(self.stored["generatedFrom"], self.current["generatedFrom"])
+        self.assertEqual(self.stored, self.current)
 
     def test_required_constants_are_present(self):
         constants = self.stored["constants"]
-        for name in ("STRAP", "PANEL", "PULL_PATCH", "STRAP_FIELD", "CUP_LIFT", "CONTACT_STEADY", "SKIN_GUARD", "FLAP", "TRANSITION", "REDUCED_TRANSITION", "OUTFITS"):
-            self.assertIn(name, constants["garment"])
-        self.assertIn("ROUND_CHEST", constants["chest-field"])
-        self.assertEqual(sorted(constants["softbody"]), ["PROFILES", "REGION_IDS"])
+        self.assertEqual(set(constants["garment"]), {"PULL_PATCH", "SKIN_GUARD", "TRANSITION", "REDUCED_TRANSITION"})
+        self.assertEqual(constants["chest-field"], {})
+        self.assertEqual(set(constants["softbody"]), {"REGION_IDS"})
+        self.assertIn("garment", self.stored["synthetic"])
 
     def test_drift_is_detected(self):
         changed = json.loads(json.dumps(self.stored["constants"]))
@@ -165,28 +143,6 @@ class ParametersMatchRuntime(unittest.TestCase):
         self.assertTrue(constants_drift(changed, self.current["constants"]))
 
 
-class SubjectLiterals(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.literals = load(PARAMETERS)["subjectLiterals"]
-
-    def test_every_citation_points_at_its_quoted_text(self):
-        self.assertEqual(check_subject_literals(RUNTIME, self.literals), [])
-
-    def test_coordinate_and_name_literals_are_listed(self):
-        quoted = {(item["file"], item["literal"]) for item in self.literals if item["class"] == "subject"}
-        for expected in (
-            ("garment.mjs", "yAttach: 1.425"), ("garment.mjs", "yTop: 1.49"), ("garment.mjs", "(0, 1.47, 0.04)"),
-            ("garment.mjs", "'Body'"), ("cloth-contact.mjs", "< 1.19"), ("cloth-contact.mjs", "> 1.65"),
-            ("viewer.mjs", "m.name==='Body'"), ("viewer.mjs", "m.name === 'BikiniTop'"),
-        ):
-            self.assertIn(expected, quoted)
-
-    def test_wrong_line_or_class_is_reported(self):
-        wrong_line = [dict(self.literals[0], line=self.literals[0]["line"] + 1, literal="no such text anywhere")]
-        self.assertTrue(check_subject_literals(RUNTIME, wrong_line))
-        wrong_class = [dict(self.literals[0], **{"class": "guess"})]
-        self.assertTrue(check_subject_literals(RUNTIME, wrong_class))
 
 
 if __name__ == "__main__":

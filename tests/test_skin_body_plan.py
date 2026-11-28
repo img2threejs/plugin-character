@@ -35,6 +35,20 @@ class PlanTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'sources.head.rights'):
             planner.create_plan(standards(), plan)
 
+    def test_selected_catalogue_is_forwarded_to_every_skin_body_measurement(self):
+        plan = character()
+        plan['catalogueFile'] = '/caller data/selected-catalogue.json'
+        tasks = planner.create_plan(standards(), plan)['tasks']
+        for task in tasks:
+            self.assertEqual(task['inputs']['catalogueFile'], plan['catalogueFile'])
+            for command in task['runCommands']:
+                args = shlex.split(command)
+                if 'tools/bpy_measure_skin_body.py' in args:
+                    self.assertEqual(args[args.index('--catalogue')+1], plan['catalogueFile'])
+        del plan['catalogueFile']
+        with self.assertRaisesRegex(ValueError, 'catalogueFile'):
+            planner.create_plan(standards(), plan)
+
     def test_forbidden_region_is_refused(self):
         plan = character()
         plan['regions'].append('chest-left')

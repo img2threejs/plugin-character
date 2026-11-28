@@ -37,11 +37,12 @@ class HeadTests(unittest.TestCase):
         with self.assertRaises(ValueError): boundary_rings([],1e-6)
 
     def test_cheeks_and_counterexample(self):
-        # synthetic dimensions only
-        left = np.array([[.13 + .001*i, 0, .145] for i in range(8)])
+        calibration = {'center_x_over_eye':1, 'center_z_offset_over_span':.5, 'radii_over_landmarks':[.5,.5,.5], 'medial_x_over_eye':.5, 'iris_clearance':.1}
+        left = np.array([[.5 + .01*i, 0, .8] for i in range(8)])
         right = left.copy(); right[:,0] *= -1
         p = np.vstack([left,right])
-        m = cheek_masks(.1,.2,.2,.1,p,np.ones(len(p),bool))
+        m = cheek_masks(.5,1,1,.4,p,np.ones(len(p),bool),calibration=calibration)
         self.assertEqual(np.count_nonzero(m['left']),8)
-        with self.assertRaises(ValueError): cheek_masks(.1,.2,.2,.1,np.vstack([left[:7],right]),np.ones(15,bool))
-        with self.assertRaises(ValueError): cheek_masks(.1,.2,.2,.1,p)
+        with self.assertRaises(ValueError): cheek_masks(.5,1,1,.4,np.vstack([left[:7],right]),np.ones(15,bool),calibration=calibration)
+        with self.assertRaises(ValueError): cheek_masks(.5,1,1,.4,p,calibration=calibration)
+        with self.assertRaises(ValueError): cheek_masks(.5,1,1,.4,p,np.ones(len(p),bool),calibration={})

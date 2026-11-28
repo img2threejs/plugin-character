@@ -39,17 +39,16 @@ Choose the route from the user's request, never from a character-looking filenam
   This composes after native Blender or CC5 authoring; it does not create missing anatomy or rigs.
   Use assets only with recorded permissions; never copy unlicensed demonstration code/assets.
   Do not claim geometric fixtures prove character likeness, collision handling or phone performance.
-- **`garment-character`**: connected cloth-surface pulls, in-place outfit change, round chest field and
-  outer-layer guarantee, after `softbody-character`. Read `reference/garment-character-route.md`
-  and `reference/garment-acceptance.md`. Copy `runtime/garment-character/` byte-identical, re-derive
-  subject values in `reference/garment-parameters.json`, measure with `tools/skin_probes.js`,
-  judge with `tools/gate_garment.py`. Creates no anatomy, rig or likeness. The route was developed against a
-  licensed third-party asset that is not bundled, not a result of reference images alone; this route reproduces
-  runtime/workflow/gates, not an image-to-character guarantee.
-- **`skin-body`**: the skin (da) **texture** and the body parts of reference characters as reusable knowledge and tools — classify
-  atlas regions, measure and match tone, fill/repair, details (iris, brows, lashes), transplanted-head composite and bridge,
-  pack-and-verify, skin material; body-part catalogue, neutral soft-region masks, skin weights and mirror checks, head/neck
-  join and hair chains. Read `reference/skin-body-distillation.md` (rules and their cases), then `reference/skin-texture.md`
+- **`garment-character`**: explicitly calibrated connected cloth pulls, color transitions and surface-support fields
+  after `softbody-character`. Read `reference/garment-character-route.md` and `reference/garment-acceptance.md`.
+  The bundled viewer is a project-authored geometric board/cloth rig, not a human/garment fidelity or native
+  acceptance claim. Real inputs require their own calibration, mesh/clip selections and measured evidence.
+  Use `window.garmentStudio`, `tools/skin_probes.js` and `tools/gate_garment.py`; missing limits remain unmeasured.
+  No subject-data fallback, source-rights grant or gate relaxation is permitted. See `NOTICE`.
+- **`skin-body`**: caller-owned skin texture, neutral masks/weights, catalogues and head/hair inputs — classify
+  regions, measure named-color-space tone, repair bounded support, composite/bridge, pack-and-verify and compare
+  actual native/export data. The default catalogue inventories only independently authored primitives, not anatomy.
+  Plans require `catalogueFile` and forward it consistently. Read `reference/skin-body-distillation.md`, then `reference/skin-texture.md`
   and `reference/body-parts.md`. Composes with `blender-character`; creates no likeness and grants no rights to donor heads,
   scans or franchise characters. Regions are neutral only (abdomen, waist, cheek/face, hair); the catalogue validator
   rejects anything else. Painted features are not measured reflectance; no pores, browser SSS or de-lighting are established.
@@ -85,7 +84,7 @@ only by measuring.
 | `anim_action_design.py` | Target bands and gait/ballistic/reach primitives; authored clips must satisfy the classifier |
 | `anim_emit_runtime.py` | Emits the bind space and controller as TypeScript |
 | `gate_rigging.py` | One gate row, twelve checks, every verdict reported |
-| `runtime/garment-character/` | Byte-identical delivered viewer runtime: `garment.mjs`, `garment-field.mjs`, `cloth-contact.mjs`, `chest-field.mjs`, `softbody.mjs`, `picking.mjs`, `viewer.mjs`, no-store `serve.py`; `manifest.json` pins every hash |
+| `runtime/garment-character/` | Calibrated mechanics, configuration validator and independently authored board/cloth viewer; `manifest.json` pins every runtime/test hash |
 | `skin_probes.js` | Browser probe, independent of the guard: signed distance of every garment vertex and triangle centre to the CPU-skinned body; inside = more than 0.3 mm under it |
 | `gate_garment.py` | Five checks (clean, coverage, phases, hard pull, exact release) over recorded matrices; an unrecorded value is `unmeasured`, never a pass |
 | `extract_garment_parameters.mjs` | Regenerates the constants in `reference/garment-parameters.json` from the runtime; a test fails on drift |
@@ -160,12 +159,10 @@ diagnostics do not establish real-reference likeness or release qualification.
 - `reference/cc5-headshot-route.md` — real-source, licensed CC authoring and bpy export
 - `reference/softbody-character-route.md` — authored masks and source-safe bpy preparation
 - `reference/softbody-runtime.md` — runtime API, diagnostic viewer and acceptance
-- `reference/garment-character-route.md` — stages, parameters (each tagged `single-subject` or `behaviour`),
-  honest scope, replay commands and known limits
-- `reference/garment-acceptance.md` — measurable acceptance items `A1`–`A13` with delivered numbers,
-  measuring commands and the counter-examples that must fail
-- `reference/garment-parameters.json` — extracted constants and hand-read subject literals
-- `reference/skin-body-distillation.md` — start here for the skin/body route: 19 rules, each with its case
+- `reference/garment-character-route.md` — explicit calibration/config contracts, independent synthetic scene and replay commands
+- `reference/garment-acceptance.md` — unchanged G1–G5 policy, runtime contracts and actual-browser verification obligations
+- `reference/garment-parameters.json` — extractor-generated generic constants and independent synthetic config, not real calibration
+- `reference/skin-body-distillation.md` — caller-data skin/body workflow and limits, not historical case evidence
 - `reference/skin-texture.md`, `reference/skin-atlas-authoring.md` — the skin texture pipeline and the atlas formulas
 - `reference/body-parts.md` (+ `body-parts.json`), `reference/head-hair-authoring.md` — body parts, weights, masks, head and hair
 - `reference/skin-body-standards.md` (+ `.json`), `reference/skin-body-agent-contract.md` — what must be true (S1–S8), how it is measured, and how agents + bpy produce it

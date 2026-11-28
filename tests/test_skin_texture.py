@@ -53,20 +53,22 @@ class SkinTextureTests(unittest.TestCase):
         self.assertFalse(receipt['support'][2,6])
         self.assertFalse(receipt['support'][:,2:].any())
         np.testing.assert_array_equal(result[~receipt['support']], image[~receipt['support']])
-        with self.assertRaises(ValueError): s.fill_skin_island(image, island, ~sample & False)
-        with self.assertRaises(ValueError): s.fill_skin_island(image, island, sample, protected_mask=island)
+        with self.assertRaises(ValueError): s.fill_skin_island(image, island, ~sample & False, dilation=1)
+        with self.assertRaises(ValueError): s.fill_skin_island(image, island, sample, dilation=1, protected_mask=island)
 
     def test_shadow_support_and_dark_free(self):
         image = np.ones((21,21,3), float)*.95
         image[10,10] = [.3,.3,.3]; image[10,11] = [.6,.6,.6]
         neck = np.zeros((21,21), bool); neck[10,10] = True
         ref = np.zeros_like(neck); ref[0,0] = True
-        result, receipt = s.lift_shadow(image, neck, ref, {})
+        params = {'dark_luminance': .5, 'dilation': 1, 'blur_iterations': 2, 'strength': .5, 'darkness_gate': [.4,.7]}
+        result, receipt = s.lift_shadow(image, neck, ref, params)
         self.assertGreater(result[10,10,0], image[10,10,0])
         self.assertEqual(result[10,9,0], image[10,9,0])
         np.testing.assert_array_equal(result[~receipt['support']], image[~receipt['support']])
-        with self.assertRaises(ValueError): s.lift_shadow(image, ref, ref, {})
-        with self.assertRaises(ValueError): s.lift_shadow(image, neck, np.zeros_like(ref), {})
+        with self.assertRaises(ValueError): s.lift_shadow(image, ref, ref, params)
+        with self.assertRaises(ValueError): s.lift_shadow(image, neck, np.zeros_like(ref), params)
+        with self.assertRaises(ValueError): s.lift_shadow(image, neck, ref, {})
 
     def test_root_original_selection_and_bounded_edges(self):
         original = np.ones((4,6,3), float)*.7
@@ -78,7 +80,7 @@ class SkinTextureTests(unittest.TestCase):
         self.assertEqual(report['selected_pixels'], 1)
         self.assertGreater(result[1,0,0], image[1,0,0])
         np.testing.assert_array_equal(result[:,5], image[:,5])
-        with self.assertRaises(ValueError): s.repair_root_paint(image, original, np.zeros((4,6)), recipe)
+        with self.assertRaises(ValueError): s.repair_root_paint(image, original, np.zeros((4,6)), recipe, iterations=20)
 
     def test_color_line_and_counterexample(self):
         image = np.tile(np.array([60,90,120], np.uint8), (16,16,1))
@@ -90,17 +92,18 @@ class SkinTextureTests(unittest.TestCase):
 
     def test_iris_counts_and_domain(self):
         image = np.array([[[.1,.7,.9], [1,1,1], [0,0,0], [.4,.1,.9]]])
-        thresholds = {'saturation': .2, 'maximum': .08, 'blue_ratio': 1.1, 'green_ratio': 1.02}
-        result, counts = s.recolor_iris(image, 42, thresholds=thresholds)
+        thresholds = {'saturation': .3, 'maximum': .1, 'blue_ratio': 1.2, 'green_ratio': 1.2}
+        result, counts = s.recolor_iris(image, 30, thresholds=thresholds)
         self.assertEqual((counts['changed'], counts['protected']), (1,3))
         np.testing.assert_array_equal(result[0,1:], image[0,1:])
-        _, covered = s.recolor_iris(image, 42, thresholds=thresholds, coverage=np.array([[False,True,True,True]]))
+        _, covered = s.recolor_iris(image, 30, thresholds=thresholds, coverage=np.array([[False,True,True,True]]))
         self.assertEqual((covered['pigment'], covered['protected']), (0,3))
         with self.assertRaises(ValueError): s.recolor_iris(image, 61, thresholds=thresholds)
 
     def test_detail_highlights_and_boxes(self):
         image = np.array([[[1.,1.,1.], [.2,.1,.1], [.8,.7,.6], [.3,.2,.1]]])
-        palette = {'background': [.8,.7,.6], 'iris_dark': [.03,.08,.2], 'iris_bright': [.36,.8,.92], 'brow_dark': [.07,.05,.055], 'crease_multiply': .8}
+        palette = {'background': [.7,.7,.7], 'iris_dark': [0,0,.2], 'iris_bright': [.2,.5,1], 'brow_dark': [.1,.1,.1], 'crease_multiply': .5,
+                   'background_distance': .2, 'highlight_luminance': .9, 'highlight_saturation': .1, 'iris_curve': [.05,.6,1], 'brow_gain': [.1,.1,.1]}
         result, counts = s.recolor_details(image, {'iris': (0,0,2,1), 'brow': (2,0,3,1), 'crease': (3,0,4,1)}, {}, palette)
         self.assertEqual(counts['iris']['protected'], 1)
         self.assertEqual(counts['brow']['selected'], 0)
@@ -134,9 +137,9 @@ class SkinTextureTests(unittest.TestCase):
             with self.assertRaises(ValueError): s.save_pack_verify(np.zeros((2,3,4), np.uint8), path)
 
     def test_material_missing_maps_and_no_sss_claim(self):
-        params = {'metallic': 0, 'roughness': .5, 'ior': 1.4, 'subsurface_weight': .08, 'subsurface_radius': (1,.45,.2), 'subsurface_scale': .002, 'detail_roughness': .35, 'base_color_map': True, 'normal_map': True, 'roughness_map': True}
+        params = {'metallic': 0, 'roughness': .6, 'ior': 1.5, 'subsurface_weight': .1, 'subsurface_radius': (1,.5,.25), 'subsurface_scale': .01, 'detail_roughness': .4, 'base_color_map': True, 'normal_map': True, 'roughness_map': True}
         spec = s.skin_material_spec(params)
-        export = {'metallic': 0, 'roughness': .5, 'base_color_map': True, 'base_color_space': 'sRGB'}
+        export = {'metallic': 0, 'roughness': .6, 'base_color_map': True, 'base_color_space': 'sRGB'}
         report = s.validate_skin_material(spec, export)
         self.assertFalse(report['ok'])
         self.assertIn('missing normal_map', report['failures'])
@@ -149,10 +152,10 @@ class SkinTextureTests(unittest.TestCase):
     def test_tone_report_counterexample(self):
         a = np.full((1,4,3), .5); a[0,0] = .7
         b = np.full_like(a, .6); mask = np.ones((1,4), bool)
-        report = s.tone_match_report(a, b, {'leg': mask})['leg']
+        report = s.tone_match_report(a, b, {'leg': mask}, deviation_limit=.1)['leg']
         self.assertEqual(report['before_deviation_count'], 1)
         self.assertEqual(report['after_deviation_count'], 0)
-        with self.assertRaises(ValueError): s.tone_match_report(a,b,{'leg': ~mask})
+        with self.assertRaises(ValueError): s.tone_match_report(a,b,{'leg': ~mask},deviation_limit=.1)
 
 
 if __name__ == '__main__':

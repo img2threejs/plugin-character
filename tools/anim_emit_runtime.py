@@ -110,24 +110,16 @@ export function resolveLoopMode(clip: ClipInfo): LoopMode {
 }
 
 // ---------------------------------------------------------------------------
-// Stage R1 -- Bind space. THE RULE THAT CAUSED EVERY RIGGING FAILURE IN 1.5.1.
+// Stage R1 -- Bind space.
 //
 // three.js SkinnedMesh defaults to AttachedBindMode, in which
 // bindMatrixInverse is recomputed from the mesh's matrixWorld on every
 // updateMatrixWorld, so the skinning evaluation is
 //   v' = skinMatrix * bindMatrix * v          // matrixWorld cancels out
-// entirely. Three things were tried before the one below, each measured:
-//   1. mesh.bind(skeleton, armature.matrixWorld)                    -> a
-//      blank frame (the bind was applied twice).
-//   2. identity bind + a `skinSpace` wrapper transform               -> the
-//      figure rendered 0.5 m high and floating.
-//   3. identity bind + the armature's translation folded into the
-//      display offset                                                -> the
-//      figure rendered offset by exactly that armature translation, because
-//      the armature's transform is already inside skinMatrix and adding it
-//      again double-counts it.
-// The rule: bind at identity, ALWAYS, and derive the display offset from the
-// mesh's own bounds — never from the armature.
+// entirely. A nonidentity bind can apply an armature transform twice, and
+// adding armature translation to a presentation offset can double-count a
+// transform already represented by skinMatrix. Bind at identity and derive
+// the presentation offset from the mesh's own bounds, not the armature.
 // ---------------------------------------------------------------------------
 export function computeDisplayOffset(mesh: THREE.SkinnedMesh): THREE.Vector3 {
   mesh.geometry.computeBoundingBox();
