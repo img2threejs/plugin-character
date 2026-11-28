@@ -1,0 +1,9 @@
+{
+  "schema":"skin-body-standards/1",
+  "stages":[{"id":"S11", "name":"Hair fit", "checks":[
+    {"id":"hair-contact-baseline", "stage":"S11", "metric":"hair_penetrating_vertices", "comparator":"no-worse-than-baseline", "unit":"vertices", "tag":"behaviour", "case":"Caller-approved exception baseline", "rationale":"Use an approved subject-specific exception baseline, not universal zero."},
+    {"id":"hair-root-drift", "stage":"S11", "metric":"hair_root_pin_drift_over_h", "comparator":"declared-max", "unit":"H", "tag":"behaviour", "case":"Caller-selected root attachment", "rationale":"Use the declared root attachment tolerance."},
+    {"id":"hair-exposed-scalp", "stage":"S11", "metric":"hair_exposed_scalp_texels", "comparator":"==", "threshold":0, "unit":"texels", "tag":"behaviour", "when":"scalp_mask_supplied", "case":"Caller-selected scalp paint eligibility", "rationale":"Only declared unapproved scalp paint texels are counted."},
+    {"id":"hair-clearance-case", "stage":"S11", "metric":"hair_min_clearance_over_h", "comparator":"exists", "unit":"H", "tag":"single-subject", "severity":"advisory", "case":"Actual caller rest clearance", "rationale":"Rest clearance is an input observation, not a population threshold."}
+  ]}]
+}

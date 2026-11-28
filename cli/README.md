@@ -10,7 +10,7 @@ The npm package is scoped to `@img2threejs/character`; the executable installed 
 stays unscoped as `img2-character`. This is a thin launcher; the shared runtime is
 [`@img2threejs/img2`](https://www.npmjs.com/package/@img2threejs/img2), pinned to an exact
 version (`0.4.0`). The plugin source commit is also pinned in the package metadata; the CLI
-version (`0.2.0`) and the plugin source version (`v0.2.0`) are released on separate tracks.
+version (`0.3.0`) and the plugin implementation version (`0.4.0`) follow separate release tracks.
 
 ## Quick start
 
@@ -51,10 +51,10 @@ comes from `@img2threejs/img2`; its executable remains `img2`.
 ## Source pin, update behaviour, and what this installer does not claim
 
 - **Source pin.** This CLI's metadata pins plugin commit
-  `796dd9caf3f299958cf75b2294f54b37dc23ada9` (plugin source tag `v0.2.0`). An explicit
-  `--ref vX.Y.Z` or `--ref <40-char SHA>` on `install` overrides that pin for that run;
-  omit `--ref` to accept the metadata pin. The CLI executable version (`0.2.0`) is
-  independent of the plugin source version (`0.2.0`).
+  `ddae08e5681119330b759a3d16a1906e2636e4f3` (plugin implementation version `0.4.0`;
+  no release tag or qualification is implied). An explicit `--ref vX.Y.Z` or `--ref <40-char SHA>`
+  on `install` overrides that pin for that run; omit `--ref` to accept the metadata pin.
+  CLI version `0.3.0` is independent of plugin implementation version `0.4.0`.
 - **Update behaviour.** `update` follows the registered source's release policy through
   the harness. Plugin source updates require a semantic `vX.Y.Z` tag on `img2threejs/plugin-character`;
   CLI updates require a separate `cli-vX.Y.Z` tag on this repository. The two tracks never
@@ -147,8 +147,8 @@ provenance; subsequent CLI tags run through trusted publishing with `provenance=
 
 ```bash
 # Bump cli/package.json and update CLI release notes first, then commit reviewed CLI files.
-git tag -a cli-v0.2.0 -m 'img2-character CLI 0.2.0'
-git push origin cli-v0.2.0
+git tag -a cli-v0.3.0 -m 'img2-character CLI 0.3.0'
+git push origin cli-v0.3.0
 ```
 
 `workflow_dispatch` is also exposed on this repository's workflow; pass a matching
@@ -162,6 +162,11 @@ README, plugin tools, gates and source assets. Keep plugin content untouched unt
 separate explicit source release.
 
 ## CLI release notes
+
+- **0.3.0 (prepared, not published)**: pin the committed `0.4.0` plugin source at
+  `ddae08e5681119330b759a3d16a1906e2636e4f3`, separately from this installer update.
+  Runtime/native acceptance and third-party-derived material rights remain unverified;
+  changing installer metadata does not clear those gates.
 
 - **0.2.0**: initial public installer-only npm package for the `character` plugin.
   Shared runtime pinned to `@img2threejs/img2@0.4.0`; plugin source pin is immutable

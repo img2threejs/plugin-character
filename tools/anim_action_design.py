@@ -1071,9 +1071,9 @@ def run_targets(figure_height: float) -> TargetBand:
       because the spec changes neither. A real run has more hip rise than 0.015H-0.025H;
       that is a divergence from observed running gaits, not from this spec, and it is left
       as written rather than quietly improved.
-    - **speed target 0.80H/s** — the measured `run-forward` value (0.799) from §2's own
-      validation table, so the target is a number the spec already recorded rather than a
-      midpoint invented here.
+    - **speed target 0.80H/s** is the retained operational authoring target,
+      not a measured subject value or a target independently validated by the
+      synthetic fixture. The existing authoring band and gate policies are unchanged.
     - **contact target 0.40**, giving a 0.20 flight phase by the same arithmetic the walk's
       0.60 uses for double support. The band's upper bound is exclusive at 0.50, matching
       "below 0.5".

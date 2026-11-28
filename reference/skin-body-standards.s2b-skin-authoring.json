@@ -1,0 +1,12 @@
+{
+  "schema":"skin-body-standards/1",
+  "stages":[{"id":"S2B","name":"Skin texture authoring from a reference","checks":[
+    {"id":"s2b-tone-rgb","stage":"S2B","metric":"skin_region_tone_max_delta_rgb","comparator":"reference-within","threshold":null,"unit":"encoded-rgb","tag":"behaviour","case":"Caller patch medians","rationale":"Declare reference value zero and a project-specific RGB error tolerance."},
+    {"id":"s2b-tone-lstar","stage":"S2B","metric":"skin_region_tone_max_delta_lstar","comparator":"reference-within","threshold":null,"unit":"L*","tag":"behaviour","case":"Caller per-pixel L* reference","rationale":"Declare reference value zero and a project-specific L* tolerance."},
+    {"id":"s2b-uniformity","stage":"S2B","metric":"skin_region_uniformity_p99","comparator":"reference-within","threshold":null,"unit":"encoded-rgb","tag":"behaviour","case":"Caller regional distribution","rationale":"Compare with the reference's matching regional maximum p99 and uncertainty, not a flat-fill mandate."},
+    {"id":"s2b-density","stage":"S2B","metric":"skin_face_body_density_ratio","comparator":"reference-within","threshold":null,"unit":"ratio","tag":"behaviour","case":"Area-weighted density definition","rationale":"Compare with the project's equivalent neutral face/body sampling and tolerance."},
+    {"id":"s2b-mirror","stage":"S2B","metric":"skin_mirror_tone_residual","comparator":"reference-within","threshold":null,"unit":"encoded-rgb","tag":"behaviour","case":"Caller-selected mirrored UV pairs","rationale":"Only explicitly intended symmetry is compared."},
+    {"id":"s2b-padding","stage":"S2B","metric":"skin_seam_padding_min_px","comparator":"declared-min","threshold":null,"unit":"pixels","tag":"behaviour","case":"Caller filter footprint","rationale":"Declare the filter footprint; layer check is not a mip simulation."},
+    {"id":"s2b-support","stage":"S2B","metric":"skin_changed_outside_support","comparator":"==","threshold":0,"unit":"pixels","tag":"behaviour","case":"Caller protected atlas regions","rationale":"Compare a prior atlas with the candidate outside the explicit support."}
+  ]}]
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Soft-body character — local diagnostic viewer</title>
+  <script type="importmap">{"imports":{"three":"../../node_modules/three/build/three.module.js","three/addons/":"../../node_modules/three/examples/jsm/"}}</script>
+  <style>
+    :root { color-scheme: dark; font: 15px/1.5 system-ui,sans-serif; background:#11161e; color:#e2eaf4; }
+    * { box-sizing:border-box; } body { margin:0; } main { display:grid; grid-template-columns:minmax(0,1fr) 340px; min-height:100dvh; }
+    #view { min-width:0; min-height:480px; position:relative; background:radial-gradient(ellipse at center,#263446,#10151d); }
+    canvas { width:100%; height:100%; display:block; position:absolute; touch-action:none; }
+    aside { padding:24px; border-left:1px solid #334253; overflow:auto; } h1 { font-size:21px; line-height:1.3; margin:0 0 10px; }
+    h2 { font-size:15px; margin:22px 0 8px; } p { color:#b3c2d4; margin:8px 0 16px; } label { display:block; margin:14px 0; }
+    input[type=range] { width:100%; accent-color:#67d9c1; } input[type=file] { max-width:100%; font-size:12px; }
+    button { padding:9px 13px; background:#243747; color:#edfaff; border:1px solid #658194; border-radius:6px; cursor:pointer; margin:5px 8px 5px 0; }
+    button:focus-visible,input:focus-visible { outline:3px solid #67d9c1; outline-offset:3px; }
+    output { float:right; font-variant-numeric:tabular-nums; } #status { white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; border-top:1px solid #334253; padding-top:14px; }
+    .hint { position:absolute; bottom:18px; left:18px; right:18px; pointer-events:none; font-size:13px; color:#d0dce8; }
+    .badge { color:#67d9c1; text-transform:uppercase; font-size:11px; letter-spacing:.1em; } .row { display:flex; gap:8px; flex-wrap:wrap; }
+    @media(max-width:760px) { main { grid-template-columns:1fr; } #view { height:58dvh; min-height:360px; } aside { border-left:0; border-top:1px solid #334253; padding:18px; } }
+    @media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+<main>
+  <section id="view" aria-label="3D diagnostic surface"><canvas id="canvas" aria-label="Drag highlighted surface to deform; drag background to orbit"></canvas><div class="hint">Nhấn/kéo vùng màu để bóp. Kéo nền để xoay; cuộn/pinch để zoom. Dải sáng là mask tóc.</div></section>
+  <aside>
+    <div class="badge">Local · Three.js · authored masks</div>
+    <h1>Soft-body character</h1>
+    <p id="asset-label">Hình học chẩn đoán có skin và morph, không phải nhân vật thật hay kết quả CC5.</p>
+    <div id="sizes"></div>
+    <label for="softness">Độ mềm <output id="soft-value">0.60</output><input id="softness" type="range" min="0" max="1" step="0.01" value="0.6"></label>
+    <label for="morph">Morph gốc <output id="morph-value">0.00</output><input id="morph" type="range" min="0" max="1" step="0.01" value="0"></label>
+    <label>Góc xương chẩn đoán <input id="pose" type="range" min="-0.6" max="0.6" step="0.01" value="0"></label>
+    <div class="row"><button id="impulse" type="button">Tạo xung nảy</button><button id="reset" type="button">Về trung tính</button></div>
+    <h2>Mở GLB đã chuẩn bị</h2>
+    <p>Chọn GLB và softbody.json từ cùng lần export. Đọc cục bộ; không upload. Không tải tài nguyên ngoài GLB.</p>
+    <label>Character GLB <input id="glb" type="file" accept=".glb"></label>
+    <label>Region sidecar <input id="config" type="file" accept=".json,application/json"></label>
+    <button id="load" type="button">Mở asset</button><button id="diagnostic" type="button">Hình chẩn đoán</button>
+    <p id="status" role="status" aria-live="polite">Đang khởi tạo WebGL…</p>
+  </aside>
+</main>
+<script type="module" src="./demo.mjs"></script>
+</body>
+</html>

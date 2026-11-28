@@ -1,0 +1,99 @@
+{
+  "schema": "body-parts/1",
+  "scope": "Independent board/cloth primitive inventory. Anatomical parts and real-input measurements are unknown.",
+  "characters": [
+    {
+      "id": "synthetic-board",
+      "assets": [
+        {
+          "id": "synthetic-board-rig",
+          "stage": "procedural-board",
+          "coordinate_basis": "metres, Y up, support normal +Z, Cartesian board (not anatomy)",
+          "rights": "Project-authored procedural geometry; no third-party asset inputs. Not a rights grant for caller data or history.",
+          "source_identity": "runtime/garment-character/synthetic-scene.mjs",
+          "bones": [
+            {
+              "id": "BoardAnchor",
+              "side": "centre",
+              "parent": null,
+              "mirror": null
+            }
+          ],
+          "meshes": [
+            {
+              "id": "SupportBoard"
+            },
+            {
+              "id": "ClothGrid"
+            }
+          ],
+          "parts": [
+            {
+              "id": "fabric",
+              "side": "centre",
+              "status": "present",
+              "bones": [
+                "BoardAnchor"
+              ],
+              "meshes": [
+                "ClothGrid"
+              ]
+            },
+            {
+              "id": "head",
+              "side": "centre",
+              "status": "unknown",
+              "bones": [],
+              "meshes": []
+            },
+            {
+              "id": "hair",
+              "side": "centre",
+              "status": "unknown",
+              "bones": [],
+              "meshes": []
+            },
+            {
+              "id": "torso",
+              "side": "centre",
+              "status": "unknown",
+              "bones": [],
+              "meshes": []
+            },
+            {
+              "id": "abdomen",
+              "side": "centre",
+              "status": "unknown",
+              "bones": [],
+              "meshes": []
+            }
+          ],
+          "bone_groups": [
+            {
+              "id": "board-anchor",
+              "bones": [
+                "BoardAnchor"
+              ]
+            }
+          ],
+          "measurements": [
+            {
+              "id": "bone-count",
+              "value": 1,
+              "unit": "count",
+              "frame": "procedural rig",
+              "method": "one Bone constructed by createSyntheticScene",
+              "evidenceClass": "authored",
+              "source": "runtime/garment-character/synthetic-scene.mjs:29",
+              "limitations": "primitive only; no anatomical measurements",
+              "tag": "behaviour"
+            }
+          ],
+          "profiles": [],
+          "masks": [],
+          "textures": []
+        }
+      ]
+    }
+  ]
+}

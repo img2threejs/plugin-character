@@ -1,6 +1,6 @@
 {
   "name": "@img2threejs/character",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Public installer-only npm package for the img2threejs/plugin-character plugin.",
   "license": "Apache-2.0",
   "type": "module",
@@ -22,7 +22,7 @@
   "img2Plugin": {
     "id": "character",
     "source": "img2threejs/plugin-character",
-    "ref": "796dd9caf3f299958cf75b2294f54b37dc23ada9"
+    "ref": "ddae08e5681119330b759a3d16a1906e2636e4f3"
   },
   "publishConfig": {
     "access": "public",

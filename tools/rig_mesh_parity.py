@@ -110,7 +110,7 @@ ARTIFACT_NAME = "mesh-manifest.json"
 # The summary is a DIFFERENT document -- the same freeze with its buffers stripped -- so it carries
 # its own kind. Feeding it to `verify` has to fail loudly; it cannot prove anything.
 SUMMARY_KIND = "rigging.mesh-manifest-summary-v1"
-PROVENANCE = {"provider": "character", "version": "0.1.0"}
+PROVENANCE = {"provider": "character", "version": "0.4.0"}
 
 
 def artifact_path(workspace: Path) -> Path:

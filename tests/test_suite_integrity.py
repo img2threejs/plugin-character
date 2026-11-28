@@ -32,7 +32,13 @@ ROOT = Path(__file__).resolve().parents[1]
 # 25, test_emit_animation_runtime 25, test_geodesic_skinning 12, test_rig_milestone0 9,
 # test_validate_rig_payload 6), plus 9 in test_gate_rigging. This file's own 2 are not counted --
 # the probe discovers them too, but a floor that counts the checker inflates itself.
-COLLECTED_FLOOR = 235
+# CC5/soft-body/garment tests bring discovery to 326; construction priors add 118.
+# Skin/body tools (texture, atlas, head/hair, body parts, standards gate, measurers, plan generator) add 121 on top of
+# the 444 above: probed total 565; exclude these two self-checks.
+# Independent-control/material regressions add seven tests without removing any prior cases.
+# One real-browser navigation-timeout regression additionally checks owned-process cleanup.
+# Three owned-fixture cases separate historical oracle stamps from current product metadata.
+COLLECTED_FLOOR = 574
 
 _PROBE = """
 import json, unittest

@@ -1,0 +1,16 @@
+{
+  "scope": "Independently authored synthetic rig, not third-party or native fidelity evidence.",
+  "generator": "scripts/generate_synthetic_rig_oracle.py",
+  "files": [
+    {
+      "path": "synthetic-rig.glb",
+      "bytes": 3212,
+      "sha256": "1f0e3cedee297a74f2d415b5d1628d3824c1f5ae5875b00449b530fc7ec4c087"
+    },
+    {
+      "path": "glb-rig.json",
+      "bytes": 7470,
+      "sha256": "51f7e91c5e3ccf35659de3b189d2930ee6277c085730e0fa10ec00bdf2871f1e"
+    }
+  ]
+}

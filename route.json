@@ -1,0 +1,13 @@
+{
+  "kind": "img2.route-card",
+  "version": 1,
+  "outputKind": "rigged-3d",
+  "requires": {"intent": ["rig"]},
+  "costClass": "heavy",
+  "deps": [{"probe": "python3>=3.10"}, {"probe": "character-node>=22.0"}, {"probe": "character-chromium>=1.0"}, {"probe": "character-bpy>=4.3"}],
+  "routedTerminalGate": {"id": "character-routed-terminal", "script": "tools/gate_routed_terminal.py"},
+  "display": {
+    "appliesTo": "Characters with explicit rig intent. Extracts the actual GLB skeleton, skin order, inverse binds and animations; terminal admission requires complete hash-bound runtime, frozen-mesh, contact and rendered integrity evidence.",
+    "notFor": "Static requests without rig intent, ambiguous skeletons, incomplete measurements or unsupported deformation representations. Not route-eligible until a complete real oracle/browser sweep qualifies a blocking rig gate; a card or a receipt does not establish readiness."
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "route": "garment-character",
+  "buildStamp": "synthetic-1",
+  "hashCheck": "sha256 and bytes of the file at path, relative to plugin root; enforced by test_garment_character_manifest.py.",
+  "runtimeLicense": "Project code Apache-2.0; Three.js 0.186.1 MIT. No third-party assets bundled.",
+  "files": [
+    {
+      "path": "runtime/garment-character/LICENSE-runtime",
+      "kind": "runtime",
+      "sha256": "4595055948a67e91177115c57e154804046878e77ff223de22accc880012827a",
+      "bytes": 11337
+    },
+    {
+      "path": "runtime/garment-character/calibration.mjs",
+      "kind": "runtime",
+      "sha256": "b4c387ed85c7d06f00c9c6a824408983f5dbdfcef5a20619ff915322cf2575df",
+      "bytes": 6077
+    },
+    {
+      "path": "runtime/garment-character/chest-field.mjs",
+      "kind": "runtime",
+      "sha256": "0b30be199c57a3f7df9e7477f46fe919f04adf5328741cb83344d99046e7b7a9",
+      "bytes": 5050
+    },
+    {
+      "path": "runtime/garment-character/cloth-contact.mjs",
+      "kind": "runtime",
+      "sha256": "adf3efc78175ca7b4175b0f9a7e8bc529e3b047f02138a402ac30ff5b9ce876e",
+      "bytes": 8667
+    },
+    {
+      "path": "runtime/garment-character/garment-field.mjs",
+      "kind": "runtime",
+      "sha256": "ffc1064b8cb3199d8b363afbe31865fdf243728765ac06f0b5985e9ce8df6417",
+      "bytes": 4975
+    },
+    {
+      "path": "runtime/garment-character/garment.mjs",
+      "kind": "runtime",
+      "sha256": "29cbdcc625a6dc46a30ea11528425484db0e328fdc27d56713bc621d1c34ae6f",
+      "bytes": 44010
+    },
+    {
+      "path": "runtime/garment-character/index.html",
+      "kind": "runtime",
+      "sha256": "95a393d30afc067dd7217423cd9c9a5e3eb33d54781d36c286c0cef2dce4f454",
+      "bytes": 5188
+    },
+    {
+      "path": "runtime/garment-character/picking.mjs",
+      "kind": "runtime",
+      "sha256": "744fc093695a90d1bd570f13268e4dfa5fa796ed603777c24a991ba23e47e31c",
+      "bytes": 6184
+    },
+    {
+      "path": "runtime/garment-character/serve.py",
+      "kind": "runtime",
+      "sha256": "f4fd056da7219475c123834b48a6231c8d8bd78ed3c8edf5d79790e898a0c4c5",
+      "bytes": 528
+    },
+    {
+      "path": "runtime/garment-character/softbody.mjs",
+      "kind": "runtime",
+      "sha256": "23448b64dca2d5765df5384d488e7ab05372c13972b79e06c394ad33a6c9fead",
+      "bytes": 38204
+    },
+    {
+      "path": "runtime/garment-character/styles.css",
+      "kind": "runtime",
+      "sha256": "2ee2cecff0e6c8fac69de31d48afd5b40f6ef82d67ec792ba6667d42040618d1",
+      "bytes": 7184
+    },
+    {
+      "path": "runtime/garment-character/synthetic-config.mjs",
+      "kind": "runtime",
+      "sha256": "8cb23feca711a0c85866af4a2d61f39c998bd74d5deaf4f75acb5f79a2f00649",
+      "bytes": 3024
+    },
+    {
+      "path": "runtime/garment-character/synthetic-scene.mjs",
+      "kind": "runtime",
+      "sha256": "d734780df957249e82e4a9f5fbd5a6eb9188d07ecdfc97ef1470843bc13027ac",
+      "bytes": 3751
+    },
+    {
+      "path": "runtime/garment-character/viewer.mjs",
+      "kind": "runtime",
+      "sha256": "c9e7e6ae7b866ed24749b845dc261d5e4517b32cbec11396439458759048ebbe",
+      "bytes": 19760
+    },
+    {
+      "path": "tests/garment-character/chest-field.test.mjs",
+      "kind": "test",
+      "sha256": "901a2836c865c2bd89eaa08d4288e23adced539c1fb95dae92143e8854d5de52",
+      "bytes": 2865
+    },
+    {
+      "path": "tests/garment-character/garment-field.test.mjs",
+      "kind": "test",
+      "sha256": "381df5551e3037dfbb5f7bbe242e2f3c66448123f32e58b96fddc015a85410f3",
+      "bytes": 3486
+    },
+    {
+      "path": "tests/garment-character/garment.test.mjs",
+      "kind": "test",
+      "sha256": "4b51190ea31a9e805adf5f6f88eb0f4a1ca2d419cdeab174e86a763b702c304b",
+      "bytes": 8437
+    },
+    {
+      "path": "tests/garment-character/softbody.test.mjs",
+      "kind": "test",
+      "sha256": "4d8d0e8e3dcaf11113dc99701138eb9c7d66854cbaaa975aa34ea867b8aba071",
+      "bytes": 34876
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+Project scope and provenance notice
+
+The current garment example is independently authored procedural geometry: Cartesian support and cloth grids, one bone, a translation clip and code-painted geometric texture. Its explicit configuration is a geometric mechanics example, not human/garment fidelity, original-asset recreation, native acceptance, or rights evidence.
+
+Historical asset-specific garment calibration, measured tables, body-part inventories, transfer studies and copied garment receipts have been removed/replaced in the current tree. Generic algorithms are retained. This change does not erase repository history, establish the provenance of historical inputs, grant rights to any former or caller-supplied asset, or constitute legal approval.
+
+Real-input users must independently establish source permissions and attribution and supply their own calibration, catalogues and measured evidence. Synthetic fixtures do not relax source admission, G10, native-control, renderer, material, rigging or export-parity gates.
+
+Project code is licensed under Apache-2.0 (LICENSE). Three.js is separately licensed under MIT. No third-party character asset or texture is included in the synthetic demo.

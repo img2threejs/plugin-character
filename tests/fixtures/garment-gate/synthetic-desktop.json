@@ -1,0 +1,1477 @@
+{
+  "scope": "Constructed synthetic gate contract input, not observed events, browser measurements or native acceptance.",
+  "cases": [
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 0,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 45,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 135,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 180,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 225,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 315,
+      "input": "mouse",
+      "trusted": true,
+      "pullMm": 32.0
+    }
+  ]
+}

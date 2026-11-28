@@ -2,3 +2,4 @@ _img2_local.py
 __pycache__/
 *.pyc
 .omc/
+node_modules/

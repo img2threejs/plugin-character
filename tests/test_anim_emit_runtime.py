@@ -41,7 +41,7 @@ def _clip(id_: str, label: str = "", source_name: str = "", duration: float = 1.
 
 
 SAMPLE_CLIPS = [
-    _clip("walk-forward", duration=1.133, loop=True),
+    _clip("walk-forward", duration=1.5, loop=True),
     _clip("idle-still", duration=2.0, loop=False),
     _clip("mystery-strip", duration=0.75, loop=None),
 ]
@@ -75,14 +75,6 @@ class EmitAnimationRuntimeTest(unittest.TestCase):
         self.assertNotIn("armature.matrixWorld", body)
         self.assertNotIn("armature.position", body)
 
-    def test_appendix_failures_are_documented(self) -> None:
-        # The three concrete things that were tried and measured, per the
-        # spec's Stage R1 table -- kept as code comments so the mistake isn't
-        # repeated silently.
-        self.assertIn("blank frame", self.source)
-        self.assertIn("0.5", self.source)
-        self.assertIn("floating", self.source)
-        self.assertIn("armature translation", self.source)
 
     # -- Stage R5.1: ticker collection vs lazy geometry (Appendix failure 2) -
 

@@ -1,0 +1,811 @@
+{
+  "scope": "Constructed synthetic gate contract input, not observed events, browser measurements or native acceptance.",
+  "touch": [
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "cobalt",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "ribbon",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 48.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 0,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 90,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": 1,
+      "angleDeg": 180,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "outfit": "gold",
+      "kind": "cup",
+      "side": -1,
+      "angleDeg": 270,
+      "input": "touch",
+      "trusted": true,
+      "pullMm": 32.0
+    }
+  ],
+  "tissue": [
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "kind": "cup",
+      "side": 1,
+      "mode": "grab",
+      "input": "mouse",
+      "trusted": true
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "kind": "cup",
+      "side": 1,
+      "mode": "squeeze",
+      "input": "mouse",
+      "trusted": true
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "kind": "cup",
+      "side": -1,
+      "mode": "grab",
+      "input": "mouse",
+      "trusted": true
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "kind": "cup",
+      "side": -1,
+      "mode": "squeeze",
+      "input": "mouse",
+      "trusted": true
+    }
+  ],
+  "combos": [
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-0",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-1",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-2",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-3",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-4",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-5",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-6",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-7",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-8",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    },
+    {
+      "inside": 0,
+      "deepestMm": 0,
+      "samples": 9,
+      "phases": {
+        "hold": {
+          "n": 3
+        },
+        "rebound": {
+          "n": 5
+        },
+        "settled": {
+          "n": 1
+        }
+      },
+      "id": "contract-combo-9",
+      "pulls": [
+        {
+          "kind": "strap",
+          "side": 1
+        },
+        {
+          "kind": "panel",
+          "side": -1
+        }
+      ],
+      "pullMmAtHold": {
+        "strap": {
+          "1": 48.0
+        },
+        "panel": {
+          "-1": 32.0
+        }
+      }
+    }
+  ]
+}

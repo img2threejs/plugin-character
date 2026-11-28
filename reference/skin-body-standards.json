@@ -1,0 +1,59 @@
+{
+  "schema": "skin-body-standards/1",
+  "neutral_allowlist": ["abdomen", "waist-left", "waist-right", "cheek-left", "cheek-right", "face", "hair"],
+  "stages": [
+    {"id":"S1", "checks":[
+      {"id":"source-hash", "stage":"S1", "metric":"source_hash", "comparator":"exists", "threshold":null, "unit":"sha256", "tag":"behaviour", "case":"Caller-owned source admission", "rationale":"Record the source identity; a hash does not establish permission."},
+      {"id":"original-unchanged", "stage":"S1", "metric":"original_changed_bytes", "comparator":"==", "threshold":0, "unit":"sources", "tag":"behaviour", "case":"Pinned source preservation", "rationale":"Count sources whose content hash differs from its independently pinned digest; this is not a changed-byte count."}
+    ]},
+    {"id":"S2", "checks":[
+      {"id":"body-pixels", "stage":"S2", "metric":"original_body_changed_pixels", "comparator":"==", "threshold":0, "unit":"pixels", "tag":"behaviour", "case":"Protected body pixels", "rationale":"Original body pixels must be preserved."},
+      {"id":"opaque", "stage":"S2", "metric":"nonopaque_pixels", "comparator":"==", "threshold":0, "unit":"pixels", "tag":"behaviour", "case":"Opaque atlas contract", "rationale":"No transparent atlas pixels."},
+      {"id":"bit-depth", "stage":"S2", "metric":"image_bit_depth", "comparator":"==", "threshold":8, "unit":"bits", "tag":"behaviour", "case":"Encoded atlas contract", "rationale":"Stored atlas samples are 8-bit."},
+      {"id":"atlas-space", "stage":"S2", "metric":"atlas_color_space", "comparator":"==", "threshold":"sRGB", "unit":"color-space", "tag":"behaviour", "case":"Encoded base colour contract", "rationale":"Base colour is sRGB."},
+      {"id":"atlas-layout", "stage":"S2", "metric":"atlas_layout_error", "comparator":"==", "threshold":0, "unit":"pixels", "tag":"behaviour", "case":"Composite layout algorithm; tools/atlas_surface.py", "rationale":"Composite height is 9W/8."},
+      {"id":"repair-boundary", "stage":"S2", "metric":"changed_outside_repair_mask", "comparator":"==", "threshold":0, "unit":"pixels", "tag":"behaviour", "case":"Caller-selected repair support", "rationale":"Repair does not alter pixels outside declared mask."},
+      {"id":"island-tone", "stage":"S2", "metric":"island_tone_deviation", "comparator":"declared-max", "threshold":null, "unit":"encoded-rgb", "tag":"single-subject", "case":"Caller-owned painted-tone limit", "rationale":"Declare the tolerated painted-tone difference between the repaired island and its reference region (evidence declared.limits.island_tone_deviation); not a visual-quality guarantee."},
+      {"id":"uv-error", "stage":"S2", "metric":"uv_max_error", "comparator":"<=", "threshold":0.00001, "unit":"uv", "tag":"behaviour", "case":"Corresponding UV tolerance policy", "rationale":"Corresponding UV loops remain within tolerance."},
+      {"id":"normalized-uv", "stage":"S2", "metric":"normalized_uv_max_error", "comparator":"==", "threshold":0, "unit":"uv", "tag":"behaviour", "case":"Resolution-independent UV layout", "rationale":"Normalized UVs match across declared resolutions."}
+    ]},
+    {"id":"S3", "checks":[
+      {"id":"join-open", "stage":"S3", "metric":"join_open_edges", "comparator":"==", "threshold":0, "unit":"edges", "tag":"behaviour", "case":"Declared closed-interface contract", "rationale":"Declared join boundary has no open edges."},
+      {"id":"join-nonmanifold", "stage":"S3", "metric":"join_nonmanifold_edges", "comparator":"==", "threshold":0, "unit":"edges", "tag":"behaviour", "case":"Declared manifold-interface contract", "rationale":"Declared join boundary has no nonmanifold edges."},
+      {"id":"join-edges", "stage":"S3", "metric":"join_edge_count", "comparator":"exists", "threshold":null, "unit":"edges", "tag":"single-subject", "case":"Caller-selected join inventory", "rationale":"Report scope, not a universal topology count."},
+      {"id":"join-triangles", "stage":"S3", "metric":"join_triangle_count", "comparator":"exists", "threshold":null, "unit":"triangles", "tag":"single-subject", "case":"Caller-selected join inventory", "rationale":"Report the actual join triangles."},
+      {"id":"face-position", "stage":"S3", "metric":"face_max_position_error", "comparator":"<=", "threshold":0.000001, "unit":"m", "tag":"behaviour", "case":"Protected source correspondence policy", "rationale":"Face correspondence must be independently selected."}
+    ]},
+    {"id":"S4", "checks":[
+      {"id":"bone-groups", "stage":"S4", "metric":"missing_bone_groups", "comparator":"==", "threshold":0, "unit":"groups", "tag":"behaviour", "case":"Explicit selected catalogue", "rationale":"Every selected catalogue group must be present."},
+      {"id":"bone-count", "stage":"S4", "metric":"bone_count", "comparator":"exists", "threshold":null, "unit":"bones", "tag":"single-subject", "case":"Caller rig inventory", "rationale":"Count is stage-specific."},
+      {"id":"hair-chains", "stage":"S4", "metric":"hair_chain_bones", "comparator":"reference-within", "threshold":null, "unit":"bones", "tag":"single-subject", "case":"Caller-declared hair rig", "rationale":"Compare the bone count with the declared hair rig (declared.references.hair_chain_bones, tolerance 0.5 for an integer count). Only applicable when hair is declared.", "when":"hair_declared"}
+    ]},
+    {"id":"S5", "checks":[
+      {"id":"weight-sum", "stage":"S5", "metric":"weight_sum_max_error", "comparator":"<=", "threshold":0.0001, "unit":"weight", "tag":"behaviour", "case":"Normalized weight contract", "rationale":"Every vertex's skin weights sum to one."},
+      {"id":"influences", "stage":"S5", "metric":"weight_max_influences", "comparator":"<=", "threshold":4, "unit":"bones", "tag":"behaviour", "case":"Four-influence format contract", "rationale":"At most four influences."},
+      {"id":"small-weights", "stage":"S5", "metric":"weight_small_count", "comparator":"==", "threshold":0, "unit":"weights", "tag":"behaviour", "case":"Weight pruning contract", "rationale":"No retained positive weight below 1e-4."},
+      {"id":"mirror-difference", "stage":"S5", "metric":"mirror_max_difference", "comparator":"<=", "threshold":0.0001, "unit":"weight", "tag":"behaviour", "case":"Explicit mirrored-pair tolerance policy", "rationale":"Compare with explicit pair and bone mapping."},
+      {"id":"mirror-unmatched", "stage":"S5", "metric":"mirror_unmatched_count", "comparator":"==", "threshold":0, "unit":"pairs", "tag":"behaviour", "case":"Fail-closed correspondence contract", "rationale":"No unmatched or ambiguous pairs."},
+      {"id":"mirror-mapping", "stage":"S5", "metric":"mirror_mapping", "comparator":"exists", "threshold":null, "unit":"mapping", "tag":"behaviour", "case":"Caller-selected pairs and permutation", "rationale":"State the tested pairs and permutation."}
+    ]},
+    {"id":"S6", "checks":[
+      {"id":"neutral-regions", "stage":"S6", "metric":"mask_region_ids", "comparator":"==", "threshold":"neutral-allowlist", "unit":"regions", "tag":"behaviour", "case":"Neutral authoring policy", "rationale":"Only declared neutral region IDs."},
+      {"id":"mask-min", "stage":"S6", "metric":"mask_min", "comparator":">=", "threshold":0, "unit":"weight", "tag":"behaviour", "case":"Normalized masks", "rationale":"Mask weights are nonnegative."},
+      {"id":"mask-max", "stage":"S6", "metric":"mask_max", "comparator":"<=", "threshold":1, "unit":"weight", "tag":"behaviour", "case":"Normalized masks", "rationale":"Mask weights do not exceed one."},
+      {"id":"mask-sum", "stage":"S6", "metric":"mask_max_sum", "comparator":"<=", "threshold":1, "unit":"weight", "tag":"behaviour", "case":"Normalized overlaps", "rationale":"Overlapping regions sum to at most one."}
+    ]},
+    {"id":"S7", "checks":[
+      {"id":"material-space", "stage":"S7", "metric":"material_base_color_space", "comparator":"==", "threshold":"sRGB", "unit":"color-space", "tag":"behaviour", "case":"Base-colour encoding policy", "rationale":"Base colour texture uses sRGB."},
+      {"id":"roughness", "stage":"S7", "metric":"material_roughness", "comparator":"exists", "threshold":null, "unit":"scalar", "tag":"single-subject", "case":"Actual caller material", "rationale":"Record actual material roughness."},
+      {"id":"metallic", "stage":"S7", "metric":"material_metallic", "comparator":"exists", "threshold":null, "unit":"scalar", "tag":"single-subject", "case":"Actual caller material", "rationale":"Record actual metallic value."},
+      {"id":"export-maps", "stage":"S7", "metric":"export_maps_and_sss", "comparator":"exists", "threshold":null, "unit":"observation", "tag":"behaviour", "case":"Actual export capabilities", "rationale":"Unavailable capabilities are unmeasured-by-export, not a pass."}
+    ]},
+    {"id":"S8", "checks":[
+      {"id":"export-position", "stage":"S8", "metric":"export_position_error", "comparator":"declared-max", "threshold":null, "unit":"m", "tag":"single-subject", "case":"Caller export tolerance", "rationale":"Declare the position tolerance from the export format (declared.limits.export_position_error); compare independently matched native and GLB positions."},
+      {"id":"export-uv", "stage":"S8", "metric":"export_uv_error", "comparator":"declared-max", "threshold":null, "unit":"uv", "tag":"single-subject", "case":"Caller export tolerance", "rationale":"Declare the UV tolerance (declared.limits.export_uv_error); compare corresponding loops."},
+      {"id":"export-weight", "stage":"S8", "metric":"export_weight_error", "comparator":"declared-max", "threshold":null, "unit":"weight", "tag":"single-subject", "case":"Caller export tolerance", "rationale":"Declare the weight tolerance (declared.limits.export_weight_error); compare corresponding joint weights."},
+      {"id":"export-pixels", "stage":"S8", "metric":"export_changed_pixels", "comparator":"==", "threshold":0, "unit":"pixels", "tag":"behaviour", "case":"Exact decoded-pixel preservation", "rationale":"Compare decoded exported pixels."}
+    ]}
+  ]
+}

@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """Read a GLB's OWN rig -- joints, inverse binds, clips -- instead of assuming one (1.5.2 §R0, §R3).
 
-WHY THIS MODULE EXISTS AT ALL. A reference GLB arrives carrying a real skin (`skinCount: 1`) and
-real clips (`animationCount: 11`), and the pipeline then authors a skeleton *procedurally* from the
-componentTree. Those are two different skeletons. The GLB's animation channels target GLB **node
-indices**; the GLB's `JOINTS_0` attribute indexes the GLB's **own** `skin.joints` array. Feeding
-either index space into a procedurally authored skeleton addresses a different bone at every index,
-which is exactly what "the mesh comes out badly broken or disjointed" looks like from the outside.
-The fast lane makes it worse by merging 69 GLB nodes into 20 components, so no 1:1 node -> component
-mapping exists to fall back on.
+WHY THIS MODULE EXISTS AT ALL. An input GLB can carry its own skin and clips while a pipeline
+authors a different skeleton procedurally from components. The animation channels target GLB
+node indices, whereas JOINTS_0 indexes that GLB's skin.joints array. Neither index space can
+address a different skeleton safely without explicit correspondence. Component merging can
+also destroy a one-to-one node-to-component mapping; names and traversal order cannot recover it.
 
 So the rig is read out as explicit, validated data and the joint correspondence is made an artifact
 you can audit, not an assumption nobody wrote down.
@@ -72,7 +69,7 @@ from img2_core.paths import resolve_workspace  # noqa: E402
 PLUGIN_ID = "character"
 ARTIFACT_KIND = "rigging.glb-rig-v1"
 ARTIFACT_NAME = "glb-rig.json"
-PROVENANCE = {"provider": "character", "version": "0.1.0"}
+PROVENANCE = {"provider": "character", "version": "0.4.0"}
 
 
 def artifact_path(workspace: Path) -> Path:

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f6f3ed"><title>Garment — Synthetic Mechanics Studio</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">{"imports":{"three":"../../node_modules/three/build/three.module.js","three/addons/":"../../node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <header class="masthead"><a class="wordmark" href="./" aria-label="Garment Studio"><span class="mark" aria-hidden="true">G</span><span>GARMENT <b>STUDIO</b></span></a><span class="edition">SYNTHETIC DEMO / 01</span></header>
+  <main>
+    <section class="stage" aria-label="Ví dụ cơ học hình học 3D tương tác">
+      <div class="stage-title"><p class="eyebrow">GARMENT STUDIO</p><h1>Geometry<span>.</span></h1><p class="subtitle">Ví dụ tổng hợp độc lập · không phải nhân vật hay kiểm chứng native.</p></div>
+      <canvas id="character" aria-label="Lưới hình học tổng hợp. Giữ để bóp hoặc kéo, thả để quan sát hồi phục." tabindex="0"></canvas>
+      <div id="loading" class="loading" role="status">Đang khởi tạo dữ liệu đầu vào…</div>
+      <div class="view-bar" role="group" aria-label="Góc nhìn"><button data-view="front" aria-pressed="false">Trước</button><button data-view="quarter" aria-pressed="true">3/4</button><button data-view="profile" aria-pressed="false">Nghiêng</button><button data-view="rear" aria-pressed="false">Sau</button><button data-view="torso" aria-pressed="false">Thân</button><button data-view="face" aria-pressed="false">Mặt</button></div>
+      <div class="stage-foot"><span><i class="status-dot"></i><span id="status" role="status">Đang khởi tạo</span></span><span id="performance" aria-label="Tốc độ khung hình"></span></div>
+    </section>
+    <aside class="panel" aria-label="Điều khiển mô mềm">
+      <div class="panel-heading"><p class="eyebrow">INTERACTION LAB</p><h2>Chạm. Kéo. Thả.</h2><p>Chọn vùng để xem cận, giữ để bóp hoặc nắm–kéo. Kéo trên nền để xoay; cuộn hoặc dùng hai ngón trên nền để thu phóng.</p></div>
+      <fieldset class="mode-picker"><legend>Cách tương tác</legend><div class="segmented"><button id="squeeze" aria-pressed="true">Bóp</button><button id="grab" aria-pressed="false">Nắm–kéo</button><button id="fabric" aria-pressed="false">Kéo vải áo</button></div></fieldset>
+      <fieldset class="mode-picker"><legend>Bề mặt hỗ trợ</legend><select id="surface" aria-label="Bề mặt hỗ trợ"><option value="skin">Vật liệu bắt sáng</option><option value="artist">Màu không chiếu sáng</option></select></fieldset>
+      <fieldset class="mode-picker"><legend>Màu vải · chuyển đổi</legend><div class="segmented"><button id="outfit-0" aria-pressed="true">Cobalt</button><button id="outfit-1" aria-pressed="false">Gold</button></div></fieldset>
+      <div class="region-box"><div class="label-row"><label for="region">Vùng kiểm tra</label><span id="tissue-label">Mềm · quán tính</span></div><select id="region"><option value="chest-left">Ngực trái</option><option value="chest-right">Ngực phải</option><option value="hips-left">Mông trái</option><option value="hips-right">Mông phải</option><option value="waist-left">Eo trái</option><option value="waist-right">Eo phải</option><option value="abdomen">Bụng</option><option value="cheek-left">Má trái</option><option value="cheek-right">Má phải</option></select><div class="readouts"><div><span>TẦN SỐ RIÊNG</span><strong id="frequency">—</strong></div><div><span>GIẢM CHẤN</span><strong id="damping">—</strong></div></div><button id="impulse" class="outline-button">Thử nẩy vùng này <span aria-hidden="true">↗</span></button></div>
+      <button id="motion" class="primary-button" aria-pressed="false"><span class="play-icon" aria-hidden="true">▷</span> Chuyển động thử</button><button id="reset" class="reset-button">Khôi phục trạng thái nghỉ</button>
+      <div class="method-note"><span class="tiny-index">01 / CƠ HỌC</span><p>Lưới hỗ trợ, tấm vải, một xương và clip tịnh tiến được tạo từ hình học do dự án tự viết. Giữ và kéo để thử các trường biến dạng, thả để quan sát hồi phục. Đây không phải mô hình giải phẫu, bằng chứng độ giống nhân vật, hay kiểm chứng renderer/native. Kiểm tra dữ liệu thực cần cấu hình và bằng chứng riêng.</p></div>
+      <div class="downloads"><a href="synthetic-scene.mjs" download>Mã tạo hình học <span aria-hidden="true">↓</span></a><a href="synthetic-config.mjs" download>Cấu hình ví dụ <span aria-hidden="true">↓</span></a></div>
+    </aside>
+  </main>
+  <footer><span>SYNTHETIC GEOMETRY</span><span>Không bao gồm tài sản bên thứ ba. · <strong id="build-stamp">build synthetic-1</strong></span></footer>
+  <script type="module" src="viewer.mjs"></script>
+</body>
+</html>

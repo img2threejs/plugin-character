@@ -1,0 +1,87 @@
+{
+  "scope": "Constructed synthetic gate contract input, not observed events, browser measurements or native acceptance.",
+  "matrix": {
+    "contract": [
+      {
+        "id": "contract-release-cobalt-ribbon-1",
+        "kind": "ribbon",
+        "side": 1,
+        "outfit": "cobalt",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-cobalt-ribbon--1",
+        "kind": "ribbon",
+        "side": -1,
+        "outfit": "cobalt",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-cobalt-cup-1",
+        "kind": "cup",
+        "side": 1,
+        "outfit": "cobalt",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-cobalt-cup--1",
+        "kind": "cup",
+        "side": -1,
+        "outfit": "cobalt",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-gold-ribbon-1",
+        "kind": "ribbon",
+        "side": 1,
+        "outfit": "gold",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-gold-ribbon--1",
+        "kind": "ribbon",
+        "side": -1,
+        "outfit": "gold",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-gold-cup-1",
+        "kind": "cup",
+        "side": 1,
+        "outfit": "gold",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      },
+      {
+        "id": "contract-release-gold-cup--1",
+        "kind": "cup",
+        "side": -1,
+        "outfit": "gold",
+        "afterRelease": {
+          "renderMismatch": 0,
+          "stillGrabbed": false
+        }
+      }
+    ]
+  }
+}
