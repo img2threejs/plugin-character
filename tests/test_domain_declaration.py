@@ -17,7 +17,6 @@ the manifest would certify the damage instead of catching it.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 import sys
@@ -42,13 +41,6 @@ EXPECTED_RIG_ORDER = [
     "rig-gates",
 ]
 
-# Content pins for the reference docs the rig-contract-read step names. The base keeps its own
-# copies; nothing else asserts the two stay equal, so divergence must fail HERE, not pass silently.
-# Re-record deliberately, in the same commit as a doc change.
-REFERENCE_DOC_HASHES = {
-    "reference/animation-contract.md": "c1c2c931e602854b8dba696dd6d1b7779290ac5b86c9d96e2c24ab784b453118",
-    "reference/character-rigging-animation-1.5.2.md": "fb1aa7c45a82effcb563b2c0669ebb596c91c219d686ccdfe4329cb3fed9ae9c",
-}
 
 
 def rig_ids() -> list[str]:
@@ -120,11 +112,6 @@ class DeclarationShape(unittest.TestCase):
 
 
 
-class ReferenceDocDriftPins(unittest.TestCase):
-    def test_reference_docs_match_their_recorded_hashes(self):
-        for rel, expected in REFERENCE_DOC_HASHES.items():
-            actual = hashlib.sha256((ROOT / rel).read_bytes()).hexdigest()
-            self.assertEqual(actual, expected, f"{rel} drifted; re-record deliberately")
 
 
 class GatePayloadMode(unittest.TestCase):

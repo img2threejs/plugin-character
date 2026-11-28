@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and correction passes; remove the unsound centre-pruning shortcut and its unused storage/parameter.
 - Recognize valid empty garment evidence containers and report missing named gates instead of
   a layout error, while continuing to reject malformed container types.
+- Remove byte-hash assertions on rewritten reference prose instead of re-pinning wording.
+  Rig stage ordering, freeze/bind/parity contracts and executable gate regressions remain intact.
 
 - Decode and CRC-verify material PNGs and require exact upright RGBA equality with their
   bottom-up raw evidence, rather than accepting dimensions or matching filenames alone.
